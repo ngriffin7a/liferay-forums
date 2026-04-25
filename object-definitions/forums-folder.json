@@ -1,0 +1,1121 @@
+{
+	"objectFolderItems": [
+		{
+			"positionX": 1600,
+			"positionY": 100,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": false,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-VOTE",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "Vote Value"
+						},
+						"name": "voteValue",
+						"required": true
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "externalReferenceCode",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Vote"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Votes"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumVote",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-vote/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-VOTE",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 600,
+			"positionY": 400,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-THREAD-FLAG",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Thread ID"
+						},
+						"name": "flagThreadId",
+						"required": true
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "externalReferenceCode",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Thread Flag"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Thread Flags"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumThreadFlag",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-thread-flag/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-THREAD-FLAG",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 1100,
+			"positionY": 400,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-SUSPICIOUS-ACTIVITY",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Message ID"
+						},
+						"name": "messageId",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Thread ID"
+						},
+						"name": "suspiciousThreadId",
+						"required": false
+					},
+					{
+						"DBType": "Clob",
+						"businessType": "LongText",
+						"label": {
+							"en_US": "Reason"
+						},
+						"name": "reason",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Validated"
+						},
+						"name": "validated",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "externalReferenceCode",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Suspicious Activity"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Suspicious Activities"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumSuspiciousActivity",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-suspicious-activity/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-SUSPICIOUS-ACTIVITY",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 100,
+			"positionY": 400,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-MAILING-LIST",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Email Address"
+						},
+						"name": "emailAddress",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Inbound Protocol"
+						},
+						"name": "inProtocol",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Inbound Server Name"
+						},
+						"name": "inServerName",
+						"required": false
+					},
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "Inbound Server Port"
+						},
+						"name": "inServerPort",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Inbound Use SSL"
+						},
+						"name": "inUseSSL",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Inbound User Name"
+						},
+						"name": "inUserName",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Inbound Password"
+						},
+						"name": "inPassword",
+						"required": false
+					},
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "Inbound Read Interval"
+						},
+						"name": "inReadInterval",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Outbound Email Address"
+						},
+						"name": "outEmailAddress",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Outbound Custom"
+						},
+						"name": "outCustom",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Outbound Server Name"
+						},
+						"name": "outServerName",
+						"required": false
+					},
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "Outbound Server Port"
+						},
+						"name": "outServerPort",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Outbound Use SSL"
+						},
+						"name": "outUseSSL",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Outbound User Name"
+						},
+						"name": "outUserName",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Outbound Password"
+						},
+						"name": "outPassword",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Allow Anonymous"
+						},
+						"name": "allowAnonymous",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Active"
+						},
+						"name": "mailingListActive",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "emailAddress",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Mailing List"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Mailing Lists"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumMailingList",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-mailing-list/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-MAILING-LIST",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 600,
+			"positionY": 700,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-STATS-USER",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "User ID"
+						},
+						"name": "statsUserId",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "externalReferenceCode",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Stats User"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Stats Users"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumStatsUser",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-stats-user/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-STATS-USER",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 1100,
+			"positionY": 700,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": false,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-BAN",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Ban User ID"
+						},
+						"name": "banUserId",
+						"required": true
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "externalReferenceCode",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Ban"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Bans"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumBan",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-ban/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-BAN",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 1100,
+			"positionY": 100,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Reply Votes"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-REPLY-VOTES",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "replyVotes",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-REPLY",
+						"objectDefinitionExternalReferenceCode2": "FORUM-VOTE",
+						"objectDefinitionName2": "ForumVote"
+					}
+				],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": true,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": true,
+				"externalReferenceCode": "FORUM-REPLY",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Class Name ID"
+						},
+						"name": "classNameId",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Class PK"
+						},
+						"name": "classPK",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Root Message ID"
+						},
+						"name": "rootMessageId",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Parent Message ID"
+						},
+						"name": "parentMessageId",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Tree Path"
+						},
+						"name": "treePath",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"indexed": true,
+						"indexedAsKeyword": false,
+						"indexedLanguageId": "en_US",
+						"label": {
+							"en_US": "Subject"
+						},
+						"localized": true,
+						"name": "subject",
+						"required": true
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "URL Subject"
+						},
+						"name": "urlSubject",
+						"required": false
+					},
+					{
+						"DBType": "Clob",
+						"businessType": "RichText",
+						"indexed": true,
+						"indexedAsKeyword": false,
+						"indexedLanguageId": "en_US",
+						"label": {
+							"en_US": "Body"
+						},
+						"name": "body",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Format"
+						},
+						"name": "format",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Anonymous"
+						},
+						"name": "anonymous",
+						"required": false
+					},
+					{
+						"DBType": "BigDecimal",
+						"businessType": "PrecisionDecimal",
+						"label": {
+							"en_US": "Priority"
+						},
+						"name": "priority",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Allow Pingbacks"
+						},
+						"name": "allowPingbacks",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Answer"
+						},
+						"name": "answer",
+						"required": false
+					},
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "Vote Score"
+						},
+						"name": "voteScore",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "subject",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Reply"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Replies"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumReply",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-reply/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-REPLY",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 600,
+			"positionY": 100,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Thread Replies"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-THREAD-REPLIES",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "threadReplies",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-THREAD",
+						"objectDefinitionExternalReferenceCode2": "FORUM-REPLY",
+						"objectDefinitionName2": "ForumReply"
+					},
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Thread Flags"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-THREAD-FLAGS",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "threadFlags",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-THREAD",
+						"objectDefinitionExternalReferenceCode2": "FORUM-THREAD-FLAG",
+						"objectDefinitionName2": "ForumThreadFlag"
+					},
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Thread Suspicious Activities"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-THREAD-SUSPICIOUS-ACTIVITIES",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "threadSuspiciousActivities",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-THREAD",
+						"objectDefinitionExternalReferenceCode2": "FORUM-SUSPICIOUS-ACTIVITY",
+						"objectDefinitionName2": "ForumSuspiciousActivity"
+					}
+				],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": true,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": true,
+				"externalReferenceCode": "FORUM-THREAD",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Category ID"
+						},
+						"name": "categoryId",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Root Message ID"
+						},
+						"name": "rootMessageId",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Root Message User ID"
+						},
+						"name": "rootMessageUserId",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"indexed": true,
+						"indexedAsKeyword": false,
+						"indexedLanguageId": "en_US",
+						"label": {
+							"en_US": "Title"
+						},
+						"localized": true,
+						"name": "threadTitle",
+						"required": false
+					},
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Last Post By User ID"
+						},
+						"name": "lastPostByUserId",
+						"required": false
+					},
+					{
+						"DBType": "Date",
+						"businessType": "Date",
+						"label": {
+							"en_US": "Last Post Date"
+						},
+						"name": "lastPostDate",
+						"required": false
+					},
+					{
+						"DBType": "BigDecimal",
+						"businessType": "PrecisionDecimal",
+						"label": {
+							"en_US": "Priority"
+						},
+						"name": "priority",
+						"required": false
+					},
+					{
+						"DBType": "Boolean",
+						"businessType": "Boolean",
+						"label": {
+							"en_US": "Question"
+						},
+						"name": "question",
+						"required": false
+					},
+					{
+						"DBType": "Integer",
+						"businessType": "Integer",
+						"label": {
+							"en_US": "View Count"
+						},
+						"name": "viewCount",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "threadTitle",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Thread"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Threads"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumThread",
+				"friendlyURLSeparator": "/c-forum-topic/",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				}
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-THREAD",
+			"linkedObjectDefinition": false
+		},
+		{
+			"positionX": 100,
+			"positionY": 100,
+			"objectDefinition": {
+				"enableComments": false,
+				"objectRelationships": [
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Category Threads"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-CATEGORY-THREADS",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "categoryThreads",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-CATEGORY",
+						"objectDefinitionExternalReferenceCode2": "FORUM-THREAD",
+						"objectDefinitionName2": "ForumThread"
+					},
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Category Replies"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-CATEGORY-REPLIES",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "categoryReplies",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-CATEGORY",
+						"objectDefinitionExternalReferenceCode2": "FORUM-REPLY",
+						"objectDefinitionName2": "ForumReply"
+					},
+					{
+						"objectDefinitionSystem2": false,
+						"parameterObjectFieldName": "",
+						"parameterObjectFieldId": 0,
+						"label": {
+							"en_US": "Category Mailing Lists"
+						},
+						"reverse": false,
+						"type": "oneToMany",
+						"externalReferenceCode": "REL-CATEGORY-MAILING-LISTS",
+						"edge": false,
+						"objectDefinitionModifiable2": true,
+						"system": false,
+						"name": "categoryMailingLists",
+						"objectDefinitionScope2": "site",
+						"deletionType": "cascade",
+						"objectDefinitionExternalReferenceCode1": "FORUM-CATEGORY",
+						"objectDefinitionExternalReferenceCode2": "FORUM-MAILING-LIST",
+						"objectDefinitionName2": "ForumMailingList"
+					}
+				],
+				"enableObjectEntryVersioning": false,
+				"enableCategorization": true,
+				"enableFriendlyURLCustomization": false,
+				"accountEntryRestrictedObjectFieldName": "",
+				"objectActions": [],
+				"enableLocalization": true,
+				"accountEntryRestricted": false,
+				"enableFormContainer": true,
+				"enableObjectEntrySubscription": false,
+				"externalReferenceCode": "FORUM-CATEGORY",
+				"workflowDefinitionLinks": [],
+				"objectFields": [
+					{
+						"DBType": "Long",
+						"businessType": "LongInteger",
+						"label": {
+							"en_US": "Parent Category ID"
+						},
+						"name": "parentCategoryId",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"indexed": true,
+						"indexedAsKeyword": false,
+						"indexedLanguageId": "en_US",
+						"label": {
+							"en_US": "Name"
+						},
+						"localized": true,
+						"name": "categoryName",
+						"required": true
+					},
+					{
+						"DBType": "Clob",
+						"businessType": "RichText",
+						"label": {
+							"en_US": "Description"
+						},
+						"name": "categoryDescription",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Display Style"
+						},
+						"name": "displayStyle",
+						"required": false
+					},
+					{
+						"DBType": "String",
+						"businessType": "Text",
+						"label": {
+							"en_US": "Friendly URL"
+						},
+						"name": "friendlyURL",
+						"required": false
+					}
+				],
+				"scope": "site",
+				"portlet": false,
+				"modifiable": true,
+				"parameterRequired": false,
+				"enableObjectEntryHistory": false,
+				"titleObjectFieldName": "categoryName",
+				"objectValidationRules": [],
+				"active": true,
+				"defaultLanguageId": "en_US",
+				"enableIndexSearch": true,
+				"label": {
+					"en_US": "Forum Category"
+				},
+				"panelCategoryKey": "",
+				"pluralLabel": {
+					"en_US": "Forum Categories"
+				},
+				"enableObjectEntrySchedule": false,
+				"objectLayouts": [],
+				"system": false,
+				"objectDefinitionSettings": [],
+				"objectViews": [],
+				"enableObjectEntryDraft": false,
+				"name": "ForumCategory",
+				"status": {
+					"code": 0,
+					"label": "approved",
+					"label_i18n": "Approved"
+				},
+				"friendlyURLSeparator": "/c-forum-category/"
+			},
+			"objectDefinitionExternalReferenceCode": "FORUM-CATEGORY",
+			"linkedObjectDefinition": false
+		}
+	],
+	"name": "Forums",
+	"label": {
+		"en_US": "Forums"
+	},
+	"externalReferenceCode": "FORUMS-FOLDER"
+}
