@@ -55,9 +55,18 @@ The following Display Page Templates must be imported rather than built manually
 The `forums-thread-detail` and `forums-related-topics` fragments each contain hidden `div` elements used to expose ERCs as mappable fields. These are visible while editing the Display Page Template in the page editor, but are not rendered to end-users when the page is viewed. After importing a Display Page Template, open it in the page editor and map each ERC field to the corresponding field on the mapped Object.
 
 ```html
-<!-- Mappable Thread ERC fields — visible in the Content Page Editor for mapping, hidden at runtime -->
-<div id="forumsDetailERC" data-lfr-editable-id="forumsDetailERC" data-lfr-editable-type="text" style="display: none;">Mappable Thread ERC</div>
-<div id="forumsDetailReplyERC" data-lfr-editable-id="forumsDetailReplyERC" data-lfr-editable-type="text" style="display: none;">Mappable Reply ERC</div>
+<!-- Mappable Thread ERC fields — visible in the Content Page Editor
+     for mapping, hidden at runtime -->
+<div
+    id="forumsDetailERC"
+    data-lfr-editable-id="forumsDetailERC"
+    data-lfr-editable-type="text"
+    style="display: none;">Mappable Thread ERC</div>
+<div
+    id="forumsDetailReplyERC"
+    data-lfr-editable-id="forumsDetailReplyERC"
+    data-lfr-editable-type="text"
+    style="display: none;">Mappable Reply ERC</div>
 ```
 
 - **Mappable Thread ERC** — map this field only when the fragment is placed in the **Forum Thread** Display Page Template.
