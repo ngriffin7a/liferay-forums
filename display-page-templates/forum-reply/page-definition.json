@@ -1,0 +1,206 @@
+{
+    "pageElement": {
+        "id": "c44b9ff9-7e4e-63da-add0-93705b4b8907",
+        "pageElements": [
+            {
+                "definition": {
+                    "fragmentStyle": {
+                        "paddingBottom": "4",
+                        "paddingTop": "4"
+                    },
+                    "indexed": true,
+                    "layout": {
+                        "paddingBottom": 2,
+                        "paddingTop": 2
+                    }
+                },
+                "id": "91307c5c-7d06-2876-e754-a930e62b754d",
+                "pageElements": [
+                    {
+                        "definition": {
+                            "indexed": true,
+                            "layout": {
+                                "widthType": "Fixed"
+                            }
+                        },
+                        "id": "af1345e1-9224-a755-e890-c928b49eccca",
+                        "pageElements": [
+                            {
+                                "definition": {
+                                    "gutters": true,
+                                    "indexed": true,
+                                    "modulesPerRow": 2,
+                                    "numberOfColumns": 2,
+                                    "reverseOrder": false,
+                                    "rowViewports": [
+                                        {
+                                            "id": "landscapeMobile",
+                                            "rowViewportDefinition": {
+                                                "modulesPerRow": 1
+                                            }
+                                        },
+                                        {
+                                            "id": "portraitMobile",
+                                            "rowViewportDefinition": {}
+                                        },
+                                        {
+                                            "id": "tablet",
+                                            "rowViewportDefinition": {}
+                                        }
+                                    ],
+                                    "verticalAlignment": "top"
+                                },
+                                "id": "42b1f17e-c5fd-8566-064a-0a20b96d4107",
+                                "pageElements": [
+                                    {
+                                        "definition": {
+                                            "columnViewports": [
+                                                {
+                                                    "columnViewportDefinition": {
+                                                        "size": 12
+                                                    },
+                                                    "id": "landscapeMobile"
+                                                },
+                                                {
+                                                    "columnViewportDefinition": {},
+                                                    "id": "portraitMobile"
+                                                },
+                                                {
+                                                    "columnViewportDefinition": {},
+                                                    "id": "tablet"
+                                                }
+                                            ],
+                                            "size": 9
+                                        },
+                                        "id": "75656b28-fa0a-f284-0a8c-65a05f7d8954",
+                                        "pageElements": [
+                                            {
+                                                "definition": {
+                                                    "fragment": {
+                                                        "key": "forums-thread-detail",
+                                                        "siteKey": "88027187798954"
+                                                    },
+                                                    "fragmentConfig": {
+                                                        "discussionsURL": "/forum-threads",
+                                                        "communityURL": "/forums",
+                                                        "repliesPageSize": "10"
+                                                    },
+                                                    "fragmentFields": [
+                                                        {
+                                                            "id": "forumsDetailReplyERC",
+                                                            "value": {
+                                                                "fragmentLink": {},
+                                                                "text": {
+                                                                    "mapping": {
+                                                                        "fieldKey": "ObjectEntry_externalReferenceCode",
+                                                                        "itemReference": {
+                                                                            "contextSource": "DisplayPageItem"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "forumsDetailERC",
+                                                            "value": {
+                                                                "fragmentLink": {}
+                                                            }
+                                                        }
+                                                    ],
+                                                    "indexed": true
+                                                },
+                                                "id": "1b084a42-0aa8-eda3-3e99-8b4da6698b53",
+                                                "type": "Fragment"
+                                            }
+                                        ],
+                                        "type": "Column"
+                                    },
+                                    {
+                                        "definition": {
+                                            "columnViewports": [
+                                                {
+                                                    "columnViewportDefinition": {
+                                                        "size": 12
+                                                    },
+                                                    "id": "landscapeMobile"
+                                                },
+                                                {
+                                                    "columnViewportDefinition": {},
+                                                    "id": "portraitMobile"
+                                                },
+                                                {
+                                                    "columnViewportDefinition": {},
+                                                    "id": "tablet"
+                                                }
+                                            ],
+                                            "size": 3
+                                        },
+                                        "id": "10f521e5-8b67-bffb-1894-38bf3ae1b879",
+                                        "pageElements": [
+                                            {
+                                                "definition": {
+                                                    "fragment": {
+                                                        "key": "forums-related-topics",
+                                                        "siteKey": "88027187798954"
+                                                    },
+                                                    "fragmentConfig": {
+                                                        "maxTopics": "5",
+                                                        "topicURL": "/forum-thread"
+                                                    },
+                                                    "fragmentFields": [
+                                                        {
+                                                            "id": "forumsRelatedTopicsReplyERC",
+                                                            "value": {
+                                                                "fragmentLink": {},
+                                                                "text": {
+                                                                    "mapping": {
+                                                                        "fieldKey": "ObjectEntry_externalReferenceCode",
+                                                                        "itemReference": {
+                                                                            "contextSource": "DisplayPageItem"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "forumsRelatedTopicsERC",
+                                                            "value": {
+                                                                "fragmentLink": {}
+                                                            }
+                                                        }
+                                                    ],
+                                                    "indexed": true
+                                                },
+                                                "id": "bfb49d21-aad1-9138-3d84-d5d9acedc459",
+                                                "type": "Fragment"
+                                            }
+                                        ],
+                                        "type": "Column"
+                                    }
+                                ],
+                                "type": "Row"
+                            }
+                        ],
+                        "type": "Section"
+                    }
+                ],
+                "type": "Section"
+            }
+        ],
+        "type": "Root"
+    },
+    "settings": {
+        "colorSchemeName": "01",
+        "masterPage": {
+            "key": "my-master-page"
+        },
+        "themeName": "Dialect",
+        "themeSettings": {
+            "lfr-theme:regular:show-header-search": "false",
+            "lfr-theme:regular:show-header": "false",
+            "lfr-theme:regular:show-footer": "false",
+            "lfr-theme:regular:wrap-widget-page-content": "false"
+        }
+    },
+    "version": 1.1
+}
