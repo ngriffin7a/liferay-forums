@@ -1,0 +1,32 @@
+.forums-categories-admin {
+	padding: 2rem 0;
+}
+
+.forums-categories-admin__card {
+	background-color: transparent;
+	border: 1px solid var(--color-neutral-2, #d9d9d6);
+	border-radius: 8px;
+	box-shadow: none;
+}
+
+.forums-categories-admin__title {
+	color: var(--color-neutral-9, #202a44);
+	margin-bottom: 1.5rem;
+}
+
+
+
+.forums-categories-admin__cat-info {
+	display: flex;
+	flex-direction: column;
+}
+
+.forums-categories-admin__cat-name {
+	font-weight: 600;
+	color: var(--color-neutral-9, #202a44);
+}
+
+.forums-categories-admin__cat-desc {
+	font-size: 0.875rem;
+	color: var(--color-neutral-6, #6a7791);
+}

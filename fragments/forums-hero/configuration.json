@@ -1,0 +1,16 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "/forum-threads",
+					"label": "Threads Page URL",
+					"name": "threadsURL",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

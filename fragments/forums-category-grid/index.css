@@ -1,0 +1,111 @@
+.forums-category-grid {
+	border: 1px solid var(--color-neutral-2, #d9d9d6);
+	border-radius: 8px;
+
+	padding: 1.5rem;
+}
+
+.forums-category-grid__title {
+	color: var(--color-neutral-9, #202a44);
+	font-size: 1.75rem;
+	font-weight: 700;
+	margin-bottom: 2rem;
+	text-align: center;
+}
+
+/* Category Card */
+
+.forums-category-grid__card {
+	border: 1px solid var(--color-neutral-2, #d9d9d6);
+	border-radius: 8px;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem;
+	text-decoration: none;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.forums-category-grid__card:hover {
+	border-color: var(--color-brand-primary-lighten-3, #88a9fe);
+	box-shadow: 0 4px 12px rgba(43, 106, 253, 0.12);
+	text-decoration: none;
+	transform: translateY(-2px);
+}
+
+.forums-category-grid__card-icon {
+	align-items: center;
+	background-color: var(--color-brand-primary-lighten-6, #e5e9ff);
+	border-radius: 8px;
+	color: var(--color-brand-primary, #2b6afd);
+	display: flex;
+	height: 48px;
+	justify-content: center;
+	margin-bottom: 1rem;
+	width: 48px;
+}
+
+.forums-category-grid__card-icon svg {
+	height: 24px;
+	width: 24px;
+}
+
+.forums-category-grid__card-name {
+	color: var(--color-neutral-9, #202a44);
+	font-size: 1.0625rem;
+	font-weight: 600;
+	line-height: 1.3;
+	margin-bottom: 0.5rem;
+}
+
+.forums-category-grid__card-desc {
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	color: var(--color-neutral-6, #6a7791);
+	display: -webkit-box;
+	flex-grow: 1;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	margin-bottom: 0.75rem;
+	overflow: hidden;
+}
+
+.forums-category-grid__card-arrow {
+	align-self: flex-end;
+	color: var(--color-brand-primary, #2b6afd);
+	font-size: 1.25rem;
+	line-height: 1;
+	transition: transform 0.2s ease;
+}
+
+.forums-category-grid__card:hover .forums-category-grid__card-arrow {
+	transform: translateX(4px);
+}
+
+/* Grid spacing */
+
+.forums-category-grid [class*="col-"] {
+	margin-bottom: 1.5rem;
+}
+
+/* Empty state */
+
+.forums-category-grid__empty {
+	color: var(--color-neutral-5, #8c95a8);
+	font-size: 1rem;
+	padding: 3rem 0;
+	text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 767.98px) {
+	.forums-category-grid {
+		padding: 2rem 0 2.5rem;
+	}
+
+	.forums-category-grid__title {
+		font-size: 1.375rem;
+	}
+}

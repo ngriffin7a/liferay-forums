@@ -1,0 +1,23 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "12",
+					"label": "Max Categories to Show",
+					"name": "pageSize",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "/forum-threads",
+					"label": "Threads Page URL",
+					"name": "threadsURL",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

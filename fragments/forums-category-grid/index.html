@@ -1,0 +1,20 @@
+<div class="forums-category-grid" id="forumsCategoryGrid"
+	data-label-no-categories="${languageUtil.get(locale, "no-categories-found")}"
+	data-label-unnamed-category="${languageUtil.get(locale, "unnamed-category")}"
+	data-label-unable-to-load="${languageUtil.get(locale, "unable-to-load-categories")}">
+	<div class="container">
+		<h2 class="forums-category-grid__title">
+			${languageUtil.get(locale, "browse-categories")}
+		</h2>
+
+		<div class="justify-content-center row" id="forumsCategoryGridItems">
+			<!-- Categories rendered by JS -->
+
+			<div class="col-12 text-center py-5" id="forumsCategoryGridLoading">
+				<div class="spinner-border text-primary" role="status">
+					<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

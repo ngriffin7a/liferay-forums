@@ -1,0 +1,48 @@
+<div class="forums-hero" id="forumsHero">
+	<div class="forums-hero__backdrop">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-8 text-center">
+					<h1 class="forums-hero__title">
+						${languageUtil.get(locale, "forums-title")}
+					</h1>
+					<p class="forums-hero__description">
+						${languageUtil.get(locale, "forums-description")}
+					</p>
+
+					<div class="forums-hero__drop-zone">
+						<lfr-drop-zone></lfr-drop-zone>
+					</div>
+
+					<div class="forums-hero__stats" id="forumsHeroStats">
+						<div class="row">
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatSolutions" aria-busy="true">&nbsp;</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "solutions")}</figcaption>
+								</figure>
+							</div>
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatThreads" aria-busy="true">&nbsp;</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "threads")}</figcaption>
+								</figure>
+							</div>
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatMembers" aria-busy="true">&nbsp;</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "participants")}</figcaption>
+								</figure>
+							</div>
+						</div>
+					</div>
+
+					<a href="${themeDisplay.getPathFriendlyURLPublic()}${themeDisplay.getScopeGroup().getFriendlyURL()}${configuration.threadsURL}?compose=true" class="btn forums-hero__cta" id="forumsHeroCta" style="display: none;">
+						${languageUtil.get(locale, "new-forum-thread")}
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

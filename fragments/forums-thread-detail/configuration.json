@@ -1,0 +1,30 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "10",
+					"label": "Replies Per Page",
+					"name": "repliesPageSize",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "/forums",
+					"label": "Community Home URL",
+					"name": "communityURL",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "/forum-threads",
+					"label": "Threads Page URL",
+					"name": "threadsURL",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

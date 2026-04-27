@@ -1,0 +1,20 @@
+<div class="forums-related-topics" id="forumsRelatedTopics"
+	data-label-no-related="${languageUtil.get(locale, "no-related-topics-found")}"
+	data-label-untitled="${languageUtil.get(locale, "untitled")}"
+	data-label-unable-to-load="${languageUtil.get(locale, "unable-to-load-related-topics")}"
+	data-label-flagged="${languageUtil.get(locale, "flagged")}">
+	<!-- Mappable Thread ERC fields — visible in the Content Page Editor for mapping, hidden at runtime -->
+	<div id="forumsRelatedTopicsERC" data-lfr-editable-id="forumsRelatedTopicsERC" data-lfr-editable-type="text" style="display: none;">Mappable Thread ERC</div>
+	<div id="forumsRelatedTopicsReplyERC" data-lfr-editable-id="forumsRelatedTopicsReplyERC" data-lfr-editable-type="text" style="display: none;">Mappable Reply ERC</div>
+
+	<h5 class="forums-related-topics__title">
+		${languageUtil.get(locale, "related-topics")}
+	</h5>
+	<div class="list-group" id="forumsRelatedTopicsList">
+		<div class="text-center py-3" id="forumsRelatedTopicsLoading">
+			<div class="spinner-border spinner-border-sm text-primary" role="status">
+				<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
+			</div>
+		</div>
+	</div>
+</div>

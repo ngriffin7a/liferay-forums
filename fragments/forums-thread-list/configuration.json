@@ -1,0 +1,22 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "20",
+					"label": "Threads Per Page",
+					"name": "pageSize",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Search Bar",
+					"name": "showSearchBar",
+					"type": "checkbox"
+				}
+			]
+		}
+	]
+}
