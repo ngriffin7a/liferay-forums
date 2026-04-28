@@ -39,10 +39,15 @@ The forums application is assembled using a combination of standard pages and Di
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  forums-hero                                                    │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  drop-zone → Search Bar widget                            │  │
+│  └───────────────────────────────────────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────────┤
 │  forums-category-grid                                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> After placing the **Search Bar** widget in the `forums-hero` drop-zone, configure it with the destination search page and any other relevant search settings (scope, placeholder text, etc.).
 
 ### Page: Forum Messages
 *Friendly URL: `/forum-messages` — Hide from page navigation.*
