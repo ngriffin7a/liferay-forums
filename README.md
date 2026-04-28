@@ -176,6 +176,15 @@ The arguments are identical to the import script above.
 
 ---
 
+## Utilities
+
+| File | Description |
+| :--- | :--- |
+| [delete-forum-stats-users.py](setup/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before executing `backfill-forum-stats-users.groovy` to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 setup/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
+| [backfill-forum-stats-users.groovy](setup/backfill-forum-stats-users.groovy) | Backfills `ForumStatsUser` records for every user who has posted a message or reply. Required when those records are missing after a data import, or for users who posted before the auto-creation logic existed — without them, the `forums-hero` fragment displays 0 Members. Run via **Control Panel → Server Administration → Script** after clearing existing records with `delete-forum-stats-users.py`. |
+
+---
+
 ## Known Limitations (Fragments)
 
 ### View Count Not Incremented for Guest Users
