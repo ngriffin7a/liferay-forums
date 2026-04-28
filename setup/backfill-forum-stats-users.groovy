@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * Backfills ForumStatsUser records for users who posted before the auto-creation
  * logic existed, or after a data import where those records were not included.

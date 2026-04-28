@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 var relatedTopics = fragmentElement.querySelector('#forumsRelatedTopics');
 
 if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {

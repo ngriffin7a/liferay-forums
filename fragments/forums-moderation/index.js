@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 var forumsMod = fragmentElement.querySelector('#forumsModeration');
 
 if (forumsMod) {
