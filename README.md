@@ -23,7 +23,7 @@ This project is a Fragments and Liferay Objects based replacement for the legacy
 | **Forums Category Grid** | [forums-category-grid](fragments/forums-category-grid) | Displays the main forum categories in a grid layout. |
 | **Forums Hero** | [forums-hero](fragments/forums-hero) | Top banner for the forums featuring statistics (like member count) and quick actions. |
 | **Forums Moderation** | [forums-moderation](fragments/forums-moderation) | Tools for moderating forum content. |
-| **Forums New Thread** | [forums-new-thread](fragments/forums-new-thread) | Interface for users to create a new forum thread. |
+| **Forums Message Composer** | [forums-message-composer](fragments/forums-message-composer) | Modal composer for creating and editing forum threads and replies. |
 | **Forums Related Topics** | [forums-related-topics](fragments/forums-related-topics) | Displays a list of topics related to the currently viewed thread. |
 | **Forums Thread Detail** | [forums-thread-detail](fragments/forums-thread-detail) | Detailed view of a single forum thread, including its replies and engagement metrics. |
 | **Forums Thread List** | [forums-thread-list](fragments/forums-thread-list) | Lists forum threads, typically used for main category views or recent activity. |
@@ -37,7 +37,7 @@ The forums application is assembled using a combination of standard pages and Di
 | Page | Fragments | Notes |
 | :--- | :--- | :--- |
 | **Forums** | `forums-hero`, `forums-category-grid` | Main entry point for the forums. |
-| **Forum Threads** | `forums-thread-list`, `forums-new-thread` | Typically hidden from page navigation. |
+| **Forum Threads** | `forums-thread-list`, `forums-message-composer` | Typically hidden from page navigation. |
 | **Forum Category Admin** | `forums-categories-admin` | Restrict access to the Administrator role. |
 | **Forum Moderation** | `forums-moderation` | Restrict access to the Administrator role. |
 
@@ -81,6 +81,24 @@ The `forums-thread-detail` and `forums-related-topics` fragments each contain hi
 The `forums-thread-detail` fragment PATCHes the `viewCount` field on `ForumThread` objects only for authenticated users. Guest views are silently skipped because the Liferay Object REST API returns `403 Forbidden` for unauthenticated PATCH requests.
 
 **Option:** Grant the Guest role `update` permission on ForumThread objects via the Object's permissions configuration. However, the preferred solution is a dedicated endpoint in a Spring Boot Client Extension that accepts a `threadId` and increments `viewCount` with its own service credentials — keeping the Object's permissions locked down.
+
+### Ban Enforcement Is UI-Only
+
+When a user is banned (a `ForumBan` Object entry exists for their user ID in the site scope), the fragments detect this at page load by querying `GET /o/c/forumbans/scopes/{groupId}?filter=banUserId eq {userId}`. If a ban is found, the UI is locked down: the submit button is disabled, compose buttons are hidden, and an inline warning is shown. This is purely client-side — the REST endpoints that create and update content (`POST /o/c/forumthreads/`, `POST /o/c/forumreplies/`, `PATCH /o/c/forumthreads/{id}`, `PATCH /o/c/forumreplies/{id}`) have no knowledge of the `ForumBan` collection and will accept requests from a banned user if called directly.
+
+**Why the legacy portlets don't have this gap:** The legacy Message Boards portlets enforce bans at the Liferay permission framework layer (`MBPortletResourcePermissionLogic`), which calls `MBBanLocalService.hasBan()` on every permission check regardless of the calling path (web UI, REST API, or direct service invocation). Custom Liferay Objects have no equivalent hook into that permission logic.
+
+**Why this can't be fixed with built-in Object features:** Object Actions all fire after the entry is already committed (there is no pre-create trigger that can abort creation). Object Validation rules use the Expression Builder, which is limited to the entry's own field values and cannot query other Object collections or access current user context. Groovy script actions — which could perform the check — are not available on Liferay SaaS.
+
+**The only realistic server-side option: Microservice Client Extension**
+
+A Spring Boot Microservice Client Extension can be registered as an Object Action webhook on both `ForumThread` and `ForumReply`, triggered on the `On After Add` event. It would:
+
+1. Receive the Object Action payload, which includes the `creatorId` (the user ID of the entry author) and the `groupId` (site scope).
+2. Call `GET /o/c/forumbans/scopes/{groupId}?filter=banUserId eq {creatorId}&pageSize=1` using service credentials to check for a ban record.
+3. If a ban record exists, immediately call `DELETE /o/c/forumthreads/{entryId}` or `DELETE /o/c/forumreplies/{entryId}` to remove the entry.
+
+There is an unavoidable brief window (milliseconds to low seconds depending on load) between the entry being created and the microservice deleting it. In practice this is acceptable given that banning is rare and the moderation fragment provides a backstop for any content that appears during that window.
 
 ### "Top Replies" Implemented as "Recent Activity"
 
