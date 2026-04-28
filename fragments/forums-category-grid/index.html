@@ -1,20 +1,43 @@
-<div class="forums-category-grid" id="forumsCategoryGrid"
-	data-label-no-categories="${languageUtil.get(locale, "no-categories-found")}"
-	data-label-unnamed-category="${languageUtil.get(locale, "unnamed-category")}"
-	data-label-unable-to-load="${languageUtil.get(locale, "unable-to-load-categories")}">
+[#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
+[#assign scopeGroup = themeDisplay.getScopeGroup() /]
+[#assign pageSize = configuration.pageSize!"12" /]
+[#assign categoriesData = restClient.get("/c/forumcategories/scopes/" + scopeGroupId + "?pageSize=" + pageSize + "&sort=categoryName:asc") /]
+[#assign baseHref = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") + (configuration.threadsURL!"/forum-threads") /]
+
+<div class="forums-category-grid">
 	<div class="container">
 		<h2 class="forums-category-grid__title">
 			${languageUtil.get(locale, "browse-categories")}
 		</h2>
 
-		<div class="justify-content-center row" id="forumsCategoryGridItems">
-			<!-- Categories rendered by JS -->
-
-			<div class="col-12 text-center py-5" id="forumsCategoryGridLoading">
-				<div class="spinner-border text-primary" role="status">
-					<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
+		<div class="justify-content-center row">
+			[#if categoriesData?? && categoriesData.items?has_content]
+				[#list categoriesData.items as cat]
+					<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2">
+						<a href="${baseHref}?categoryId=${cat.id}" class="forums-category-grid__card">
+							<div class="forums-category-grid__card-icon">
+								<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+									<path d="M14 1H2c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zm-1 12H3V3h10v10z"/>
+									<path d="M5 5h6v1H5zM5 7h6v1H5zM5 9h4v1H5z"/>
+								</svg>
+							</div>
+							<div class="forums-category-grid__card-name">
+								[#if cat.categoryName?has_content]
+									${cat.categoryName?html}
+								[#else]
+									${languageUtil.get(locale, "unnamed-category")}
+								[/#if]
+							</div>
+							<div class="forums-category-grid__card-desc">${(cat.categoryDescription!"")?html}</div>
+							<span class="forums-category-grid__card-arrow">&rsaquo;</span>
+						</a>
+					</div>
+				[/#list]
+			[#else]
+				<div class="col-12 forums-category-grid__empty">
+					${languageUtil.get(locale, "no-categories-found")}
 				</div>
-			</div>
+			[/#if]
 		</div>
 	</div>
 </div>

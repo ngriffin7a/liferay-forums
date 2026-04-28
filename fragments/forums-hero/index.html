@@ -1,4 +1,21 @@
-<div class="forums-hero" id="forumsHero">
+[#function formatCount n]
+	[#if n gte 1000000]
+		[#return (n / 1000000)?string("0.#") + "M"]
+	[#elseif n gte 1000]
+		[#return (n / 1000)?string("0.#") + "K"]
+	[#else]
+		[#return n?c]
+	[/#if]
+[/#function]
+
+[#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
+[#assign scopeGroup = themeDisplay.getScopeGroup() /]
+[#assign sitePrefix = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
+[#assign threadsData = restClient.get("/c/forumthreads/scopes/" + scopeGroupId + "?pageSize=1&page=1") /]
+[#assign solutionsData = restClient.get("/c/forumreplies/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true") /]
+[#assign membersData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1") /]
+
+<div class="forums-hero">
 	<div class="forums-hero__backdrop">
 		<div class="container">
 			<div class="row justify-content-center">
@@ -14,35 +31,54 @@
 						<lfr-drop-zone></lfr-drop-zone>
 					</div>
 
-					<div class="forums-hero__stats" id="forumsHeroStats">
+					<div class="forums-hero__stats">
 						<div class="row">
 							<div class="col-4">
 								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatSolutions" aria-busy="true">&nbsp;</span>
+									<span class="forums-hero__stat-value">
+										[#if solutionsData?? && solutionsData.totalCount??]
+											${formatCount(solutionsData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
 									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "solutions")}</figcaption>
 								</figure>
 							</div>
 							<div class="col-4">
 								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatThreads" aria-busy="true">&nbsp;</span>
+									<span class="forums-hero__stat-value">
+										[#if threadsData?? && threadsData.totalCount??]
+											${formatCount(threadsData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
 									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "threads")}</figcaption>
 								</figure>
 							</div>
 							<div class="col-4">
 								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value is-loading" id="forumsHeroStatMembers" aria-busy="true">&nbsp;</span>
+									<span class="forums-hero__stat-value">
+										[#if membersData?? && membersData.totalCount??]
+											${formatCount(membersData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
 									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "participants")}</figcaption>
 								</figure>
 							</div>
 						</div>
 					</div>
 
-					<a href="${themeDisplay.getPathFriendlyURLPublic()}${themeDisplay.getScopeGroup().getFriendlyURL()}${configuration.threadsURL}?compose=true" class="btn forums-hero__cta" id="forumsHeroCta" style="display: none;">
-						${languageUtil.get(locale, "new-forum-thread")}
-					</a>
+					[#if threadsData?? && threadsData.actions?? && (threadsData.actions["post"]?? || threadsData.actions["create"]??)]
+						<a href="${sitePrefix}${configuration.threadsURL!"/forum-threads"}?compose=true" class="btn forums-hero__cta">
+							${languageUtil.get(locale, "new-forum-thread")}
+						</a>
+					[/#if]
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
-
