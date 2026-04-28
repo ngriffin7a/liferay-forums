@@ -34,12 +34,41 @@ This project is a Fragments and Liferay Objects based replacement for the legacy
 
 The forums application is assembled using a combination of standard pages and Display Page Templates.
 
-| Page | Fragments | Notes |
-| :--- | :--- | :--- |
-| **Forums** | `forums-hero`, `forums-category-grid` | Main entry point for the forums. |
-| **Forum Messages** | `forums-message-list`, `forums-message-composer` | Typically hidden from page navigation. |
-| **Forum Category Admin** | `forums-categories-admin` | Restrict access to the Administrator role. |
-| **Forum Moderation** | `forums-moderation` | Restrict access to the Administrator role. |
+### Page: Forums
+*Friendly URL: `/forums` — Main entry point for the forums.*
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  forums-hero                                                    │
+├─────────────────────────────────────────────────────────────────┤
+│  forums-category-grid                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Page: Forum Messages
+*Friendly URL: `/forum-messages` — Hide from page navigation.*
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  forums-message-list                                            │
+├─────────────────────────────────────────────────────────────────┤
+│  forums-message-composer                                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Page: Forum Category Admin
+*Friendly URL: `/forum-category-admin` — Restrict access to the Administrator role.*
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  forums-categories-admin                                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Page: Forum Moderation
+*Friendly URL: `/forum-moderation` — Restrict access to the Administrator role.*
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  forums-moderation                                              │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
