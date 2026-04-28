@@ -66,8 +66,8 @@ The forums application is assembled using a combination of standard pages and Di
 
 > After placing the **Search Bar** widget in the `forums-hero` drop-zone, configure it with the destination search page and any other relevant search settings (scope, placeholder text, etc.).
 
-### Page: Forum Messages
-*Friendly URL: `/forum-messages` — Hide from page navigation.*
+### Page: Forums Messages
+*Friendly URL: `/forums-messages` — Hide from page navigation.*
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  forums-message-list                                            │
@@ -76,16 +76,16 @@ The forums application is assembled using a combination of standard pages and Di
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Page: Forum Category Admin
-*Friendly URL: `/forum-category-admin` — Restrict access to the Administrator role.*
+### Page: Forum Categories Admin
+*Friendly URL: `/forum-categories-admin` — Restrict access to the Administrator role.*
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  forums-categories-admin                                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Page: Forum Moderation
-*Friendly URL: `/forum-moderation` — Restrict access to the Administrator role.*
+### Page: Forums Moderation
+*Friendly URL: `/forums-moderation` — Restrict access to the Administrator role.*
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  forums-moderation                                              │
