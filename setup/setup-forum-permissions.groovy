@@ -27,6 +27,7 @@
  */
 
 import com.liferay.portal.kernel.model.ResourceConstants
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil
 import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil
@@ -236,9 +237,7 @@ try {
             out.println("  ✅ Already configured correctly")
         }
     } else {
-        def userId = com.liferay.portal.kernel.service.UserLocalServiceUtil
-            .getUserByEmailAddress(companyId, "test@liferay.com")
-            .getUserId()
+        def userId = Long.parseLong(PrincipalThreadLocal.getName())
 
         SAPEntryLocalServiceUtil.addSAPEntry(
             userId,                  // userId
