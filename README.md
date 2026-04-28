@@ -49,8 +49,10 @@ The following Display Page Templates must be imported rather than built manually
 
 | Display Page Template | Folder | Mapped Object | Fragments |
 | :--- | :--- | :--- | :--- |
-| **Forum Message** | [forum-message](display-page-templates/forum-message) | `ForumMessage` | `forums-message-detail`, `forums-related-topics` |
-| **Forum Reply** | [forum-reply](display-page-templates/forum-reply) | `ForumReply` | `forums-message-detail`, `forums-related-topics` |
+| **Forum Message** | [forum-message](display-page-templates/forum-message) | `ForumMessage` | `forums-message-detail`, `forums-related-topics`, `forums-message-composer` |
+| **Forum Reply** | [forum-reply](display-page-templates/forum-reply) | `ForumReply` | `forums-message-detail`, `forums-related-topics`, `forums-message-composer` |
+
+> **Important:** The `forums-message-composer` fragment must be present in every Display Page Template. Without it, users will have no way to edit or reply to the corresponding message, because the composer modal is the sole entry point for both the edit and reply actions.
 
 The `forums-message-detail` and `forums-related-topics` fragments each contain hidden `div` elements used to expose ERCs as mappable fields. These are visible while editing the Display Page Template in the page editor, but are not rendered to end-users when the page is viewed. After importing a Display Page Template, open it in the page editor and map each ERC field to the corresponding field on the mapped Object.
 
