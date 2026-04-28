@@ -5,7 +5,7 @@
 			"fields": [
 				{
 					"dataType": "string",
-					"defaultValue": "/forum-messages",
+					"defaultValue": "/forums-messages",
 					"label": "Messages Page URL",
 					"name": "messagesURL",
 					"type": "text"
