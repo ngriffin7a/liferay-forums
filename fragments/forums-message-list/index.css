@@ -182,13 +182,15 @@
 
 .forums-message-card__username {
 	color: var(--color-brand-primary, #2b6afd);
-	display: block;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	font-size: 0.75rem;
 	font-weight: 500;
 	margin-top: 0.25rem;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow-wrap: break-word;
+	text-align: center;
+	word-break: break-word;
 }
 
 .forums-message-card__rank {

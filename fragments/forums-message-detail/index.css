@@ -164,17 +164,17 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	display: inline-flex;
 	font-size: 1rem;
 	font-weight: 700;
-	height: 40px;
+	height: 48px;
 	justify-content: center;
 	overflow: hidden;
-	width: 40px;
+	width: 48px;
 }
 
 .forums-message-detail__author-avatar img {
 	border-radius: 50%;
-	height: 40px;
+	height: 48px;
 	object-fit: cover;
-	width: 40px;
+	width: 48px;
 }
 
 .forums-message-detail__author-name {
@@ -445,9 +445,9 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 .forums-skeleton__avatar {
 	border-radius: 50%;
 	flex-shrink: 0;
-	height: 40px;
+	height: 48px;
 	margin-bottom: 0;
-	width: 40px;
+	width: 48px;
 }
 
 .forums-skeleton__avatar--sm {
