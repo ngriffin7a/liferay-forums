@@ -7,6 +7,7 @@ Delete all demo forum data via the Liferay DXP Headless API.
 Steps:
   1. Delete all Forum Reply entries (votes auto-deleted via cascade).
   2. Delete all Forum Message entries.
+  3. Delete all Forum Category entries.
 
 Usage:
     python3 delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
@@ -109,6 +110,28 @@ def delete_messages(base, site_id, auth):
     print(f"\n  Deleted {deleted}/{len(ids)} messages.")
 
 
+# ─── Step 3: Delete Forum Categories ─────────────────────────────────────
+
+def delete_categories(base, site_id, auth):
+    print("\n═══ Step 3: Deleting Forum Categories ═══")
+    ids = fetch_all_ids(base, f"/o/c/forumcategories/scopes/{site_id}", auth)
+    if not ids:
+        print("  No Forum Categories found.")
+        return
+
+    print(f"  Found {len(ids)} categories to delete.")
+    deleted = 0
+    for cat_id in ids:
+        status, _ = api_request("DELETE", f"{base}/o/c/forumcategories/{cat_id}", auth)
+        if status < 300:
+            deleted += 1
+            print(f"  ✅ Deleted category {cat_id}")
+        else:
+            print(f"  ❌ Failed to delete category {cat_id}: {status}")
+
+    print(f"\n  Deleted {deleted}/{len(ids)} categories.")
+
+
 # ─── Main ─────────────────────────────────────────────────────────────────
 
 def main():
@@ -134,6 +157,7 @@ def main():
 
     delete_replies(base, site_id, auth)
     delete_messages(base, site_id, auth)
+    delete_categories(base, site_id, auth)
 
     print("\n✅ Demo data deletion complete.")
 
