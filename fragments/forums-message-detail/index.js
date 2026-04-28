@@ -1419,20 +1419,12 @@ if (messageDetail) {
 			})
 			.catch(function() { runMessageDetail(null, null); });
 		} else {
-			/* Read ERC from the Display Page-mapped message element */
 			var ercEl = messageDetail.querySelector('#forumsDetailERC');
 			var erc = ercEl ? ercEl.textContent.trim() : null;
 			if (erc === 'Mappable Message ERC') erc = null;
 
-			/* Fall back to the slug in the Display Page URL path */
 			if (!erc) {
-				var pathParts = window.location.pathname.split('/');
-				var routeIdx = pathParts.indexOf('-c-forum-topic-');
-				erc = routeIdx !== -1 && pathParts[routeIdx + 1] ? decodeURIComponent(pathParts[routeIdx + 1]) : null;
-			}
-
-			if (!erc) {
-				runMessageDetail(null, null);
+				if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelErcNotMapped || 'Message ERC is not mapped.') + '</div>';
 			} else {
 				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
