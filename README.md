@@ -4,6 +4,23 @@ This project is a Fragments and Liferay Objects based replacement for the legacy
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Forums Home</strong></td>
+    <td align="center"><strong>Message List</strong></td>
+    <td align="center"><strong>Message Detail</strong></td>
+  </tr>
+  <tr>
+    <td><a href="screenshots/screenshot-forums.png"><img src="screenshots/screenshot-forums.png" width="260" alt="Forums home page"></a></td>
+    <td><a href="screenshots/screenshot-message-list.png"><img src="screenshots/screenshot-message-list.png" width="260" alt="Message list view"></a></td>
+    <td><a href="screenshots/screenshot-message-detail.png"><img src="screenshots/screenshot-message-detail.png" width="260" alt="Message detail view"></a></td>
+  </tr>
+</table>
+
+---
+
 ## Setup
 
 | File | Description |
