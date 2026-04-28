@@ -185,7 +185,7 @@ The arguments are identical to the import script above.
 
 ---
 
-## Known Limitations (Fragments)
+## Known Limitations
 
 ### View Count Not Incremented for Guest Users
 
