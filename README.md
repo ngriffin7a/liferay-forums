@@ -45,34 +45,52 @@ The forums application is assembled using a combination of standard pages and Di
 
 ## Display Page Templates
 
-The following Display Page Templates must be imported rather than built manually.
+> **Why these cannot be exported and re-imported:** Each Liferay Object Definition is assigned a random internal ID suffix (e.g. `com.liferay.object.model.ObjectDefinition#A0Z2`) when it is first published. That suffix is baked into an exported `display-page-template.json` as the `contentType.className`. Because `delete-forum-object-definitions.py` destroys and recreates the Object Definitions on every reset, the suffix changes each time — making any previously exported Display Page Template immediately invalid on re-import. There is no ERC-based resolution path in the Display Page Template importer. **These two Display Page Templates must be created by hand** in each environment after the Object Definitions have been imported.
 
-| Display Page Template | Folder | Mapped Object | Fragments |
-| :--- | :--- | :--- | :--- |
-| **Forum Message** | [forum-message](display-page-templates/forum-message) | `ForumMessage` | `forums-message-detail`, `forums-related-topics`, `forums-message-composer` |
-| **Forum Reply** | [forum-reply](display-page-templates/forum-reply) | `ForumReply` | `forums-message-detail`, `forums-related-topics`, `forums-message-composer` |
+Create two Display Page Templates — one mapped to `ForumMessage`, one mapped to `ForumReply`. Both use the identical fragment arrangement described below.
 
-> **Important:** The `forums-message-composer` fragment must be present in every Display Page Template. Without it, users will have no way to edit or reply to the corresponding message, because the composer modal is the sole entry point for both the edit and reply actions.
+### Layout
 
-The `forums-message-detail` and `forums-related-topics` fragments each contain hidden `div` elements used to expose ERCs as mappable fields. These are visible while editing the Display Page Template in the page editor, but are not rendered to end-users when the page is viewed. After importing a Display Page Template, open it in the page editor and map each ERC field to the corresponding field on the mapped Object.
+Both Display Page Templates share the same structure:
 
-```html
-<!-- Mappable Message ERC fields — visible in the Content Page Editor
-     for mapping, hidden at runtime -->
-<div
-    id="forumsDetailERC"
-    data-lfr-editable-id="forumsDetailERC"
-    data-lfr-editable-type="text"
-    style="display: none;">Mappable Message ERC</div>
-<div
-    id="forumsDetailReplyERC"
-    data-lfr-editable-id="forumsDetailReplyERC"
-    data-lfr-editable-type="text"
-    style="display: none;">Mappable Reply ERC</div>
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Container                                                      │
+│  ┌───────────────────────────────────────┬───────────────────┐  │
+│  │  Column — 75%                         │  Column — 25%     │  │
+│  │                                       │                   │  │
+│  │  ┌─────────────────────────────────┐  │  ┌─────────────┐  │  │
+│  │  │  forums-message-detail          │  │  │   forums-   │  │  │
+│  │  └─────────────────────────────────┘  │  │  related-   │  │  │
+│  │  ┌─────────────────────────────────┐  │  │   topics    │  │  │
+│  │  │  forums-message-composer        │  │  └─────────────┘  │  │
+│  │  └─────────────────────────────────┘  │                   │  │
+│  └───────────────────────────────────────┴───────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-- **Mappable Message ERC** — map this field only when the fragment is placed in the **Forum Message** Display Page Template.
-- **Mappable Reply ERC** — map this field only when the fragment is placed in the **Forum Reply** Display Page Template.
+Inside the Container, add a **2-column Grid** with a **75% / 25%** split:
+- **Left column:** `forums-message-detail`, then `forums-message-composer`
+- **Right column:** `forums-related-topics`
+
+> **Important:** `forums-message-composer` must be present in every Display Page Template. Without it, users have no way to edit or reply to a message, because the composer modal is the sole entry point for both actions.
+
+### ERC Field Mapping
+
+After building the layout, open each Display Page Template in the page editor and map the hidden ERC fields exposed by the fragments. The `forums-message-detail` and `forums-related-topics` fragments each contain hidden `div` elements that appear as mappable fields in the editor but are not rendered to end-users at runtime.
+
+```html
+<!-- Exposed as mappable fields in the Content Page Editor; hidden at runtime -->
+<div id="forumsDetailERC"      data-lfr-editable-id="forumsDetailERC"      data-lfr-editable-type="text" style="display:none;">Mappable Message ERC</div>
+<div id="forumsDetailReplyERC" data-lfr-editable-id="forumsDetailReplyERC" data-lfr-editable-type="text" style="display:none;">Mappable Reply ERC</div>
+```
+
+Map these fields differently depending on which Display Page Template you are editing:
+
+| Field | Forum Message DPT | Forum Reply DPT |
+| :--- | :--- | :--- |
+| **Mappable Message ERC** | Map to `ForumMessage → externalReferenceCode` | Leave unmapped |
+| **Mappable Reply ERC** | Leave unmapped | Map to `ForumReply → externalReferenceCode` |
 
 ---
 
