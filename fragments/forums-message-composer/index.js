@@ -78,9 +78,9 @@ if (messageComposer) {
 
 	/* Detect mode from URL */
 	var urlParams = new URLSearchParams(window.location.search);
-	var threadId = urlParams.get('threadId');
+	var messageId = urlParams.get('messageId');
 	var categoryIdParam = urlParams.get('categoryId');
-	var isReplyMode = !!threadId;
+	var isReplyMode = !!messageId;
 	var parentMessageId = null;
 	var categoriesLoaded = false;
 	var isEditMode = false;
@@ -243,7 +243,7 @@ if (messageComposer) {
 		}
 	});
 
-	/* ---- Configure form for new-thread vs reply mode ---- */
+	/* ---- Configure form for new-message vs reply mode ---- */
 
 	function configureModal(replyMode) {
 		if (isEditMode && editIsOp) {
@@ -278,7 +278,7 @@ if (messageComposer) {
 			if (bodyLabel) bodyLabel.textContent = messageComposer.dataset.labelYourReply || 'Your Reply';
 			if (submitBtn) submitBtn.textContent = messageComposer.dataset.labelPost || 'Post';
 		} else {
-			if (titleEl) titleEl.textContent = messageComposer.dataset.labelNewForumThread || 'New Forum Thread';
+			if (titleEl) titleEl.textContent = messageComposer.dataset.labelNewForumMessage || 'New Forum Message';
 			if (leftCol) leftCol.style.display = '';
 			if (categoryGroup) categoryGroup.style.display = '';
 			if (subjectGroup) subjectGroup.style.display = '';
@@ -322,12 +322,12 @@ if (messageComposer) {
 
 	window.forumsOpenComposeModal = function(options) {
 		options = options || {};
-		var replyMode = !!options.threadId && !options.editMode;
+		var replyMode = !!options.messageId && !options.editMode;
 		isEditMode = !!options.editMode;
 		editIsOp = !!options.isOp;
 		editMessageId = options.messageId || null;
 		
-		if (options.threadId) threadId = options.threadId;
+		if (options.messageId) messageId = options.messageId;
 		if (options.categoryId) categoryIdParam = String(options.categoryId);
 		parentMessageId = options.parentMessageId || null;
 		isReplyMode = replyMode;
@@ -369,7 +369,7 @@ if (messageComposer) {
 		var trigger = e.target.closest('[data-forums-compose]');
 		if (trigger) {
 			e.preventDefault();
-			var composeThreadId = trigger.getAttribute('data-forums-thread-id') || threadId;
+			var composeMessageId = trigger.getAttribute('data-forums-message-id') || messageId;
 			var composeCategoryId = trigger.getAttribute('data-forums-category-id') || categoryIdParam;
 			var composeMessageId = trigger.getAttribute('data-forums-message-id') || null;
 			var rawTags = trigger.getAttribute('data-forums-tags');
@@ -378,7 +378,7 @@ if (messageComposer) {
 				try { parsedTags = JSON.parse(rawTags); } catch (e) {}
 			}
 			window.forumsOpenComposeModal({
-				threadId: trigger.hasAttribute('data-forums-reply') ? composeThreadId : null,
+				messageId: trigger.hasAttribute('data-forums-reply') ? composeMessageId : null,
 				categoryId: composeCategoryId,
 				parentMessageId: composeMessageId,
 				tags: parsedTags
@@ -465,13 +465,13 @@ if (messageComposer) {
 				var promises = [];
 				if (editIsOp) {
 					promises.push(
-						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + threadId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({
-								threadTitle: subject,
-								threadTitle_i18n: { en_US: subject },
-								r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
+								messageTitle: subject,
+								messageTitle_i18n: { en_US: subject },
+								r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
 								question: isQuestion,
 								keywords: tagsArray
 							})
@@ -519,7 +519,7 @@ if (messageComposer) {
 				submitBtn.textContent = messageComposer.dataset.labelPosting || 'Posting...';
 
 				var replyPayload = {
-					r_threadReplies_c_forumThreadId: parseInt(threadId),
+					r_messageReplies_c_forumMessageId: parseInt(messageId),
 					parentMessageId: parentMessageId ? parseInt(parentMessageId) : 0,
 					body: body,
 					format: 'html',
@@ -574,27 +574,27 @@ if (messageComposer) {
 				submitBtn.disabled = true;
 				submitBtn.textContent = messageComposer.dataset.labelPosting || 'Posting...';
 
-				var threadPayload = {
-					threadTitle: subject,
-					threadTitle_i18n: { en_US: subject },
-					r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
+				var messagePayload = {
+					messageTitle: subject,
+					messageTitle_i18n: { en_US: subject },
+					r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
 					question: isQuestion,
 					keywords: tagsArray
 				};
 
-				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId, {
+				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId, {
 					headers: headers,
 					method: 'POST',
-					body: JSON.stringify(threadPayload)
+					body: JSON.stringify(messagePayload)
 				})
 				.then(function(r) {
 					if (!r.ok) throw new Error('HTTP ' + r.status);
 					trackForumStatsUser();
 					return r.json();
 				})
-				.then(function(thread) {
+				.then(function(msg) {
 					var msgPayload = {
-						r_threadReplies_c_forumThreadId: thread.id,
+						r_messageReplies_c_forumMessageId: msg.id,
 						r_categoryReplies_c_forumCategoryId: parseInt(selectedCategory),
 						subject: subject,
 						subject_i18n: { en_US: subject },
@@ -612,8 +612,8 @@ if (messageComposer) {
 						return r.json();
 					}));
 
-					if (subscribeCheck && subscribeCheck.checked && thread.externalReferenceCode) {
-						promises.push(Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(thread.externalReferenceCode) + '/subscribe', {
+					if (subscribeCheck && subscribeCheck.checked && msg.externalReferenceCode) {
+						promises.push(Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(msg.externalReferenceCode) + '/subscribe', {
 							headers: headers,
 							method: 'POST'
 						}).then(function(r) {
@@ -622,10 +622,10 @@ if (messageComposer) {
 					}
 
 					return Promise.all(promises).then(function() {
-						if (!thread.friendlyUrlPath) {
+						if (!msg.friendlyUrlPath) {
 							if (Liferay.Util && Liferay.Util.openToast) {
 								Liferay.Util.openToast({
-									message: messageComposer.dataset.labelDisplayPageNotConfigured || 'Thread created, but the display page is not configured.',
+									message: messageComposer.dataset.labelDisplayPageNotConfigured || 'Message created, but the display page is not configured.',
 									type: 'danger'
 								});
 							}
@@ -634,12 +634,12 @@ if (messageComposer) {
 						}
 						hideModal();
 						sessionStorage.setItem('forumsSuccessToast', messageComposer.dataset.labelQuestionPosted || 'Your question has been posted!');
-						var siteSlug = (thread.scopeKey || '').toLowerCase().replace(/ /g, '-');
-						spaNavigate(Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-topic-/' + thread.friendlyUrlPath);
+						var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
+						spaNavigate(Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-message-/' + msg.friendlyUrlPath);
 					});
 				})
 				.catch(function(err) {
-					console.error('New thread error:', err);
+					console.error('New message error:', err);
 					if (errorAlert) errorAlert.style.display = '';
 					submitBtn.disabled = false;
 					submitBtn.textContent = messageComposer.dataset.labelPost || 'Post';

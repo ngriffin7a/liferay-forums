@@ -11,7 +11,7 @@
 [#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
 [#assign scopeGroup = themeDisplay.getScopeGroup() /]
 [#assign sitePrefix = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
-[#assign threadsData = restClient.get("/c/forumthreads/scopes/" + scopeGroupId + "?pageSize=1&page=1") /]
+[#assign messagesData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1") /]
 [#assign solutionsData = restClient.get("/c/forumreplies/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true") /]
 [#assign membersData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1") /]
 
@@ -48,13 +48,13 @@
 							<div class="col-4">
 								<figure class="forums-hero__stat-card">
 									<span class="forums-hero__stat-value">
-										[#if threadsData?? && threadsData.totalCount??]
-											${formatCount(threadsData.totalCount)}
+										[#if messagesData?? && messagesData.totalCount??]
+											${formatCount(messagesData.totalCount)}
 										[#else]
 											&mdash;
 										[/#if]
 									</span>
-									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "threads")}</figcaption>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "messages")}</figcaption>
 								</figure>
 							</div>
 							<div class="col-4">
@@ -72,9 +72,9 @@
 						</div>
 					</div>
 
-					[#if threadsData?? && threadsData.actions?? && (threadsData.actions["post"]?? || threadsData.actions["create"]??)]
-						<a href="${sitePrefix}${configuration.threadsURL!"/forum-threads"}?compose=true" class="btn forums-hero__cta">
-							${languageUtil.get(locale, "new-forum-thread")}
+					[#if messagesData?? && messagesData.actions?? && (messagesData.actions["post"]?? || messagesData.actions["create"]??)]
+						<a href="${sitePrefix}${configuration.messagesURL!"/forum-messages"}?compose=true" class="btn forums-hero__cta">
+							${languageUtil.get(locale, "new-forum-message")}
 						</a>
 					[/#if]
 				</div>

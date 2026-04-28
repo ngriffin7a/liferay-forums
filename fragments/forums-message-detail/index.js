@@ -1,6 +1,6 @@
-var threadDetail = fragmentElement.querySelector('#forumsThreadDetail');
+var messageDetail = fragmentElement.querySelector('#forumsMessageDetail');
 
-if (threadDetail) {
+if (messageDetail) {
 	var portalURL = Liferay.ThemeDisplay.getPortalURL();
 	var scopeGroupId = Liferay.ThemeDisplay.getScopeGroupId();
 	var pathFriendlyURLPublic = Liferay.ThemeDisplay.getPathFriendlyURLPublic();
@@ -22,57 +22,57 @@ if (threadDetail) {
 	var clayIconsUrl = Liferay.ThemeDisplay.getPathThemeImages() + '/clay/icons.svg';
 
 	/* DOM refs */
-	var titleEl = threadDetail.querySelector('#forumsDetailTitle');
-	var loadingEl = threadDetail.querySelector('#forumsDetailLoading');
-	var opSection = threadDetail.querySelector('#forumsDetailOP');
-	var opBody = threadDetail.querySelector('#forumsDetailOPBody');
-	var opAvatar = threadDetail.querySelector('#forumsDetailOPAvatar');
-	var opAuthor = threadDetail.querySelector('#forumsDetailOPAuthor');
-	var opDate = threadDetail.querySelector('#forumsDetailOPDate');
-	var opViews = threadDetail.querySelector('#forumsDetailOPViews');
-	var opTags = threadDetail.querySelector('#forumsDetailOPTags');
-	var solvedBanner = threadDetail.querySelector('#forumsDetailSolvedBanner');
-	var solutionSection = threadDetail.querySelector('#forumsDetailSolutionSection');
-	var solutionCards = threadDetail.querySelector('#forumsDetailSolutionCards');
-	var solutionCount = threadDetail.querySelector('#forumsDetailSolutionCount');
-	var repliesSection = threadDetail.querySelector('#forumsDetailRepliesSection');
-	var replyCards = threadDetail.querySelector('#forumsDetailReplyCards');
-	var replyCountEl = threadDetail.querySelector('#forumsDetailReplyCount');
-	var replyBtn = threadDetail.querySelector('#forumsDetailReplyBtn');
-	var flagBtn = threadDetail.querySelector('#forumsDetailFlagBtn');
+	var titleEl = messageDetail.querySelector('#forumsDetailTitle');
+	var loadingEl = messageDetail.querySelector('#forumsDetailLoading');
+	var opSection = messageDetail.querySelector('#forumsDetailOP');
+	var opBody = messageDetail.querySelector('#forumsDetailOPBody');
+	var opAvatar = messageDetail.querySelector('#forumsDetailOPAvatar');
+	var opAuthor = messageDetail.querySelector('#forumsDetailOPAuthor');
+	var opDate = messageDetail.querySelector('#forumsDetailOPDate');
+	var opViews = messageDetail.querySelector('#forumsDetailOPViews');
+	var opTags = messageDetail.querySelector('#forumsDetailOPTags');
+	var solvedBanner = messageDetail.querySelector('#forumsDetailSolvedBanner');
+	var solutionSection = messageDetail.querySelector('#forumsDetailSolutionSection');
+	var solutionCards = messageDetail.querySelector('#forumsDetailSolutionCards');
+	var solutionCount = messageDetail.querySelector('#forumsDetailSolutionCount');
+	var repliesSection = messageDetail.querySelector('#forumsDetailRepliesSection');
+	var replyCards = messageDetail.querySelector('#forumsDetailReplyCards');
+	var replyCountEl = messageDetail.querySelector('#forumsDetailReplyCount');
+	var replyBtn = messageDetail.querySelector('#forumsDetailReplyBtn');
+	var flagBtn = messageDetail.querySelector('#forumsDetailFlagBtn');
 	/* HATEOAS: hide write-action buttons by default; show after API confirms permission */
 	if (replyBtn) {
 		replyBtn.style.display = 'none';
-		replyBtn.setAttribute('title', threadDetail.dataset.labelReply || 'Reply');
-		replyBtn.setAttribute('aria-label', threadDetail.dataset.labelReply || 'Reply');
+		replyBtn.setAttribute('title', messageDetail.dataset.labelReply || 'Reply');
+		replyBtn.setAttribute('aria-label', messageDetail.dataset.labelReply || 'Reply');
 		replyBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg>`;
 	}
 	if (flagBtn) flagBtn.style.display = 'none';
-	var breadcrumbCategory = threadDetail.querySelector('#forumsDetailBreadcrumbCategory');
-	var breadcrumbThread = threadDetail.querySelector('#forumsDetailBreadcrumbThread');
-	var allTopicsLink = threadDetail.querySelector('#forumsDetailAllTopics');
-	var categoryLink = threadDetail.querySelector('#forumsDetailCategoryLink');
+	var breadcrumbCategory = messageDetail.querySelector('#forumsDetailBreadcrumbCategory');
+	var breadcrumbMessage = messageDetail.querySelector('#forumsDetailBreadcrumbMessage');
+	var allTopicsLink = messageDetail.querySelector('#forumsDetailAllTopics');
+	var categoryLink = messageDetail.querySelector('#forumsDetailCategoryLink');
 
 	if (allTopicsLink) {
 		allTopicsLink.href = sitePrefix + ((typeof configuration !== 'undefined' && configuration.communityURL) ? configuration.communityURL : '/forums');
 	}
 
 	// Also fix the hidden community breadcrumb link, which could be the 1st one
-	var communityBreadcrumb = threadDetail.querySelector('.forums-thread-detail__breadcrumb li:first-child a');
+	var communityBreadcrumb = messageDetail.querySelector('.forums-message-detail__breadcrumb li:first-child a');
 	if (communityBreadcrumb) {
 		communityBreadcrumb.href = sitePrefix + ((typeof configuration !== 'undefined' && configuration.communityURL) ? configuration.communityURL : '/forums');
 	}
-	var replyPaginationNav = threadDetail.querySelector('#forumsDetailReplyPagination');
-	var replyPaginationUl = threadDetail.querySelector('#forumsDetailReplyPaginationUl');
+	var replyPaginationNav = messageDetail.querySelector('#forumsDetailReplyPagination');
+	var replyPaginationUl = messageDetail.querySelector('#forumsDetailReplyPaginationUl');
 
 	/* URL params */
 	var urlParams = new URLSearchParams(window.location.search);
-	var threadId = urlParams.get('threadId');
+	var messageId = urlParams.get('messageId');
 
 	/* Options Dropdown Vanilla JS Fallback */
-	var optionsBtn = threadDetail.querySelector('#forumsDetailOptions');
+	var optionsBtn = messageDetail.querySelector('#forumsDetailOptions');
 	if (optionsBtn && Liferay.ThemeDisplay.isSignedIn()) {
-		var optionsDropdown = threadDetail.querySelector('#forumsDetailOptionsDropdown');
+		var optionsDropdown = messageDetail.querySelector('#forumsDetailOptionsDropdown');
 		if (optionsDropdown) optionsDropdown.style.display = '';
 		var optionsMenu = optionsBtn.nextElementSibling;
 		optionsBtn.addEventListener('click', function(e) {
@@ -97,11 +97,11 @@ if (threadDetail) {
 		});
 	}
 
-	function runThreadDetail(resolvedThreadId, replyId) {
-	threadId = resolvedThreadId;
+	function runMessageDetail(resolvedMessageId, replyId) {
+	messageId = resolvedMessageId;
 	var targetReplyId = replyId || null;
-	if (!threadId) {
-		if (loadingEl) loadingEl.innerHTML = '<div class="forums-thread-list__empty">' + (threadDetail.dataset.labelNoThread || 'No thread selected.') + '</div>';
+	if (!messageId) {
+		if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelNoMessage || 'No message selected.') + '</div>';
 		return;
 	}
 
@@ -159,7 +159,7 @@ if (threadDetail) {
 	}
 
 	function renderAvatar(creator, size) {
-		var cls = size === 'sm' ? 'forums-thread-detail__reply-avatar' : 'forums-thread-detail__author-avatar';
+		var cls = size === 'sm' ? 'forums-message-detail__reply-avatar' : 'forums-message-detail__author-avatar';
 		if (creator && creator.image) {
 			return '<div class="' + cls + '"><img src="' + Liferay.Util.escapeHTML(creator.image) + '" alt="' + Liferay.Util.escapeHTML(displayName(creator)) + '"></div>';
 		}
@@ -169,28 +169,28 @@ if (threadDetail) {
 
 	/* Vote state: maps messageId -> { voteId, voteValue } for current user */
 	var userVoteMap = {};
-	var opCreatorId = null; /* Track thread owner for Mark as Answer */
+	var opCreatorId = null; /* Track message owner for Mark as Answer */
 	var currentAnswerId = null; /* Track currently accepted answer message ID */
-	var threadDeleteUrl = null; /* Track HATEOAS URL to delete the whole thread */
-	var canUpdateThread = false; /* HATEOAS: set true when ForumThreads API exposes update action for this thread */
+	var messageDeleteUrl = null; /* Track HATEOAS URL to delete the whole message */
+	var canUpdateMessage = false; /* HATEOAS: set true when ForumMessages API exposes update action for this message */
 	var canVote = false; /* HATEOAS: set true when ForumVotes API exposes create action */
 	var canReply = false; /* HATEOAS: set true when ForumReplies API exposes create action */
-	var isThreadQuestion = false; /* Track if the thread was marked as a question */
-	var threadCategoryFK = null;
-	var threadTitleText = '';
-	var threadTagsArray = [];
+	var isMessageQuestion = false; /* Track if the message was marked as a question */
+	var messageCategoryFK = null;
+	var messageTitleText = '';
+	var messageTagsArray = [];
 	var replyMessagesMap = {};
-	var existingFlagId = null; /* Track if the current user already flagged this thread */
+	var existingFlagId = null; /* Track if the current user already flagged this message */
 
 	function renderReplyCard(msg, isSolution, depth) {
 		depth = depth || 0;
 		var creator = msg.creator || {};
-		var name = displayName(creator) || threadDetail.dataset.labelUnknown || 'Unknown';
+		var name = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 		var body = msg.body || '';
 		var date = formatDate(msg.dateCreated);
 		var score = msg.voteScore || 0;
-		var solClass = isSolution ? ' forums-thread-detail__reply-card--solution' : '';
-		var depthClass = depth > 0 ? ' forums-thread-detail__reply-card--nested' : '';
+		var solClass = isSolution ? ' forums-message-detail__reply-card--solution' : '';
+		var depthClass = depth > 0 ? ' forums-message-detail__reply-card--nested' : '';
 		var depthStyle = depth > 0 ? ' style="margin-left:' + (depth * 2.5) + 'rem"' : '';
 		var userVote = userVoteMap[msg.id];
 		var upActive = userVote && userVote.voteValue === 1 ? ' active' : '';
@@ -204,10 +204,10 @@ if (threadDetail) {
 		var hasDeleteAction = !!(msg.actions && msg.actions['delete']);
 		var replyBtnSpacerClass = (hasEditAction || hasDeleteAction) ? ' mr-2' : '';
 		var editBtnSpacerClass = hasDeleteAction ? ' mr-2' : '';
-		var canMarkAnswer = isThreadQuestion && (canUpdateThread || (opCreatorId && String(opCreatorId) === String(currentUserId))) && depth === 0;
+		var canMarkAnswer = isMessageQuestion && (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId))) && depth === 0;
 
-		return `<div class="forums-thread-detail__reply-card${solClass}${depthClass}" data-message-id="${msg.id}"${depthStyle}>
-			<div class="forums-thread-detail__reply-layout">
+		return `<div class="forums-message-detail__reply-card${solClass}${depthClass}" data-message-id="${msg.id}"${depthStyle}>
+			<div class="forums-message-detail__reply-layout">
 				<div class="align-items-center d-inline-flex justify-content-start text-secondary mr-3 forums-vote" data-message-id="${msg.id}">
 					<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="Upvote">
 						<span class="inline-item inline-item-before">
@@ -221,20 +221,20 @@ if (threadDetail) {
 						</span>
 					</button>
 				</div>
-				<div class="forums-thread-detail__reply-content">
-					${isSolution ? `<span class="forums-vote__accepted-badge">&#10003; ${threadDetail.dataset.labelAccepted || 'Accepted'}</span>` : ''}
-					<div class="forums-thread-detail__reply-body">${body}</div>
-					<div class="forums-thread-detail__reply-author">
-						<div class="forums-thread-detail__reply-author-info">
+				<div class="forums-message-detail__reply-content">
+					${isSolution ? `<span class="forums-vote__accepted-badge">&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}</span>` : ''}
+					<div class="forums-message-detail__reply-body">${body}</div>
+					<div class="forums-message-detail__reply-author">
+						<div class="forums-message-detail__reply-author-info">
 							${renderAvatar(creator, 'sm')}
-							<span class="forums-thread-detail__reply-name">${Liferay.Util.escapeHTML(name)}</span>
-							<span class="forums-thread-detail__reply-date">${date}</span>
+							<span class="forums-message-detail__reply-name">${Liferay.Util.escapeHTML(name)}</span>
+							<span class="forums-message-detail__reply-date">${date}</span>
 						</div>
-						<div class="forums-thread-detail__reply-actions">
-							${canMarkAnswer ? `<button class="btn btn-sm mr-2 ${isSolution ? 'btn-success' : 'btn-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${threadDetail.dataset.labelAccepted || 'Accepted'}` : (threadDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
-							${canReply ? `<button class="btn btn-secondary btn-sm${replyBtnSpacerClass}" data-forums-compose data-forums-reply data-forums-message-id="${msg.id}" title="${threadDetail.dataset.labelReply || 'Reply'}" aria-label="${threadDetail.dataset.labelReply || 'Reply'}"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></button>` : ''}
-							${hasEditAction ? `<button class="btn btn-secondary btn-sm forums-edit-reply-btn${editBtnSpacerClass}" data-message-id="${msg.id}" title="${threadDetail.dataset.labelEditReply || 'Edit Reply'}" aria-label="${threadDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
-							${hasDeleteAction ? `<button class="btn btn-danger btn-sm forums-delete-btn" data-delete-url="${msg.actions['delete'].href}" title="${threadDetail.dataset.labelDelete || 'Delete'}" aria-label="${threadDetail.dataset.labelDelete || 'Delete'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
+						<div class="forums-message-detail__reply-actions">
+							${canMarkAnswer ? `<button class="btn btn-sm mr-2 ${isSolution ? 'btn-success' : 'btn-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
+							${canReply ? `<button class="btn btn-secondary btn-sm${replyBtnSpacerClass}" data-forums-compose data-forums-reply data-forums-message-id="${msg.id}" title="${messageDetail.dataset.labelReply || 'Reply'}" aria-label="${messageDetail.dataset.labelReply || 'Reply'}"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></button>` : ''}
+							${hasEditAction ? `<button class="btn btn-secondary btn-sm forums-edit-reply-btn${editBtnSpacerClass}" data-message-id="${msg.id}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
+							${hasDeleteAction ? `<button class="btn btn-danger btn-sm forums-delete-btn" data-delete-url="${msg.actions['delete'].href}" title="${messageDetail.dataset.labelDelete || 'Delete'}" aria-label="${messageDetail.dataset.labelDelete || 'Delete'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
 						</div>
 					</div>
 				</div>
@@ -246,8 +246,8 @@ if (threadDetail) {
 	function sortByVoteScore(messages) {
 		return messages.slice().sort(function(a, b) {
 			/* Accepted answers first */
-			var aAnswer = isThreadQuestion && a.answer === true ? 1 : 0;
-			var bAnswer = isThreadQuestion && b.answer === true ? 1 : 0;
+			var aAnswer = isMessageQuestion && a.answer === true ? 1 : 0;
+			var bAnswer = isMessageQuestion && b.answer === true ? 1 : 0;
 			if (bAnswer !== aAnswer) return bAnswer - aAnswer;
 			/* Higher score first */
 			var aScore = a.voteScore || 0;
@@ -294,7 +294,7 @@ if (threadDetail) {
 		function renderTree(msgList, depth) {
 			var html = '';
 			msgList.forEach(function(msg) {
-				html += renderReplyCard(msg, isThreadQuestion && msg.answer === true, depth);
+				html += renderReplyCard(msg, isMessageQuestion && msg.answer === true, depth);
 				var children = childrenMap[msg.id];
 				if (children && children.length > 0) {
 					html += renderTree(sortByVoteScore(children), depth + 1);
@@ -306,7 +306,7 @@ if (threadDetail) {
 		return renderTree(topLevel, 0);
 	}
 
-	/* Fetch current user's votes for all messages in this thread */
+	/* Fetch current user's votes for all messages in this message */
 	function fetchUserVotes(messageIds, callback) {
 		if (!messageIds || messageIds.length === 0) { callback(); return; }
 		if (!Liferay.ThemeDisplay.isSignedIn()) { callback(); return; }
@@ -400,7 +400,7 @@ if (threadDetail) {
 
 	function updateVoteScore(messageId, delta) {
 		/* Update the score in the DOM */
-		var scoreEl = threadDetail.querySelector('[data-vote-score="' + messageId + '"]');
+		var scoreEl = messageDetail.querySelector('[data-vote-score="' + messageId + '"]');
 		if (scoreEl) {
 			var current = parseInt(scoreEl.textContent) || 0;
 			var newScore = current + delta;
@@ -408,7 +408,7 @@ if (threadDetail) {
 		}
 
 		/* Update button active states and icons */
-		var voteContainer = threadDetail.querySelector('.forums-vote[data-message-id="' + messageId + '"]');
+		var voteContainer = messageDetail.querySelector('.forums-vote[data-message-id="' + messageId + '"]');
 		if (voteContainer) {
 			var upBtn = voteContainer.querySelector('.forums-vote__btn--up');
 			var downBtn = voteContainer.querySelector('.forums-vote__btn--down');
@@ -443,7 +443,7 @@ if (threadDetail) {
 
 	/* Attach vote click handlers after rendering */
 	function attachVoteHandlers() {
-		threadDetail.querySelectorAll('.forums-vote__btn').forEach(function(btn) {
+		messageDetail.querySelectorAll('.forums-vote__btn').forEach(function(btn) {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
 				var msgId = this.getAttribute('data-message-id');
@@ -497,7 +497,7 @@ if (threadDetail) {
 	}
 
 	function attachAnswerHandlers() {
-		threadDetail.querySelectorAll('.forums-answer-btn').forEach(function(btn) {
+		messageDetail.querySelectorAll('.forums-answer-btn').forEach(function(btn) {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
 				var msgId = parseInt(this.getAttribute('data-answer-message-id'));
@@ -551,8 +551,8 @@ if (threadDetail) {
 					<div class="modal-footer">
 						<div class="modal-item-last">
 							<div class="btn-group-spaced" role="group">
-								<button class="btn btn-secondary forums-delete-modal-close" type="button">${threadDetail.dataset.labelCancel || 'Cancel'}</button>
-								<button class="btn btn-danger" type="button" id="forumsDeleteModalConfirmBtn">${threadDetail.dataset.labelDelete || 'Delete'}</button>
+								<button class="btn btn-secondary forums-delete-modal-close" type="button">${messageDetail.dataset.labelCancel || 'Cancel'}</button>
+								<button class="btn btn-danger" type="button" id="forumsDeleteModalConfirmBtn">${messageDetail.dataset.labelDelete || 'Delete'}</button>
 							</div>
 						</div>
 					</div>
@@ -595,12 +595,12 @@ if (threadDetail) {
 
 	/* Delete Reply */
 	function attachDeleteHandlers() {
-		threadDetail.querySelectorAll('.forums-delete-btn').forEach(function(btn) {
+		messageDetail.querySelectorAll('.forums-delete-btn').forEach(function(btn) {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
-				var isReply = this.closest('.forums-thread-detail__reply-card');
-				var title = isReply ? (threadDetail.dataset.labelDeleteReply || 'Delete Reply') : (threadDetail.dataset.labelDeleteTopic || 'Delete Topic');
-				var confirmMsg = isReply ? (threadDetail.dataset.labelConfirmDeleteReply || 'Deleting a reply is an action impossible to revert. It will not be possible to recover it.') : (threadDetail.dataset.labelConfirmDeleteTopic || 'Deleting a topic is an action impossible to revert. All the replies in the topic will be removed and it will not be possible to recover them.');
+				var isReply = this.closest('.forums-message-detail__reply-card');
+				var title = isReply ? (messageDetail.dataset.labelDeleteReply || 'Delete Reply') : (messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
+				var confirmMsg = isReply ? (messageDetail.dataset.labelConfirmDeleteReply || 'Deleting a reply is an action impossible to revert. It will not be possible to recover it.') : (messageDetail.dataset.labelConfirmDeleteTopic || 'Deleting a topic is an action impossible to revert. All the replies in the topic will be removed and it will not be possible to recover them.');
 				
 				var deleteUrl = this.getAttribute('data-delete-url');
 				var btnEl = this;
@@ -613,20 +613,20 @@ if (threadDetail) {
 					.then(function(r) {
 						if (r.ok) {
 							/* Optimistically remove the card from the DOM */
-							var card = btnEl.closest('.forums-thread-detail__reply-card');
+							var card = btnEl.closest('.forums-message-detail__reply-card');
 							if (card) {
 								card.style.opacity = '0.5';
 								setTimeout(function() { card.remove(); }, 300);
 								/* Delay the reload to allow the backend search index to catch up */
 								setTimeout(loadMessages, 1500);
 							} else {
-								/* This is the Original Post being deleted — navigate back to the thread list */
-								var opSection = threadDetail.querySelector('#forumsDetailOP');
+								/* This is the Original Post being deleted — navigate back to the message list */
+								var opSection = messageDetail.querySelector('#forumsDetailOP');
 								if (opSection) opSection.style.opacity = '0.5';
-								var breadcrumbCatEl = threadDetail.querySelector('#forumsDetailBreadcrumbCategory');
-								var threadsBase = sitePrefix + ((typeof configuration !== 'undefined' && configuration.threadsURL) ? configuration.threadsURL : '/forum-threads');
+								var breadcrumbCatEl = messageDetail.querySelector('#forumsDetailBreadcrumbCategory');
+								var messagesBase = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forum-messages');
 								var targetHref = (breadcrumbCatEl && breadcrumbCatEl.href) ? breadcrumbCatEl.href
-									: (threadCategoryFK ? threadsBase + '?categoryId=' + threadCategoryFK : threadsBase);
+									: (messageCategoryFK ? messagesBase + '?categoryId=' + messageCategoryFK : messagesBase);
 								setTimeout(function() {
 									window.location.href = targetHref;
 								}, 1500);
@@ -642,7 +642,7 @@ if (threadDetail) {
 	}
 
 	function attachEditReplyHandlers() {
-		threadDetail.querySelectorAll('.forums-edit-reply-btn').forEach(function(btn) {
+		messageDetail.querySelectorAll('.forums-edit-reply-btn').forEach(function(btn) {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
 				var msgId = parseInt(this.getAttribute('data-message-id'));
@@ -659,55 +659,55 @@ if (threadDetail) {
 		});
 	}
 
-	/* Load thread data */
-	function initThreadDetail() {
+	/* Load message data */
+	function initMessageDetail() {
 		if (isBanned) {
 			var bannedBanner = document.createElement('div');
 			bannedBanner.className = 'alert alert-danger mt-3';
 			bannedBanner.setAttribute('role', 'alert');
-			bannedBanner.innerHTML = `<span class="alert-indicator"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg></span><strong class="lead">${threadDetail.dataset.labelBanned || 'Banned'}: </strong>${threadDetail.dataset.labelBannedWarning || 'Your account has been banned from participating in the forums.'}`;
+			bannedBanner.innerHTML = `<span class="alert-indicator"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg></span><strong class="lead">${messageDetail.dataset.labelBanned || 'Banned'}: </strong>${messageDetail.dataset.labelBannedWarning || 'Your account has been banned from participating in the forums.'}`;
 			
-			var titleRow = threadDetail.querySelector('.forums-thread-detail__title-row');
+			var titleRow = messageDetail.querySelector('.forums-message-detail__title-row');
 			if (titleRow) {
 				titleRow.parentNode.insertBefore(bannedBanner, titleRow);
 			}
 		}
 
-		Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + threadId + '?nestedFields=threadSuspiciousActivities', {
+		Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId + '?nestedFields=messageSuspiciousActivities', {
 			headers: headers,
 			method: 'GET'
 		})
 	.then(function(r) { return r.json(); })
-	.then(function(thread) {
+	.then(function(msg) {
 		if (isBanned) {
-			if (thread.actions) thread.actions = {};
+			if (msg.actions) msg.actions = {};
 			if (optionsBtn) optionsBtn.style.display = 'none';
 		}
 		
-		if (thread.actions && thread.actions['delete']) {
-			threadDeleteUrl = thread.actions['delete'].href;
+		if (msg.actions && msg.actions['delete']) {
+			messageDeleteUrl = msg.actions['delete'].href;
 		}
-		if (thread.actions && (thread.actions['update'] || thread.actions['patch'] || thread.actions['PUT'])) {
-			canUpdateThread = true;
+		if (msg.actions && (msg.actions['update'] || msg.actions['patch'] || msg.actions['PUT'])) {
+			canUpdateMessage = true;
 		}
 
-		var subscribeBtn = threadDetail.querySelector('#forumsDetailSubscribeBtn');
+		var subscribeBtn = messageDetail.querySelector('#forumsDetailSubscribeBtn');
 		var currentSubscribeUrl = null;
 		var isSubscribed = false;
 
-		if (subscribeBtn && thread.actions && !isBanned) {
-			if (thread.actions['unsubscribe']) {
-				currentSubscribeUrl = thread.actions['unsubscribe'].href;
+		if (subscribeBtn && msg.actions && !isBanned) {
+			if (msg.actions['unsubscribe']) {
+				currentSubscribeUrl = msg.actions['unsubscribe'].href;
 				isSubscribed = true;
-			} else if (thread.actions['subscribe']) {
-				currentSubscribeUrl = thread.actions['subscribe'].href;
+			} else if (msg.actions['subscribe']) {
+				currentSubscribeUrl = msg.actions['subscribe'].href;
 				isSubscribed = false;
 			}
 
 			if (currentSubscribeUrl) {
 				subscribeBtn.textContent = isSubscribed 
-					? (threadDetail.dataset.labelUnsubscribe || 'Unsubscribe')
-					: (threadDetail.dataset.labelSubscribe || 'Subscribe');
+					? (messageDetail.dataset.labelUnsubscribe || 'Unsubscribe')
+					: (messageDetail.dataset.labelSubscribe || 'Subscribe');
 				subscribeBtn.style.display = '';
 
 				var newSubBtn = subscribeBtn.cloneNode(true);
@@ -732,19 +732,19 @@ if (threadDetail) {
 								: currentSubscribeUrl.replace('/unsubscribe', '/subscribe');
 								
 							btn.textContent = isSubscribed 
-								? (threadDetail.dataset.labelUnsubscribe || 'Unsubscribe')
-								: (threadDetail.dataset.labelSubscribe || 'Subscribe');
+								? (messageDetail.dataset.labelUnsubscribe || 'Unsubscribe')
+								: (messageDetail.dataset.labelSubscribe || 'Subscribe');
 							
 							var optionsMenu = btn.closest('.dropdown-menu');
 							if (optionsMenu) optionsMenu.classList.remove('show');
 							
 							if (Liferay.Util && Liferay.Util.openToast) {
 								var toastMsg = isSubscribed 
-									? (threadDetail.dataset.labelSubscribedToast || 'You have been subscribed to this thread.') 
-									: (threadDetail.dataset.labelUnsubscribedToast || 'You have been unsubscribed from this thread.');
+									? (messageDetail.dataset.labelSubscribedToast || 'You have been subscribed to this message.') 
+									: (messageDetail.dataset.labelUnsubscribedToast || 'You have been unsubscribed from this message.');
 								Liferay.Util.openToast({
 									message: toastMsg,
-									title: threadDetail.dataset.labelSuccess || 'Success',
+									title: messageDetail.dataset.labelSuccess || 'Success',
 									type: 'success'
 								});
 							}
@@ -760,15 +760,15 @@ if (threadDetail) {
 		}
 
 		/* Increment viewCount via REST PATCH (unique per session) */
-		var currentViewCount = thread.viewCount;
+		var currentViewCount = msg.viewCount;
 		currentViewCount = currentViewCount || 0;
-		var viewStorageKey = 'forums_viewed_' + currentUserId + '_' + threadId;
+		var viewStorageKey = 'forums_viewed_' + currentUserId + '_' + messageId;
 		var alreadyViewed = false;
 		try { alreadyViewed = !!sessionStorage.getItem(viewStorageKey); } catch(e) {}
 
 		if (!alreadyViewed && Liferay.ThemeDisplay.isSignedIn()) {
 			newViewCount = currentViewCount + 1;
-			Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + threadId, {
+			Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 				method: 'PATCH',
 				headers: headers,
 				body: JSON.stringify({ viewCount: newViewCount })
@@ -785,10 +785,10 @@ if (threadDetail) {
 			newViewCount = currentViewCount;
 		}
 
-		isThreadQuestion = thread.question === true;
+		isMessageQuestion = msg.question === true;
 
 		var isFlagged = false;
-		var suspiciousActivities = thread.threadSuspiciousActivities || [];
+		var suspiciousActivities = msg.messageSuspiciousActivities || [];
 		for (var s = 0; s < suspiciousActivities.length; s++) {
 			if (suspiciousActivities[s].validated === true) {
 				isFlagged = true;
@@ -797,15 +797,15 @@ if (threadDetail) {
 		}
 
 		if (isFlagged) {
-			var flaggedBanner = threadDetail.querySelector('#forumsDetailFlaggedBanner');
+			var flaggedBanner = messageDetail.querySelector('#forumsDetailFlaggedBanner');
 			if (!flaggedBanner) {
 				flaggedBanner = document.createElement('div');
 				flaggedBanner.id = 'forumsDetailFlaggedBanner';
 				flaggedBanner.className = 'alert alert-danger mt-3';
 				flaggedBanner.setAttribute('role', 'alert');
-				flaggedBanner.innerHTML = `<span class="alert-indicator"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg></span><strong class="lead">${threadDetail.dataset.labelFlagged || 'Flagged'}: </strong>${threadDetail.dataset.labelFlaggedWarning || 'This thread has been flagged and validated by moderators as inappropriate content.'}`;
+				flaggedBanner.innerHTML = `<span class="alert-indicator"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg></span><strong class="lead">${messageDetail.dataset.labelFlagged || 'Flagged'}: </strong>${messageDetail.dataset.labelFlaggedWarning || 'This message has been flagged and validated by moderators as inappropriate content.'}`;
 				
-				var titleRow = threadDetail.querySelector('.forums-thread-detail__title-row');
+				var titleRow = messageDetail.querySelector('.forums-message-detail__title-row');
 				if (titleRow) {
 					titleRow.parentNode.insertBefore(flaggedBanner, titleRow.nextSibling);
 				}
@@ -814,14 +814,14 @@ if (threadDetail) {
 			}
 		}
 
-		threadTitleText = thread.threadTitle || threadDetail.dataset.labelUntitledThread || 'Untitled Thread';
-		threadCategoryFK = thread.r_categoryThreads_c_forumCategoryId;
-		threadTagsArray = thread.keywords || [];
-		var title = threadTitleText;
-		var categoryFK = threadCategoryFK;
+		messageTitleText = msg.messageTitle || messageDetail.dataset.labelUntitledMessage || 'Untitled Message';
+		messageCategoryFK = msg.r_categoryMessages_c_forumCategoryId;
+		messageTagsArray = msg.keywords || [];
+		var title = messageTitleText;
+		var categoryFK = messageCategoryFK;
 
 		if (titleEl) titleEl.textContent = title;
-		if (breadcrumbThread) breadcrumbThread.textContent = title;
+		if (breadcrumbMessage) breadcrumbMessage.textContent = title;
 
 		/* Fetch category for breadcrumb */
 		if (categoryFK) {
@@ -831,9 +831,9 @@ if (threadDetail) {
 			})
 			.then(function(r) { return r.json(); })
 			.then(function(cat) {
-				var catName = cat.categoryName || threadDetail.dataset.labelCategory || 'Category';
-				var threadsHref = sitePrefix + ((typeof configuration !== 'undefined' && configuration.threadsURL) ? configuration.threadsURL : '/forum-threads');
-				var catURL = threadsHref + '?categoryId=' + categoryFK;
+				var catName = cat.categoryName || messageDetail.dataset.labelCategory || 'Category';
+				var messagesHref = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forum-messages');
+				var catURL = messagesHref + '?categoryId=' + categoryFK;
 
 				if (breadcrumbCategory) {
 					breadcrumbCategory.textContent = catName;
@@ -842,7 +842,7 @@ if (threadDetail) {
 
 				/* Also populate the bottom category link */
 				if (categoryLink) {
-					var labelText = (threadDetail.dataset.labelBackToX || 'Back to {0}').replace('{0}', catName);
+					var labelText = (messageDetail.dataset.labelBackToX || 'Back to {0}').replace('{0}', catName);
 					categoryLink.textContent = '\u00ab ' + labelText;
 					categoryLink.href = catURL;
 					categoryLink.style.display = '';
@@ -851,10 +851,10 @@ if (threadDetail) {
 			.catch(function() {});
 		}
 
-		/* Check if the current user has already flagged this thread (dedup) */
+		/* Check if the current user has already flagged this message (dedup) */
 		if (flagBtn && currentUserId) {
 			Liferay.Util.fetch(portalURL + '/o/c/forumsuspiciousactivities/scopes/' + scopeGroupId + '?filter='
-				+ encodeURIComponent('creatorId eq ' + currentUserId + ' and suspiciousThreadId eq ' + threadId)
+				+ encodeURIComponent('creatorId eq ' + currentUserId + ' and suspiciousMessageId eq ' + messageId)
 				+ '&pageSize=1', {
 				headers: headers,
 				method: 'GET'
@@ -864,7 +864,7 @@ if (threadDetail) {
 				var items = data.items || [];
 				if (items.length > 0) {
 					existingFlagId = items[0].id;
-					flagBtn.textContent = threadDetail.dataset.labelFlagged || 'Flagged';
+					flagBtn.textContent = messageDetail.dataset.labelFlagged || 'Flagged';
 					flagBtn.classList.add('disabled');
 					flagBtn.disabled = true;
 				}
@@ -872,19 +872,19 @@ if (threadDetail) {
 			.catch(function(err) { console.error('Flag dedup check error:', err); });
 		}
 
-		/* Fetch messages for this thread */
+		/* Fetch messages for this message */
 		loadMessages();
 	})
 	.catch(function(err) {
-		if (loadingEl) loadingEl.innerHTML = '<div class="forums-thread-list__empty">' + (threadDetail.dataset.labelUnableToLoadThread || 'Unable to load thread.') + '</div>';
-		console.error('ForumsThreadDetail error:', err);
+		if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelUnableToLoadMessage || 'Unable to load message.') + '</div>';
+		console.error('ForumsMessageDetail error:', err);
 	});
 	}
 
 	/* Load messages */
 	function loadMessages() {
 		Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId + '?filter='
-			+ encodeURIComponent('r_threadReplies_c_forumThreadId eq \'' + threadId + '\'')
+			+ encodeURIComponent('r_messageReplies_c_forumMessageId eq \'' + messageId + '\'')
 			+ '&sort=dateCreated:asc&page=' + currentReplyPage
 			+ '&pageSize=' + replyPageSize, {
 			headers: headers,
@@ -950,20 +950,20 @@ if (threadDetail) {
 				} else if (opAvatar) {
 					opAvatar.textContent = avatarInitial(displayName(creator));
 				}
-				if (opAuthor) opAuthor.textContent = displayName(creator) || threadDetail.dataset.labelUnknown || 'Unknown';
+				if (opAuthor) opAuthor.textContent = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 				if (opDate) {
-					var dateTmpl = threadDetail.dataset.labelPostedOn || 'Posted on: {0}';
+					var dateTmpl = messageDetail.dataset.labelPostedOn || 'Posted on: {0}';
 					opDate.textContent = dateTmpl.replace('{0}', formatDate(opMsg.dateCreated));
 				}
 				if (opViews) {
-					var viewLabel = threadDetail.dataset.labelViews || 'Views';
+					var viewLabel = messageDetail.dataset.labelViews || 'Views';
 					opViews.textContent = newViewCount + ' ' + viewLabel;
 				}
 
 				/* Render OP Tags */
-				if (opTags && threadTagsArray.length > 0) {
-					var tagsHtml = threadTagsArray.map(function(tag) {
-						return `<span class="label label-secondary forums-thread-detail__tag"><span class="label-item label-item-expand">${Liferay.Util.escapeHTML(tag)}</span></span>`;
+				if (opTags && messageTagsArray.length > 0) {
+					var tagsHtml = messageTagsArray.map(function(tag) {
+						return `<span class="label label-secondary forums-message-detail__tag"><span class="label-item label-item-expand">${Liferay.Util.escapeHTML(tag)}</span></span>`;
 					}).join('');
 					opTags.innerHTML = tagsHtml;
 					opTags.style.display = '';
@@ -972,7 +972,7 @@ if (threadDetail) {
 				if (opSection) opSection.style.display = '';
 
 				/* Render OP vote buttons */
-				var opVoteEl = threadDetail.querySelector('#forumsDetailOPVote');
+				var opVoteEl = messageDetail.querySelector('#forumsDetailOPVote');
 				if (opVoteEl) {
 					var opScore = opMsg.voteScore || 0;
 					var opUserVote = userVoteMap[opMsg.id];
@@ -985,8 +985,8 @@ if (threadDetail) {
 					
 					opVoteEl.className = 'align-items-center d-inline-flex justify-content-center text-secondary mr-3 forums-vote';
 					opVoteEl.setAttribute('data-message-id', opMsg.id);
-					var upvoteTitle = threadDetail.dataset.labelUpvote || 'Upvote';
-					var downvoteTitle = threadDetail.dataset.labelDownvote || 'Downvote';
+					var upvoteTitle = messageDetail.dataset.labelUpvote || 'Upvote';
+					var downvoteTitle = messageDetail.dataset.labelDownvote || 'Downvote';
 					opVoteEl.innerHTML = `
 						<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${opUpActive}" type="button" aria-pressed="${opIsUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${opMsg.id}"` : ' disabled'} title="${upvoteTitle}">
 							<span class="inline-item inline-item-before">
@@ -1002,7 +1002,7 @@ if (threadDetail) {
 				}
 
 				/* Render OP Delete/Edit buttons if permitted (HATEOAS) */
-				var opActionsEl = threadDetail.querySelector('#forumsDetailOPActions');
+				var opActionsEl = messageDetail.querySelector('#forumsDetailOPActions');
 				if (opActionsEl) {
 					var oldDel = opActionsEl.querySelector('.forums-delete-btn');
 					if (oldDel) oldDel.remove();
@@ -1011,19 +1011,19 @@ if (threadDetail) {
 					
 					var rBtn = opActionsEl.querySelector('#forumsDetailReplyBtn');
 					
-					if (rBtn && (canUpdateThread || threadDeleteUrl)) {
+					if (rBtn && (canUpdateMessage || messageDeleteUrl)) {
 						rBtn.style.marginRight = '0.5rem';
 					}
 					
-					/* Use the thread's update permissions */
-					if (canUpdateThread) {
+					/* Use the message's update permissions */
+					if (canUpdateMessage) {
 						var editBtn = document.createElement('button');
 						editBtn.className = 'btn btn-secondary btn-sm forums-edit-btn';
-						if (threadDeleteUrl) {
+						if (messageDeleteUrl) {
 							editBtn.style.marginRight = '0.5rem';
 						}
-						editBtn.setAttribute('title', threadDetail.dataset.labelEditTopic || 'Edit Topic');
-						editBtn.setAttribute('aria-label', threadDetail.dataset.labelEditTopic || 'Edit Topic');
+						editBtn.setAttribute('title', messageDetail.dataset.labelEditTopic || 'Edit Topic');
+						editBtn.setAttribute('aria-label', messageDetail.dataset.labelEditTopic || 'Edit Topic');
 						editBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg>`;
 						
 						editBtn.addEventListener('click', function(e) {
@@ -1032,13 +1032,13 @@ if (threadDetail) {
 								window.forumsOpenComposeModal({
 									editMode: true,
 									isOp: true,
-									threadId: threadId,
+									messageId: messageId,
 									messageId: opMsg.id,
-									categoryId: threadCategoryFK,
-									subject: threadTitleText,
+									categoryId: messageCategoryFK,
+									subject: messageTitleText,
 									body: opMsg.body,
-									isQuestion: isThreadQuestion,
-									tags: threadTagsArray
+									isQuestion: isMessageQuestion,
+									tags: messageTagsArray
 								});
 							}
 						});
@@ -1046,13 +1046,13 @@ if (threadDetail) {
 						opActionsEl.appendChild(editBtn);
 					}
 					
-					/* Use the thread's delete URL for the OP so the whole topic is removed */
-					if (threadDeleteUrl) {
+					/* Use the message's delete URL for the OP so the whole topic is removed */
+					if (messageDeleteUrl) {
 						var delBtn = document.createElement('button');
 						delBtn.className = 'btn btn-danger btn-sm forums-delete-btn';
-						delBtn.setAttribute('data-delete-url', threadDeleteUrl);
-						delBtn.setAttribute('title', threadDetail.dataset.labelDeleteTopic || 'Delete Topic');
-						delBtn.setAttribute('aria-label', threadDetail.dataset.labelDeleteTopic || 'Delete Topic');
+						delBtn.setAttribute('data-delete-url', messageDeleteUrl);
+						delBtn.setAttribute('title', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
+						delBtn.setAttribute('aria-label', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
 						delBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg>`;
 						
 						opActionsEl.appendChild(delBtn);
@@ -1060,11 +1060,11 @@ if (threadDetail) {
 				}
 
 				/* Render OP Toggle Question button if permitted (HATEOAS) */
-				var toggleQuestionBtn = threadDetail.querySelector('#forumsDetailToggleQuestionBtn');
-				if (toggleQuestionBtn && !isBanned && (canUpdateThread || (opCreatorId && String(opCreatorId) === String(currentUserId)))) {
-					toggleQuestionBtn.textContent = isThreadQuestion 
-						? (threadDetail.dataset.labelConvertToThread || 'Convert to Thread')
-						: (threadDetail.dataset.labelConvertToQuestion || 'Convert to Question');
+				var toggleQuestionBtn = messageDetail.querySelector('#forumsDetailToggleQuestionBtn');
+				if (toggleQuestionBtn && !isBanned && (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId)))) {
+					toggleQuestionBtn.textContent = isMessageQuestion 
+						? (messageDetail.dataset.labelConvertToMessage || 'Convert to Discussion')
+						: (messageDetail.dataset.labelConvertToQuestion || 'Convert to Question');
 					toggleQuestionBtn.style.display = '';
 					
 					var newBtn = toggleQuestionBtn.cloneNode(true);
@@ -1072,17 +1072,17 @@ if (threadDetail) {
 					
 					newBtn.addEventListener('click', function(e) {
 						e.preventDefault();
-						var newStatus = !isThreadQuestion;
+						var newStatus = !isMessageQuestion;
 						
 						/* Update the backend object */
-						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + threadId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({ question: newStatus })
 						})
 						.then(function(r) {
 							if (r.ok) {
-								isThreadQuestion = newStatus;
+								isMessageQuestion = newStatus;
 								
 								/* Refresh to show/hide the answer buttons and solved banner */
 								loadMessages();
@@ -1097,7 +1097,7 @@ if (threadDetail) {
 			var solutions = [];
 			var regularReplies = [];
 			replyMessages.forEach(function(msg) {
-				if (isThreadQuestion && msg.answer === true) {
+				if (isMessageQuestion && msg.answer === true) {
 					solutions.push(msg);
 					currentAnswerId = msg.id;
 				} else {
@@ -1111,8 +1111,8 @@ if (threadDetail) {
 				if (solutionSection) solutionSection.style.display = '';
 				if (solutionCount) {
 					var tmpl = solutions.length === 1 
-						? (threadDetail.dataset.labelAcceptedSolution || '{0} accepted solution')
-						: (threadDetail.dataset.labelAcceptedSolutions || '{0} accepted solutions');
+						? (messageDetail.dataset.labelAcceptedSolution || '{0} accepted solution')
+						: (messageDetail.dataset.labelAcceptedSolutions || '{0} accepted solutions');
 					solutionCount.textContent = tmpl.replace('{0}', solutions.length);
 				}
 
@@ -1126,7 +1126,7 @@ if (threadDetail) {
 				}
 			}
 
-			/* Render regular replies as a threaded tree */
+			/* Render regular replies as a messageed tree */
 			var regularReplyCount = totalCount - 1 - solutions.length;
 			if (regularReplyCount < 0) regularReplyCount = 0;
 
@@ -1134,8 +1134,8 @@ if (threadDetail) {
 				if (repliesSection) repliesSection.style.display = '';
 				if (replyCountEl) {
 					var tmpl = regularReplyCount === 1
-						? (threadDetail.dataset.labelXReply || '{0} reply')
-						: (threadDetail.dataset.labelXReplies || '{0} replies');
+						? (messageDetail.dataset.labelXReply || '{0} reply')
+						: (messageDetail.dataset.labelXReplies || '{0} replies');
 					replyCountEl.textContent = tmpl.replace('{0}', regularReplyCount);
 				}
 
@@ -1155,11 +1155,11 @@ if (threadDetail) {
 
 			/* Scroll to a specific reply when the fragment is on a Forum Reply Display Page */
 			if (targetReplyId) {
-				var targetCard = threadDetail.querySelector('.forums-thread-detail__reply-card[data-message-id="' + targetReplyId + '"]');
+				var targetCard = messageDetail.querySelector('.forums-message-detail__reply-card[data-message-id="' + targetReplyId + '"]');
 				if (targetCard) {
 					setTimeout(function() {
 						targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						targetCard.classList.add('forums-thread-detail__reply-card--targeted');
+						targetCard.classList.add('forums-message-detail__reply-card--targeted');
 					}, 200);
 				}
 			}
@@ -1194,8 +1194,8 @@ if (threadDetail) {
 			}); /* end fetchUserVotes callback */
 		})
 		.catch(function(err) {
-			if (loadingEl) loadingEl.innerHTML = '<div class="forums-thread-list__empty">' + (threadDetail.dataset.labelUnableToLoadMessages || 'Unable to load messages.') + '</div>';
-			console.error('ForumsThreadDetail messages error:', err);
+			if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelUnableToLoadMessages || 'Unable to load messages.') + '</div>';
+			console.error('ForumsMessageDetail messages error:', err);
 		});
 	}
 
@@ -1216,11 +1216,11 @@ if (threadDetail) {
 			modal.setAttribute('aria-labelledby', 'forumsReportModalHeading');
 
 			var reasonOptions = [
-				{ value: 'spam', label: threadDetail.dataset.labelSpam || 'Spam' },
-				{ value: 'harmful-dangerous-acts', label: threadDetail.dataset.labelHarmfulDangerousActs || 'Harmful Dangerous Acts' },
-				{ value: 'harassment-bullying', label: threadDetail.dataset.labelHarassmentBullying || 'Harassment or Bullying' },
-				{ value: 'nudity-sexual-content', label: threadDetail.dataset.labelNuditySexualContent || 'Nudity or Sexual Content' },
-				{ value: 'other', label: threadDetail.dataset.labelOther || 'Other' }
+				{ value: 'spam', label: messageDetail.dataset.labelSpam || 'Spam' },
+				{ value: 'harmful-dangerous-acts', label: messageDetail.dataset.labelHarmfulDangerousActs || 'Harmful Dangerous Acts' },
+				{ value: 'harassment-bullying', label: messageDetail.dataset.labelHarassmentBullying || 'Harassment or Bullying' },
+				{ value: 'nudity-sexual-content', label: messageDetail.dataset.labelNuditySexualContent || 'Nudity or Sexual Content' },
+				{ value: 'other', label: messageDetail.dataset.labelOther || 'Other' }
 			];
 
 			var optionsHtml = reasonOptions.map(function(opt) {
@@ -1231,7 +1231,7 @@ if (threadDetail) {
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h1 class="modal-title" id="forumsReportModalHeading" tabindex="-1">${Liferay.Util.escapeHTML(threadDetail.dataset.labelReportInappropriateContent || 'Report Inappropriate Content')}</h1>
+							<h1 class="modal-title" id="forumsReportModalHeading" tabindex="-1">${Liferay.Util.escapeHTML(messageDetail.dataset.labelReportInappropriateContent || 'Report Inappropriate Content')}</h1>
 							<button class="close btn btn-unstyled forums-report-modal-close" type="button" aria-label="Close">
 								<svg class="lexicon-icon lexicon-icon-times" role="presentation">
 									<use href="${clayIconsUrl}#times"></use>
@@ -1239,9 +1239,9 @@ if (threadDetail) {
 							</button>
 						</div>
 						<div class="modal-body">
-							<p class="text-secondary">${Liferay.Util.escapeHTML(threadDetail.dataset.labelReportDescription || 'You are about to report a violation of our Terms of Use. All reports are strictly confidential.')}</p>
+							<p class="text-secondary">${Liferay.Util.escapeHTML(messageDetail.dataset.labelReportDescription || 'You are about to report a violation of our Terms of Use. All reports are strictly confidential.')}</p>
 							<div class="form-group">
-								<label for="forumsReportReason" class="font-weight-bold">${Liferay.Util.escapeHTML(threadDetail.dataset.labelReasonForReport || 'Reason for the Report')}</label>
+								<label for="forumsReportReason" class="font-weight-bold">${Liferay.Util.escapeHTML(messageDetail.dataset.labelReasonForReport || 'Reason for the Report')}</label>
 								<select class="form-control" id="forumsReportReason">
 									${optionsHtml}
 								</select>
@@ -1250,8 +1250,8 @@ if (threadDetail) {
 						<div class="modal-footer">
 							<div class="modal-item-last">
 								<div class="btn-group-spaced" role="group">
-									<button class="btn btn-secondary forums-report-modal-close" type="button">${Liferay.Util.escapeHTML(threadDetail.dataset.labelCancel || 'Cancel')}</button>
-									<button class="btn btn-primary" type="button" id="forumsReportModalSubmitBtn">${Liferay.Util.escapeHTML(threadDetail.dataset.labelReport || 'Report')}</button>
+									<button class="btn btn-secondary forums-report-modal-close" type="button">${Liferay.Util.escapeHTML(messageDetail.dataset.labelCancel || 'Cancel')}</button>
+									<button class="btn btn-primary" type="button" id="forumsReportModalSubmitBtn">${Liferay.Util.escapeHTML(messageDetail.dataset.labelReport || 'Report')}</button>
 								</div>
 							</div>
 						</div>
@@ -1277,10 +1277,10 @@ if (threadDetail) {
 						modal.style.display = 'none';
 						modal.classList.remove('show');
 						submitBtn.disabled = false;
-						submitBtn.textContent = threadDetail.dataset.labelReport || 'Report';
+						submitBtn.textContent = messageDetail.dataset.labelReport || 'Report';
 					}, function() {
 						submitBtn.disabled = false;
-						submitBtn.textContent = threadDetail.dataset.labelReport || 'Report';
+						submitBtn.textContent = messageDetail.dataset.labelReport || 'Report';
 					});
 				}
 			});
@@ -1298,7 +1298,7 @@ if (threadDetail) {
 		}, 10);
 	}
 
-	/* Flag thread handler */
+	/* Flag message handler */
 	if (flagBtn) {
 		flagBtn.addEventListener('click', function(e) {
 			e.preventDefault();
@@ -1320,8 +1320,8 @@ if (threadDetail) {
 					flagMethod = 'POST';
 					flagBody = JSON.stringify({
 						reason: reason,
-						suspiciousThreadId: parseInt(threadId),
-						r_threadSuspiciousActivities_c_forumThreadId: parseInt(threadId)
+						suspiciousMessageId: parseInt(messageId),
+						r_messageSuspiciousActivities_c_forumMessageId: parseInt(messageId)
 					});
 				}
 
@@ -1335,14 +1335,14 @@ if (threadDetail) {
 						return r.json().then(function(body) {
 							existingFlagId = body.id;
 							onSuccess();
-							flagBtn.textContent = threadDetail.dataset.labelFlagged || 'Flagged';
+							flagBtn.textContent = messageDetail.dataset.labelFlagged || 'Flagged';
 							flagBtn.classList.add('disabled');
 							flagBtn.disabled = true;
 							/* Brief toast-like feedback */
 							var toast = document.createElement('div');
 							toast.className = 'forums-report-toast';
-							toast.textContent = threadDetail.dataset.labelReportSubmitted || 'Thank you! Your report has been submitted.';
-							threadDetail.prepend(toast);
+							toast.textContent = messageDetail.dataset.labelReportSubmitted || 'Thank you! Your report has been submitted.';
+							messageDetail.prepend(toast);
 							setTimeout(function() { toast.classList.add('forums-report-toast--visible'); }, 10);
 							setTimeout(function() {
 								toast.classList.remove('forums-report-toast--visible');
@@ -1366,9 +1366,9 @@ if (threadDetail) {
 	if (replyBtn) {
 		replyBtn.addEventListener('click', function() {
 			if (typeof window.forumsOpenComposeModal === 'function') {
-				window.forumsOpenComposeModal({ threadId: threadId });
+				window.forumsOpenComposeModal({ messageId: messageId });
 			} else {
-				alert(threadDetail.dataset.labelReplyFormNotFound || 'Reply form not found on this page. Please add the forums-message-composer fragment.');
+				alert(messageDetail.dataset.labelReplyFormNotFound || 'Reply form not found on this page. Please add the forums-message-composer fragment.');
 			}
 		});
 	}
@@ -1383,24 +1383,24 @@ if (threadDetail) {
 			if (data.items && data.items.length > 0) {
 				isBanned = true;
 			}
-			initThreadDetail();
+			initMessageDetail();
 		})
 		.catch(function(err) {
 			console.error('Error checking ban status', err);
-			initThreadDetail();
+			initMessageDetail();
 		});
 	} else {
-		initThreadDetail();
+		initMessageDetail();
 	}
 	
-	} // end runThreadDetail
+	} // end runMessageDetail
 
-	/* Resolve threadId: ?threadId param → mapped reply ERC → mapped thread ERC → URL path slug */
-	if (threadId) {
-		runThreadDetail(threadId, null);
+	/* Resolve messageId: ?messageId param → mapped reply ERC → mapped message ERC → URL path slug */
+	if (messageId) {
+		runMessageDetail(messageId, null);
 	} else {
 		/* Reply ERC takes priority — set when this fragment is on a Forum Reply Display Page */
-		var replyErcEl = threadDetail.querySelector('#forumsDetailReplyERC');
+		var replyErcEl = messageDetail.querySelector('#forumsDetailReplyERC');
 		var replyErc = replyErcEl ? replyErcEl.textContent.trim() : null;
 		if (replyErc === 'Mappable Reply ERC') replyErc = null;
 
@@ -1414,15 +1414,15 @@ if (threadDetail) {
 				return r.json();
 			})
 			.then(function(reply) {
-				var parentThreadId = reply.r_threadReplies_c_forumThreadId;
-				runThreadDetail(parentThreadId ? String(parentThreadId) : null, reply.id ? String(reply.id) : null);
+				var parentMessageId = reply.r_messageReplies_c_forumMessageId;
+				runMessageDetail(parentMessageId ? String(parentMessageId) : null, reply.id ? String(reply.id) : null);
 			})
-			.catch(function() { runThreadDetail(null, null); });
+			.catch(function() { runMessageDetail(null, null); });
 		} else {
-			/* Read ERC from the Display Page-mapped thread element */
-			var ercEl = threadDetail.querySelector('#forumsDetailERC');
+			/* Read ERC from the Display Page-mapped message element */
+			var ercEl = messageDetail.querySelector('#forumsDetailERC');
 			var erc = ercEl ? ercEl.textContent.trim() : null;
-			if (erc === 'Mappable Thread ERC') erc = null;
+			if (erc === 'Mappable Message ERC') erc = null;
 
 			/* Fall back to the slug in the Display Page URL path */
 			if (!erc) {
@@ -1432,9 +1432,9 @@ if (threadDetail) {
 			}
 
 			if (!erc) {
-				runThreadDetail(null, null);
+				runMessageDetail(null, null);
 			} else {
-				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
+				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
 					method: 'GET'
 				})
@@ -1443,9 +1443,9 @@ if (threadDetail) {
 					return r.json();
 				})
 				.then(function(data) {
-					runThreadDetail(data.id ? String(data.id) : null, null);
+					runMessageDetail(data.id ? String(data.id) : null, null);
 				})
-				.catch(function() { runThreadDetail(null, null); });
+				.catch(function() { runMessageDetail(null, null); });
 			}
 		}
 	}

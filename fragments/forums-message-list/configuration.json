@@ -6,7 +6,7 @@
 				{
 					"dataType": "string",
 					"defaultValue": "20",
-					"label": "Threads Per Page",
+					"label": "Messages Per Page",
 					"name": "pageSize",
 					"type": "text"
 				},

@@ -5,5 +5,5 @@
     "contentType": {
         "className": "com.liferay.object.model.ObjectDefinition#A0Z2"
     },
-    "name": "Forum Thread"
+    "name": "Forum Message"
 }

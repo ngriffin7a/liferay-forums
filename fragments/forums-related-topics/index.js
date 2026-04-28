@@ -13,33 +13,33 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 	/* URL params */
 	var urlParams = new URLSearchParams(window.location.search);
-	var currentThreadId = urlParams.get('threadId');
+	var currentMessageId = urlParams.get('messageId');
 
-	function runRelatedTopics(resolvedThreadId) {
-		currentThreadId = resolvedThreadId;
+	function runRelatedTopics(resolvedMessageId) {
+		currentMessageId = resolvedMessageId;
 
-		if (!currentThreadId) {
+		if (!currentMessageId) {
 			if (loadingEl) loadingEl.remove();
 			relatedTopics.style.display = 'none';
 			return;
 		}
 
-	/* First, get the current thread to find its category */
-	Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + currentThreadId, {
+	/* First, get the current message to find its category */
+	Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + currentMessageId, {
 		headers: headers,
 		method: 'GET'
 	})
 	.then(function(r) { return r.json(); })
-	.then(function(thread) {
-		var categoryId = thread.r_categoryThreads_c_forumCategoryId;
+	.then(function(msg) {
+		var categoryId = msg.r_categoryMessages_c_forumCategoryId;
 
-		/* Fetch other threads from the same category */
+		/* Fetch other messages from the same category */
 		var filterParts = [];
 		if (categoryId) {
-			filterParts.push('r_categoryThreads_c_forumCategoryId eq \'' + categoryId + '\'');
+			filterParts.push('r_categoryMessages_c_forumCategoryId eq \'' + categoryId + '\'');
 		}
 
-		var url = portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '?pageSize=6&sort=lastPostDate:desc&nestedFields=threadSuspiciousActivities';
+		var url = portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?pageSize=6&sort=lastPostDate:desc&nestedFields=messageSuspiciousActivities';
 		if (filterParts.length > 0) {
 			url += '&filter=' + encodeURIComponent(filterParts.join(' and '));
 		}
@@ -51,7 +51,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 		if (loadingEl) loadingEl.remove();
 
 		var items = (data.items || []).filter(function(t) {
-			return String(t.id) !== String(currentThreadId);
+			return String(t.id) !== String(currentMessageId);
 		}).slice(0, 5);
 
 		if (items.length === 0) {
@@ -61,10 +61,10 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 		var html = '';
 		var missingDisplayPage = false;
-		items.forEach(function(thread) {
-			var title = thread.threadTitle || relatedTopics.dataset.labelUntitled || 'Untitled';
+		items.forEach(function(msg) {
+			var title = msg.messageTitle || relatedTopics.dataset.labelUntitled || 'Untitled';
 			var isFlagged = false;
-			var suspiciousActivities = thread.threadSuspiciousActivities || [];
+			var suspiciousActivities = msg.messageSuspiciousActivities || [];
 			for (var s = 0; s < suspiciousActivities.length; s++) {
 				if (suspiciousActivities[s].validated === true) {
 					isFlagged = true;
@@ -78,10 +78,10 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 				flaggedBadge = '<span class="text-danger ml-2" style="font-size:0.85em"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
 			}
 
-			if (thread.friendlyUrlPath) {
-				var siteSlug = (thread.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var threadHref = Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-topic-/' + thread.friendlyUrlPath;
-				html += '<a href="' + threadHref + '" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">'
+			if (msg.friendlyUrlPath) {
+				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
+				var messageHref = Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-message-/' + msg.friendlyUrlPath;
+				html += '<a href="' + messageHref + '" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">'
 					+ '<span>' + Liferay.Util.escapeHTML(title) + '</span>' + flaggedBadge + '</a>';
 			} else {
 				missingDisplayPage = true;
@@ -94,7 +94,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 		if (missingDisplayPage && Liferay.Util && Liferay.Util.openToast) {
 			Liferay.Util.openToast({
-				message: relatedTopics.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more threads.',
+				message: relatedTopics.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more messages.',
 				type: 'danger'
 			});
 		}
@@ -106,9 +106,9 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 	});
 	} // end runRelatedTopics
 
-	/* Resolve threadId: ?threadId param → mapped reply ERC → mapped thread ERC → URL path slug */
-	if (currentThreadId) {
-		runRelatedTopics(currentThreadId);
+	/* Resolve messageId: ?messageId param → mapped reply ERC → mapped message ERC → URL path slug */
+	if (currentMessageId) {
+		runRelatedTopics(currentMessageId);
 	} else {
 		/* Reply ERC takes priority — set when this fragment is on a Forum Reply Display Page */
 		var replyErcEl = relatedTopics.querySelector('#forumsRelatedTopicsReplyERC');
@@ -125,15 +125,15 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 				return r.json();
 			})
 			.then(function(reply) {
-				var parentThreadId = reply.r_threadReplies_c_forumThreadId;
-				runRelatedTopics(parentThreadId ? String(parentThreadId) : null);
+				var parentMessageId = reply.r_messageReplies_c_forumMessageId;
+				runRelatedTopics(parentMessageId ? String(parentMessageId) : null);
 			})
 			.catch(function() { runRelatedTopics(null); });
 		} else {
-			/* Read ERC from the Display Page-mapped thread element */
+			/* Read ERC from the Display Page-mapped message element */
 			var ercEl = relatedTopics.querySelector('#forumsRelatedTopicsERC');
 			var erc = ercEl ? ercEl.textContent.trim() : null;
-			if (erc === 'Mappable Thread ERC') erc = null;
+			if (erc === 'Mappable Message ERC') erc = null;
 
 			/* Fall back to the slug in the Display Page URL path */
 			if (!erc) {
@@ -145,7 +145,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 			if (!erc) {
 				runRelatedTopics(null);
 			} else {
-				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
+				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
 					method: 'GET'
 				})

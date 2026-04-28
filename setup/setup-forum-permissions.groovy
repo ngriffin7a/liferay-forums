@@ -43,10 +43,10 @@ def SAP_NAME = "FORUM_GUEST_ACCESS"
 
 def FORUM_OBJECT_NAMES = [
     "C_ForumCategory",
-    "C_ForumThread",
+    "C_ForumMessage",
     "C_ForumReply",
     "C_ForumVote",
-    "C_ForumThreadFlag",
+    "C_ForumMessageFlag",
     "C_ForumStatsUser",
     "C_ForumMailingList",
     "C_ForumSuspiciousActivity",
@@ -56,10 +56,10 @@ def FORUM_OBJECT_NAMES = [
 // Objects that Site Members can create entries in
 def SITE_MEMBER_WRITE_NAMES = [
     "C_ForumCategory",
-    "C_ForumThread",
+    "C_ForumMessage",
     "C_ForumReply",
     "C_ForumVote",
-    "C_ForumThreadFlag",
+    "C_ForumMessageFlag",
 ] as Set
 
 def sapSignatures = "com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceImpl#get*"

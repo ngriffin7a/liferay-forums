@@ -77,11 +77,11 @@
                                             {
                                                 "definition": {
                                                     "fragment": {
-                                                        "key": "forums-thread-detail",
+                                                        "key": "forums-message-detail",
                                                         "siteKey": "88027187798954"
                                                     },
                                                     "fragmentConfig": {
-                                                        "discussionsURL": "/forum-threads",
+                                                        "discussionsURL": "/forum-messages",
                                                         "communityURL": "/forums",
                                                         "repliesPageSize": "10"
                                                     },
@@ -119,7 +119,7 @@
                                                         "siteKey": "88027187798954"
                                                     },
                                                     "fragmentConfig": {
-                                                        "topicURL": "/forum-thread"
+                                                        "topicURL": "/forum-message"
                                                     },
                                                     "fragmentFields": [],
                                                     "indexed": true
@@ -160,7 +160,7 @@
                                                     },
                                                     "fragmentConfig": {
                                                         "maxTopics": "5",
-                                                        "topicURL": "/forum-thread"
+                                                        "topicURL": "/forum-message"
                                                     },
                                                     "fragmentFields": [
                                                         {

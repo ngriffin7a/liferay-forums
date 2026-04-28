@@ -1,5 +1,5 @@
 <div class="forums-message-composer" id="forumsMessageComposer"
-	data-label-new-forum-thread="${languageUtil.get(locale, "new-forum-thread")}"
+	data-label-new-forum-message="${languageUtil.get(locale, "new-forum-message")}"
 	data-label-post-a-reply="${languageUtil.get(locale, "post-a-reply")}"
 	data-label-details="${languageUtil.get(locale, "details")}"
 	data-label-your-reply="${languageUtil.get(locale, "your-reply")}"
@@ -14,7 +14,7 @@
 	data-label-edit-topic="${languageUtil.get(locale, "edit-topic")}"
 	data-label-edit-reply="${languageUtil.get(locale, "edit-reply")}"
 	data-label-success="${languageUtil.get(locale, "success")}"
-	data-label-subscribe-to-this-thread="${languageUtil.get(locale, "subscribe-to-this-thread")}"
+	data-label-subscribe-to-this-message="${languageUtil.get(locale, "subscribe-to-this-message")}"
 	data-label-banned-warning="${languageUtil.get(locale, "your-account-has-been-banned-from-participating-in-the-forums")}">
 
 	<!-- Backdrop -->
@@ -26,7 +26,7 @@
 			<div class="forums-message-composer__card">
 
 				<div class="forums-message-composer__header">
-					<h5 class="forums-message-composer__title" id="forumsMessageComposerTitle">${languageUtil.get(locale, "new-forum-thread")}</h5>
+					<h5 class="forums-message-composer__title" id="forumsMessageComposerTitle">${languageUtil.get(locale, "new-forum-message")}</h5>
 					<button type="button" class="forums-message-composer__close" id="forumsMessageComposerCloseBtn" aria-label="${languageUtil.get(locale, "close")}">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -36,7 +36,7 @@
 					<form id="forumsMessageComposerForm" novalidate>
 						<div class="forums-message-composer__layout">
 							<div class="forums-message-composer__layout-left" id="forumsMessageComposerLeftCol">
-								<!-- Category selector (new thread mode) -->
+								<!-- Category selector (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerCategoryGroup">
 									<label for="forumsMessageComposerCategory" class="forums-message-composer__label">${languageUtil.get(locale, "category")}</label>
 									<select class="custom-select" id="forumsMessageComposerCategory" required aria-describedby="forumsMessageComposerCategoryError">
@@ -45,14 +45,14 @@
 									<div class="invalid-feedback" id="forumsMessageComposerCategoryError">${languageUtil.get(locale, "please-select-a-category")}</div>
 								</div>
 
-								<!-- Subject (new thread mode) -->
+								<!-- Subject (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerSubjectGroup">
 									<label for="forumsMessageComposerSubject" class="forums-message-composer__label">${languageUtil.get(locale, "subject")}</label>
 									<input type="text" class="form-control" id="forumsMessageComposerSubject" placeholder="${languageUtil.get(locale, "enter-a-descriptive-title")}" required maxlength="255" aria-describedby="forumsMessageComposerSubjectError">
 									<div class="invalid-feedback" id="forumsMessageComposerSubjectError">${languageUtil.get(locale, "please-enter-a-subject")}</div>
 								</div>
 								
-								<!-- Tags selector (new thread mode) -->
+								<!-- Tags selector (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerTagsGroup">
 									<label class="forums-message-composer__label" for="forumsMessageComposerTagsInput" id="forumsMessageComposerTagsLabel">${languageUtil.get(locale, "tags")}</label>
 									<div class="input-group" style="min-height: 2.125rem;">
@@ -78,16 +78,16 @@
 									</div>
 								</div>
 
-								<!-- Mark as question checkbox (new thread mode) -->
+								<!-- Mark as question checkbox (new message mode) -->
 								<div class="form-group form-check" id="forumsMessageComposerQuestionGroup">
 									<input type="checkbox" class="form-check-input" id="forumsMessageComposerQuestion" checked>
 									<label class="form-check-label forums-message-composer__label--check" for="forumsMessageComposerQuestion">${languageUtil.get(locale, "mark-as-question")}</label>
 								</div>
 
-								<!-- Subscribe checkbox (new thread mode) -->
+								<!-- Subscribe checkbox (new message mode) -->
 								<div class="form-group form-check" id="forumsMessageComposerSubscribeGroup">
 									<input type="checkbox" class="form-check-input" id="forumsMessageComposerSubscribe" checked>
-									<label class="form-check-label forums-message-composer__label--check" for="forumsMessageComposerSubscribe">${languageUtil.get(locale, "subscribe-to-this-thread")}</label>
+									<label class="form-check-label forums-message-composer__label--check" for="forumsMessageComposerSubscribe">${languageUtil.get(locale, "subscribe-to-this-message")}</label>
 								</div>
 							</div>
 

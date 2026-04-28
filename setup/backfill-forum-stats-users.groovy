@@ -20,15 +20,15 @@ import com.liferay.portal.kernel.util.LocaleUtil
 def companyId = com.liferay.portal.kernel.util.PortalUtil.getDefaultCompanyId()
 
 def statsUserDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-STATS-USER", companyId)
-def threadDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-THREAD", companyId)
+def messageDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-MESSAGE", companyId)
 def replyDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-REPLY", companyId)
 
-if (!statsUserDef || !threadDef || !replyDef) {
-    out.println("❌ Could not find Forum Object Definitions. Ensure FORUM-STATS-USER, FORUM-THREAD, and FORUM-REPLY exist.")
+if (!statsUserDef || !messageDef || !replyDef) {
+    out.println("❌ Could not find Forum Object Definitions. Ensure FORUM-STATS-USER, FORUM-MESSAGE, and FORUM-REPLY exist.")
     return
 }
 
-out.println("Fetching unique user IDs from threads and replies...")
+out.println("Fetching unique user IDs from messages and replies...")
 
 // Use projections — avoids loading full ObjectEntry objects into memory.
 def collectUserIds = { long defId ->
@@ -39,7 +39,7 @@ def collectUserIds = { long defId ->
 }
 
 Set<Long> uniqueUserIds = new HashSet<>()
-collectUserIds(threadDef.getObjectDefinitionId()).each { uniqueUserIds.add(((Number)it).longValue()) }
+collectUserIds(messageDef.getObjectDefinitionId()).each { uniqueUserIds.add(((Number)it).longValue()) }
 collectUserIds(replyDef.getObjectDefinitionId()).each { uniqueUserIds.add(((Number)it).longValue()) }
 
 out.println("Found " + uniqueUserIds.size() + " unique users who have posted.")
@@ -54,7 +54,7 @@ def resolveGroupId = { long defId ->
 }
 
 long groupId = resolveGroupId(statsUserDef.getObjectDefinitionId())
-if (groupId == 0) groupId = resolveGroupId(threadDef.getObjectDefinitionId())
+if (groupId == 0) groupId = resolveGroupId(messageDef.getObjectDefinitionId())
 if (groupId == 0) groupId = resolveGroupId(replyDef.getObjectDefinitionId())
 
 if (groupId == 0) {

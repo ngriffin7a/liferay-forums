@@ -1,6 +1,6 @@
-var threadList = fragmentElement.querySelector('#forumsThreadList');
+var messageList = fragmentElement.querySelector('#forumsMessageList');
 
-if (threadList) {
+if (messageList) {
 	var portalURL = Liferay.ThemeDisplay.getPortalURL();
 	var scopeGroupId = Liferay.ThemeDisplay.getScopeGroupId();
 	var headers = {
@@ -19,18 +19,18 @@ if (threadList) {
 	var isBanned = false;
 
 	/* DOM refs */
-	var cardsContainer = threadList.querySelector('#forumsThreadListCards');
-	var loadingEl = threadList.querySelector('#forumsThreadListLoading');
-	var paginationNav = threadList.querySelector('#forumsThreadListPagination');
-	var paginationUl = threadList.querySelector('#forumsThreadListPaginationUl');
-	var headingEl = threadList.querySelector('#forumsThreadListHeading');
-	var breadcrumbName = threadList.querySelector('#forumsThreadListCategoryName');
-	var searchInput = threadList.querySelector('#forumsThreadListSearchInput');
-	var searchBtn = threadList.querySelector('#forumsThreadListSearchBtn');
-	var tabLinks = threadList.querySelectorAll('#forumsThreadListTabs .nav-link');
-	var askBtn = threadList.querySelector('#forumsThreadListAskBtn');
-	var categoryFilter = threadList.querySelector('#forumsThreadListCategoryFilter');
-	var showingEl = threadList.querySelector('#forumsThreadListShowing');
+	var cardsContainer = messageList.querySelector('#forumsMessageListCards');
+	var loadingEl = messageList.querySelector('#forumsMessageListLoading');
+	var paginationNav = messageList.querySelector('#forumsMessageListPagination');
+	var paginationUl = messageList.querySelector('#forumsMessageListPaginationUl');
+	var headingEl = messageList.querySelector('#forumsMessageListHeading');
+	var breadcrumbName = messageList.querySelector('#forumsMessageListCategoryName');
+	var searchInput = messageList.querySelector('#forumsMessageListSearchInput');
+	var searchBtn = messageList.querySelector('#forumsMessageListSearchBtn');
+	var tabLinks = messageList.querySelectorAll('#forumsMessageListTabs .nav-link');
+	var askBtn = messageList.querySelector('#forumsMessageListAskBtn');
+	var categoryFilter = messageList.querySelector('#forumsMessageListCategoryFilter');
+	var showingEl = messageList.querySelector('#forumsMessageListShowing');
 
 	/* Read URL params */
 	var urlParams = new URLSearchParams(window.location.search);
@@ -50,10 +50,10 @@ if (threadList) {
 		var now = Date.now();
 		var then = new Date(dateStr).getTime();
 		var diff = Math.floor((now - then) / 1000);
-		if (diff < 60) return threadList.dataset.labelJustNow || 'just now';
-		if (diff < 3600) return (threadList.dataset.labelXMinutesAgo || '{0}m ago').replace('{0}', Math.floor(diff / 60));
-		if (diff < 86400) return (threadList.dataset.labelXHoursAgo || '{0}h ago').replace('{0}', Math.floor(diff / 3600));
-		if (diff < 2592000) return (threadList.dataset.labelXDaysAgo || '{0}d ago').replace('{0}', Math.floor(diff / 86400));
+		if (diff < 60) return messageList.dataset.labelJustNow || 'just now';
+		if (diff < 3600) return (messageList.dataset.labelXMinutesAgo || '{0}m ago').replace('{0}', Math.floor(diff / 60));
+		if (diff < 86400) return (messageList.dataset.labelXHoursAgo || '{0}h ago').replace('{0}', Math.floor(diff / 3600));
+		if (diff < 2592000) return (messageList.dataset.labelXDaysAgo || '{0}d ago').replace('{0}', Math.floor(diff / 86400));
 		return new Date(dateStr).toLocaleDateString();
 	}
 
@@ -78,7 +78,7 @@ if (threadList) {
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(cat) {
-			var name = cat.categoryName || threadList.dataset.labelCategory || 'Category';
+			var name = cat.categoryName || messageList.dataset.labelCategory || 'Category';
 			if (headingEl) headingEl.textContent = name;
 			if (breadcrumbName) breadcrumbName.textContent = name;
 		})
@@ -118,7 +118,7 @@ if (threadList) {
 			}
 			history.pushState(null, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
 
-			var allLabel = threadList.dataset.labelAllCategories || threadList.dataset.labelAllThreads || 'All Threads';
+			var allLabel = messageList.dataset.labelAllCategories || messageList.dataset.labelAllMessages || 'All Messages';
 			if (!categoryId) {
 				if (headingEl) headingEl.textContent = allLabel;
 				if (breadcrumbName) breadcrumbName.textContent = allLabel;
@@ -130,25 +130,25 @@ if (threadList) {
 				if (breadcrumbName) breadcrumbName.textContent = catName;
 			}
 
-			loadThreads();
+			loadMessages();
 		});
 	}
 
-	/* Load threads */
-	function loadThreads() {
+	/* Load messages */
+	function loadMessages() {
 		if (loadingEl) {
 			loadingEl.style.display = '';
 		}
-		cardsContainer.querySelectorAll('.forums-thread-card').forEach(function(el) { el.remove(); });
+		cardsContainer.querySelectorAll('.forums-message-card').forEach(function(el) { el.remove(); });
 		if (paginationNav) paginationNav.style.display = 'none';
 		if (showingEl) showingEl.style.display = 'none';
 
 		var filterParts = [];
 		if (categoryId) {
-			filterParts.push('r_categoryThreads_c_forumCategoryId eq \'' + categoryId + '\'');
+			filterParts.push('r_categoryMessages_c_forumCategoryId eq \'' + categoryId + '\'');
 		}
 
-		var url = portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '?page=' + currentPage
+		var url = portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?page=' + currentPage
 			+ '&pageSize=' + pageSize
 			+ '&sort=' + currentSort;
 
@@ -178,17 +178,17 @@ if (threadList) {
 			var lastPage = data.lastPage || 1;
 
 			if (items.length === 0) {
-				cardsContainer.innerHTML = '<div class="forums-thread-list__empty">' + (threadList.dataset.labelNoThreads || 'No threads found.') + '</div>';
+				cardsContainer.innerHTML = '<div class="forums-message-list__empty">' + (messageList.dataset.labelNoMessages || 'No messages found.') + '</div>';
 				return;
 			}
 
 			/* Fetch replies and activities separately to avoid JOIN-based pagination overlap */
-			var threadIds = items.map(function(t) { return t.id; });
-			var repliesFilter = threadIds.map(function(id) {
-				return 'r_threadReplies_c_forumThreadId eq \'' + id + '\'';
+			var messageIds = items.map(function(t) { return t.id; });
+			var repliesFilter = messageIds.map(function(id) {
+				return 'r_messageReplies_c_forumMessageId eq \'' + id + '\'';
 			}).join(' or ');
-			var activitiesFilter = threadIds.map(function(id) {
-				return 'r_threadSuspiciousActivities_c_forumThreadId eq \'' + id + '\'';
+			var activitiesFilter = messageIds.map(function(id) {
+				return 'r_messageSuspiciousActivities_c_forumMessageId eq \'' + id + '\'';
 			}).join(' or ');
 
 			return Promise.all([
@@ -205,35 +205,35 @@ if (threadList) {
 					{ headers: headers, method: 'GET' }
 				).then(function(r) { return r.json(); }).catch(function() { return { items: [] }; })
 			]).then(function(results) {
-				var repliesByThread = {};
+				var repliesByMessage = {};
 				(results[0].items || []).forEach(function(reply) {
-					var tid = reply.r_threadReplies_c_forumThreadId;
-					if (!repliesByThread[tid]) repliesByThread[tid] = [];
-					repliesByThread[tid].push(reply);
+					var tid = reply.r_messageReplies_c_forumMessageId;
+					if (!repliesByMessage[tid]) repliesByMessage[tid] = [];
+					repliesByMessage[tid].push(reply);
 				});
-				var activitiesByThread = {};
+				var activitiesByMessage = {};
 				(results[1].items || []).forEach(function(activity) {
-					var tid = activity.r_threadSuspiciousActivities_c_forumThreadId;
-					if (!activitiesByThread[tid]) activitiesByThread[tid] = [];
-					activitiesByThread[tid].push(activity);
+					var tid = activity.r_messageSuspiciousActivities_c_forumMessageId;
+					if (!activitiesByMessage[tid]) activitiesByMessage[tid] = [];
+					activitiesByMessage[tid].push(activity);
 				});
-				items.forEach(function(thread) {
-					thread.threadReplies = repliesByThread[thread.id] || [];
-					thread.threadSuspiciousActivities = activitiesByThread[thread.id] || [];
+				items.forEach(function(msg) {
+					msg.messageReplies = repliesByMessage[msg.id] || [];
+					msg.messageSuspiciousActivities = activitiesByMessage[msg.id] || [];
 				});
 
 			var html = '';
 			var missingDisplayPage = false;
-			items.forEach(function(thread) {
-				if (isBanned && thread.actions) {
-					thread.actions = {};
+			items.forEach(function(msg) {
+				if (isBanned && msg.actions) {
+					msg.actions = {};
 				}
-				var title = thread.threadTitle || threadList.dataset.labelUntitledThread || 'Untitled Thread';
-				var threadId = thread.id || '';
-				var creatorName = displayName(thread.creator) || threadList.dataset.labelUnknown || 'Unknown';
-				var creatorImage = (thread.creator && thread.creator.image) || '';
-				var dateStr = thread.dateCreated || '';
-				var messages = thread.threadReplies || [];
+				var title = msg.messageTitle || messageList.dataset.labelUntitledMessage || 'Untitled Message';
+				var messageId = msg.id || '';
+				var creatorName = displayName(msg.creator) || messageList.dataset.labelUnknown || 'Unknown';
+				var creatorImage = (msg.creator && msg.creator.image) || '';
+				var dateStr = msg.dateCreated || '';
+				var messages = msg.messageReplies || [];
 				var replyCount = messages.length > 0 ? messages.length - 1 : 0;
 				var hasSolution = false;
 
@@ -245,7 +245,7 @@ if (threadList) {
 				}
 
 				var isFlagged = false;
-				var suspiciousActivities = thread.threadSuspiciousActivities || [];
+				var suspiciousActivities = msg.messageSuspiciousActivities || [];
 				for (var s = 0; s < suspiciousActivities.length; s++) {
 					if (suspiciousActivities[s].validated === true) {
 						isFlagged = true;
@@ -265,59 +265,59 @@ if (threadList) {
 				/* Avatar */
 				var avatarHtml;
 				if (creatorImage) {
-					avatarHtml = '<div class="forums-thread-card__avatar"><img src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></div>';
+					avatarHtml = '<div class="forums-message-card__avatar"><img src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></div>';
 				} else {
-					avatarHtml = '<div class="forums-thread-card__avatar">' + avatarInitial(creatorName) + '</div>';
+					avatarHtml = '<div class="forums-message-card__avatar">' + avatarInitial(creatorName) + '</div>';
 				}
 
 				/* Solved badge */
 				var solvedBadge = '';
-				if (thread.question && hasSolution) {
-					var solvedText = threadList.dataset.labelSolved || 'Solved';
-					solvedBadge = '<span class="forums-thread-card__solved">' + checkIcon + ' ' + solvedText + '</span>';
+				if (msg.question && hasSolution) {
+					var solvedText = messageList.dataset.labelSolved || 'Solved';
+					solvedBadge = '<span class="forums-message-card__solved">' + checkIcon + ' ' + solvedText + '</span>';
 				}
 
-				var siteSlug = (thread.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var topicHref = thread.friendlyUrlPath
-					? Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-topic-/' + thread.friendlyUrlPath
+				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
+				var topicHref = msg.friendlyUrlPath
+					? Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-message-/' + msg.friendlyUrlPath
 					: null;
 				if (!topicHref) missingDisplayPage = true;
 
 				var flaggedBadge = '';
 				if (isFlagged) {
-					var flaggedText = threadList.dataset.labelFlagged || 'Flagged';
-					flaggedBadge = '<span class="forums-thread-card__solved text-danger ml-2"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
+					var flaggedText = messageList.dataset.labelFlagged || 'Flagged';
+					flaggedBadge = '<span class="forums-message-card__solved text-danger ml-2"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
 				}
 
-				html += '<div class="forums-thread-card">'
-					+ '<div class="forums-thread-card__inner">'
-					+ '<div class="forums-thread-card__avatar-col">'
+				html += '<div class="forums-message-card">'
+					+ '<div class="forums-message-card__inner">'
+					+ '<div class="forums-message-card__avatar-col">'
 					+ avatarHtml
-					+ '<span class="forums-thread-card__username">' + Liferay.Util.escapeHTML(creatorName) + '</span>'
+					+ '<span class="forums-message-card__username">' + Liferay.Util.escapeHTML(creatorName) + '</span>'
 					+ '</div>'
-					+ '<div class="forums-thread-card__content">'
-					+ '<h5 class="forums-thread-card__title">'
+					+ '<div class="forums-message-card__content">'
+					+ '<h5 class="forums-message-card__title">'
 					+ (topicHref ? '<a href="' + topicHref + '">' + Liferay.Util.escapeHTML(title) + '</a>' : '<span>' + Liferay.Util.escapeHTML(title) + '</span>')
 					+ solvedBadge
 					+ flaggedBadge
 					+ '</h5>'
-					+ '<p class="forums-thread-card__preview">' + Liferay.Util.escapeHTML(preview) + '</p>'
+					+ '<p class="forums-message-card__preview">' + Liferay.Util.escapeHTML(preview) + '</p>'
 					+ (function() {
-						var threadTags = thread.keywords || [];
-						if (threadTags.length === 0) return '';
-						var tHtml = '<div class="forums-thread-card__tags">';
-						threadTags.forEach(function(tag) {
-							tHtml += '<span class="label label-secondary forums-thread-card__tag"><span class="label-item label-item-expand">' + Liferay.Util.escapeHTML(tag) + '</span></span>';
+						var messageTags = msg.keywords || [];
+						if (messageTags.length === 0) return '';
+						var tHtml = '<div class="forums-message-card__tags">';
+						messageTags.forEach(function(tag) {
+							tHtml += '<span class="label label-secondary forums-message-card__tag"><span class="label-item label-item-expand">' + Liferay.Util.escapeHTML(tag) + '</span></span>';
 						});
 						tHtml += '</div>';
 						return tHtml;
 					})()
-					+ '<div class="forums-thread-card__meta">'
-					+ '<span class="forums-thread-card__meta-item">' + clockIcon + ' ' + timeAgo(dateStr) + '</span>'
-					+ '<span class="forums-thread-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (threadList.dataset.labelXReply || '{0} reply').replace('{0}', replyCount) : (threadList.dataset.labelXReplies || '{0} replies').replace('{0}', replyCount)) + '</span>'
-					+ '<span class="forums-thread-card__meta-item">' + eyeIcon + ' ' + (thread.viewCount || 0) + '</span>'
-					+ (thread.actions && thread.actions['delete']
-						? '<span class="forums-thread-card__meta-item ml-auto ms-auto"><button class="btn btn-danger btn-sm forums-list-delete-btn" data-delete-url="' + thread.actions['delete'].href + '" title="' + (threadList.dataset.labelDelete || 'Delete') + '" aria-label="' + (threadList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
+					+ '<div class="forums-message-card__meta">'
+					+ '<span class="forums-message-card__meta-item">' + clockIcon + ' ' + timeAgo(dateStr) + '</span>'
+					+ '<span class="forums-message-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (messageList.dataset.labelXReply || '{0} reply').replace('{0}', replyCount) : (messageList.dataset.labelXReplies || '{0} replies').replace('{0}', replyCount)) + '</span>'
+					+ '<span class="forums-message-card__meta-item">' + eyeIcon + ' ' + (msg.viewCount || 0) + '</span>'
+					+ (msg.actions && msg.actions['delete']
+						? '<span class="forums-message-card__meta-item ml-auto ms-auto"><button class="btn btn-danger btn-sm forums-list-delete-btn" data-delete-url="' + msg.actions['delete'].href + '" title="' + (messageList.dataset.labelDelete || 'Delete') + '" aria-label="' + (messageList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
 						: '')
 					+ '</div>'
 					+ '</div>'
@@ -330,7 +330,7 @@ if (threadList) {
 
 			if (missingDisplayPage && Liferay.Util && Liferay.Util.openToast) {
 				Liferay.Util.openToast({
-					message: threadList.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more threads.',
+					message: messageList.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more messages.',
 					type: 'danger'
 				});
 			}
@@ -339,7 +339,7 @@ if (threadList) {
 			if (showingEl && totalCount > 0) {
 				var startItem = (currentPage - 1) * pageSize + 1;
 				var endItem = Math.min(currentPage * pageSize, totalCount);
-				var showingLabel = (threadList.dataset.labelShowing || 'Showing {0} of {1} Items')
+				var showingLabel = (messageList.dataset.labelShowing || 'Showing {0} of {1} Items')
 					.replace('{0}', startItem + '-' + endItem).replace('{1}', totalCount);
 				showingEl.textContent = showingLabel;
 				showingEl.style.display = '';
@@ -383,8 +383,8 @@ if (threadList) {
 						var p = parseInt(this.getAttribute('data-page'));
 						if (p >= 1 && p <= lastPage) {
 							currentPage = p;
-							loadThreads();
-							threadList.scrollIntoView({ behavior: 'smooth' });
+							loadMessages();
+							messageList.scrollIntoView({ behavior: 'smooth' });
 						}
 					});
 				});
@@ -393,8 +393,8 @@ if (threadList) {
 		})
 		.catch(function(err) {
 			if (loadingEl) loadingEl.style.display = 'none';
-			cardsContainer.innerHTML = '<div class="forums-thread-list__empty">' + (threadList.dataset.labelUnableToLoad || 'Unable to load threads.') + '</div>';
-			console.error('ForumsThreadList error:', err);
+			cardsContainer.innerHTML = '<div class="forums-message-list__empty">' + (messageList.dataset.labelUnableToLoad || 'Unable to load messages.') + '</div>';
+			console.error('ForumsMessageList error:', err);
 		});
 	}
 
@@ -437,8 +437,8 @@ if (threadList) {
 				'<div class="modal-footer">' +
 				'<div class="modal-item-last">' +
 				'<div class="btn-group-spaced" role="group">' +
-				'<button class="btn btn-secondary forums-delete-modal-close" type="button">' + (threadList.dataset.labelCancel || 'Cancel') + '</button>' +
-				'<button class="btn btn-danger" type="button" id="forumsDeleteModalConfirmBtn">' + (threadList.dataset.labelDelete || 'Delete') + '</button>' +
+				'<button class="btn btn-secondary forums-delete-modal-close" type="button">' + (messageList.dataset.labelCancel || 'Cancel') + '</button>' +
+				'<button class="btn btn-danger" type="button" id="forumsDeleteModalConfirmBtn">' + (messageList.dataset.labelDelete || 'Delete') + '</button>' +
 				'</div>' +
 				'</div>' +
 				'</div>' +
@@ -480,16 +480,16 @@ if (threadList) {
 	}
 
 	function attachDeleteHandlers() {
-		threadList.querySelectorAll('.forums-list-delete-btn').forEach(function(btn) {
+		messageList.querySelectorAll('.forums-list-delete-btn').forEach(function(btn) {
 			btn.addEventListener('click', function(e) {
 				e.preventDefault();
 				e.stopPropagation();
 				
-				var title = threadList.dataset.labelDeleteTopic || 'Delete Topic';
-				var confirmMsg = threadList.dataset.labelConfirmDeleteTopic || 'Deleting a topic is an action impossible to revert. All the replies in the topic will be removed and it will not be possible to recover them.';
+				var title = messageList.dataset.labelDeleteTopic || 'Delete Topic';
+				var confirmMsg = messageList.dataset.labelConfirmDeleteTopic || 'Deleting a topic is an action impossible to revert. All the replies in the topic will be removed and it will not be possible to recover them.';
 				
 				var deleteUrl = this.getAttribute('data-delete-url');
-				var card = this.closest('.forums-thread-card');
+				var card = this.closest('.forums-message-card');
 
 				showDeleteModal(title, confirmMsg, function() {
 					Liferay.Util.fetch(deleteUrl, {
@@ -502,7 +502,7 @@ if (threadList) {
 								card.style.opacity = '0.5';
 								setTimeout(function() { card.remove(); }, 300);
 							}
-							setTimeout(loadThreads, 1500);
+							setTimeout(loadMessages, 1500);
 						} else {
 							console.error('Failed to delete topic');
 						}
@@ -525,7 +525,7 @@ if (threadList) {
 			this.setAttribute('aria-selected', 'true');
 			currentSort = this.getAttribute('data-sort');
 			currentPage = 1;
-			loadThreads();
+			loadMessages();
 		});
 	});
 
@@ -533,7 +533,7 @@ if (threadList) {
 	function doSearch() {
 		searchQuery = searchInput ? searchInput.value.trim() : '';
 		currentPage = 1;
-		loadThreads();
+		loadMessages();
 	}
 
 	if (searchBtn) {
@@ -560,13 +560,13 @@ if (threadList) {
 			if (data.items && data.items.length > 0) {
 				isBanned = true;
 			}
-			loadThreads();
+			loadMessages();
 		})
 		.catch(function(err) {
 			console.error('Error checking ban status', err);
-			loadThreads();
+			loadMessages();
 		});
 	} else {
-		loadThreads();
+		loadMessages();
 	}
 }

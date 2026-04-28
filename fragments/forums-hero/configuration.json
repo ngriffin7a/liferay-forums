@@ -5,9 +5,9 @@
 			"fields": [
 				{
 					"dataType": "string",
-					"defaultValue": "/forum-threads",
-					"label": "Threads Page URL",
-					"name": "threadsURL",
+					"defaultValue": "/forum-messages",
+					"label": "Messages Page URL",
+					"name": "messagesURL",
 					"type": "text"
 				}
 			]

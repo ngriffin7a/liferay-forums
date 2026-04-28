@@ -56,7 +56,7 @@
 	min-width: 0;
 }
 
-.forums-moderation__thread-title {
+.forums-moderation__message-title {
 	color: var(--color-brand-primary, #2b6afd);
 	font-size: 0.9375rem;
 	font-weight: 600;
@@ -66,7 +66,7 @@
 	white-space: nowrap;
 }
 
-.forums-moderation__thread-title:hover {
+.forums-moderation__message-title:hover {
 	text-decoration: underline;
 }
 

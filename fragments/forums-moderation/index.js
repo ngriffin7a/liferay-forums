@@ -8,10 +8,10 @@ if (forumsMod) {
 		'Content-Type': 'application/json'
 	};
 
-	function buildThreadHref(threadData) {
-		if (threadData && threadData.friendlyUrlPath) {
-			var siteSlug = (threadData.scopeKey || '').toLowerCase().replace(/ /g, '-');
-			return Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-topic-/' + threadData.friendlyUrlPath;
+	function buildMessageHref(messageData) {
+		if (messageData && messageData.friendlyUrlPath) {
+			var siteSlug = (messageData.scopeKey || '').toLowerCase().replace(/ /g, '-');
+			return Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/-c-forum-message-/' + messageData.friendlyUrlPath;
 		}
 		return null;
 	}
@@ -201,7 +201,7 @@ if (forumsMod) {
 				var infoDiv = document.createElement('div');
 				infoDiv.className = 'forums-moderation__flag-info';
 				var titleLink = document.createElement('span');
-				titleLink.className = 'forums-moderation__thread-title font-weight-bold';
+				titleLink.className = 'forums-moderation__message-title font-weight-bold';
 				titleLink.textContent = (forumsMod.dataset.labelUserId || 'User ID: {0}').replace('{0}', ban.banUserId);
 				var metaDiv = document.createElement('div');
 				metaDiv.className = 'forums-moderation__flag-meta mt-1';
@@ -251,7 +251,7 @@ if (forumsMod) {
 		if (paginationNav) paginationNav.style.display = 'none';
 
 		var url = portalURL + '/o/c/forumsuspiciousactivities/scopes/' + scopeGroupId
-			+ '?nestedFields=threadSuspiciousActivities'
+			+ '?nestedFields=messageSuspiciousActivities'
 			+ '&sort=dateCreated:desc'
 			+ '&page=' + currentPage
 			+ '&pageSize=' + pageSize
@@ -286,16 +286,16 @@ if (forumsMod) {
 			var lastPage = data.lastPage || 1;
 
 			if (items.length === 0) {
-				flagList.innerHTML = '<div class="list-group-item text-muted">' + (forumsMod.dataset.labelNoFlags || 'No flagged threads found.') + '</div>';
+				flagList.innerHTML = '<div class="list-group-item text-muted">' + (forumsMod.dataset.labelNoFlags || 'No flagged messages found.') + '</div>';
 				return;
 			}
 
 			var missingDisplayPage = false;
 			items.forEach(function(flag) {
-				var threadData = flag.threadSuspiciousActivities || {};
-				var threadTitle = threadData.threadTitle || threadData.title || 'Thread #' + (flag.suspiciousThreadId || flag.r_threadSuspiciousActivities_c_forumThreadId || '?');
-				var threadId = flag.suspiciousThreadId || flag.r_threadSuspiciousActivities_c_forumThreadId;
-				var authorId = threadData.creator ? threadData.creator.id : null;
+				var messageData = flag.messageSuspiciousActivities || {};
+				var messageTitle = messageData.messageTitle || messageData.title || 'Message #' + (flag.suspiciousMessageId || flag.r_messageSuspiciousActivities_c_forumMessageId || '?');
+				var messageId = flag.suspiciousMessageId || flag.r_messageSuspiciousActivities_c_forumMessageId;
+				var authorId = messageData.creator ? messageData.creator.id : null;
 				var creator = flag.creator || {};
 				var creatorName = displayName(creator) || 'Unknown';
 				var reason = flag.reason || 'other';
@@ -309,15 +309,15 @@ if (forumsMod) {
 				var infoDiv = document.createElement('div');
 				infoDiv.className = 'forums-moderation__flag-info';
 
-				var titleHref = buildThreadHref(threadData);
+				var titleHref = buildMessageHref(messageData);
 				if (!titleHref) missingDisplayPage = true;
 
 				var titleLink = document.createElement('a');
-				titleLink.className = 'forums-moderation__thread-title';
-				titleLink.textContent = threadTitle;
+				titleLink.className = 'forums-moderation__message-title';
+				titleLink.textContent = messageTitle;
 				if (titleHref) titleLink.href = titleHref;
 				titleLink.target = '_blank';
-				titleLink.title = forumsMod.dataset.labelViewThread || 'View Thread';
+				titleLink.title = forumsMod.dataset.labelViewMessage || 'View Message';
 
 				var metaDiv = document.createElement('div');
 				metaDiv.className = 'forums-moderation__flag-meta';
@@ -358,7 +358,7 @@ if (forumsMod) {
 				/* View link — always shown (read-only) */
 				var viewLink = document.createElement('a');
 				viewLink.className = 'btn btn-sm btn-outline-primary' + (titleHref ? '' : ' disabled');
-				viewLink.textContent = forumsMod.dataset.labelViewThread || 'View Thread';
+				viewLink.textContent = forumsMod.dataset.labelViewMessage || 'View Message';
 				if (titleHref) viewLink.href = titleHref;
 				viewLink.target = '_blank';
 				actionsDiv.appendChild(viewLink);
@@ -479,7 +479,7 @@ if (forumsMod) {
 
 			if (missingDisplayPage && Liferay.Util && Liferay.Util.openToast) {
 				Liferay.Util.openToast({
-					message: forumsMod.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more threads.',
+					message: forumsMod.dataset.labelDisplayPageNotConfigured || 'Display page is not configured for one or more messages.',
 					type: 'danger'
 				});
 			}
