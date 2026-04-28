@@ -1,0 +1,150 @@
+[
+	{
+		"author": "alice.morgan",
+		"category": "FORUM-CAT-GENERAL-DISCUSSION",
+		"title": "Welcome to the Community Forums!",
+		"body": "<p>Hello everyone! This is the place to connect, share ideas, and get help from fellow Liferay developers. Feel free to introduce yourself and tell us what you're working on!</p>",
+		"keywords": ["welcome", "introduction", "community"],
+		"question": false,
+		"replies": [
+			{"author": "bob.chen", "replyIndex": 35, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "carla.rivera", "replyIndex": 36, "answer": false, "upvotes": 3, "downvotes": 0}
+		]
+	},
+	{
+		"author": "bob.chen",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "REST API returns 403 after upgrading to 2025.Q4",
+		"body": "<p>I just upgraded our dev environment to 2025.Q4 and now all my custom REST endpoints are returning a 403 Forbidden. I haven't changed any Service Access Policies. Is there a new security configuration I missed?</p>",
+		"keywords": ["REST", "403", "upgrade", "security"],
+		"question": true,
+		"replies": [
+			{"author": "elena.petrov", "replyIndex": 2, "answer": true, "upvotes": 12, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 3, "answer": false, "upvotes": 2, "downvotes": 0},
+			{"author": "alice.morgan", "replyIndex": 4, "answer": false, "upvotes": 7, "downvotes": 0}
+		]
+	},
+	{
+		"author": "carla.rivera",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "How to configure SSO with SAML 2.0 and Azure AD?",
+		"body": "<p>I'm trying to set up SAML 2.0 with Azure AD as the Identity Provider. The initial handshake seems to work, but I'm getting an 'Invalid SAML Response' error on the Liferay side. Any tips?</p>",
+		"keywords": ["SAML", "SSO", "Azure", "Security"],
+		"question": true,
+		"replies": [
+			{"author": "frank.tanaka", "replyIndex": 5, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "grace.obi", "replyIndex": 6, "answer": false, "upvotes": 8, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 21, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "elena.petrov", "replyIndex": 22, "answer": true, "upvotes": 15, "downvotes": 0}
+		]
+	},
+	{
+		"author": "dan.novak",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Custom Object fields not appearing in search",
+		"body": "<p>I created a custom object 'Project' with a 'description' field. I marked it as searchable, but it doesn't show up in the search results widget. I tried re-indexing everything but no luck.</p>",
+		"keywords": ["Search", "Objects", "Indexing"],
+		"question": true,
+		"replies": [
+			{"author": "lilly.zhao", "replyIndex": 7, "answer": false, "upvotes": 10, "downvotes": 0},
+			{"author": "frank.tanaka", "replyIndex": 8, "answer": false, "upvotes": 1, "downvotes": 2},
+			{"author": "bob.chen", "replyIndex": 23, "answer": false, "upvotes": 6, "downvotes": 0},
+			{"author": "alice.morgan", "replyIndex": 24, "answer": true, "upvotes": 18, "downvotes": 0}
+		]
+	},
+	{
+		"author": "elena.petrov",
+		"category": "FORUM-CAT-BEST-PRACTICES",
+		"title": "Should I use Service Builder or Objects for new projects?",
+		"body": "<p>We're starting a new project and I'm torn between using the classic Service Builder or the new Objects feature. What's the current recommendation for a simple CRUD application?</p>",
+		"keywords": ["Service Builder", "Objects", "Architecture"],
+		"question": false,
+		"replies": [
+			{"author": "bob.chen", "replyIndex": 9, "answer": false, "upvotes": 10, "downvotes": 1},
+			{"author": "carla.rivera", "replyIndex": 10, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 25, "answer": true, "upvotes": 14, "downvotes": 0},
+			{"author": "frank.tanaka", "replyIndex": 26, "answer": false, "upvotes": 8, "downvotes": 0}
+		]
+	},
+	{
+		"author": "frank.tanaka",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Memory leak in Document Library during large uploads",
+		"body": "<p>We're seeing a steady increase in heap usage when users upload multiple large files (500MB+) to the Document Library. The JVM eventually crashes with an OutOfMemoryError.</p>",
+		"keywords": ["OOM", "Document Library", "Performance"],
+		"question": true,
+		"replies": [
+			{"author": "grace.obi", "replyIndex": 11, "answer": false, "upvotes": 6, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 12, "answer": false, "upvotes": 9, "downvotes": 0},
+			{"author": "lilly.zhao", "replyIndex": 27, "answer": false, "upvotes": 7, "downvotes": 0},
+			{"author": "alice.morgan", "replyIndex": 28, "answer": true, "upvotes": 20, "downvotes": 0}
+		]
+	},
+	{
+		"author": "grace.obi",
+		"category": "FORUM-CAT-FEATURE-REQUESTS",
+		"title": "Native Dark Mode support for the Control Panel",
+		"body": "<p>The Liferay admin interface is great, but a native dark mode would be amazing for those of us working late nights. Is this on the roadmap?</p>",
+		"keywords": ["Dark Mode", "UX", "Feature Request"],
+		"question": false,
+		"replies": [
+			{"author": "alice.morgan", "replyIndex": 13, "answer": false, "upvotes": 25, "downvotes": 0},
+			{"author": "lilly.zhao", "replyIndex": 14, "answer": false, "upvotes": 4, "downvotes": 0}
+		]
+	},
+	{
+		"author": "lilly.zhao",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Fragment Editor bug in Safari",
+		"body": "<p>I'm experiencing weird layout issues in the Fragment Editor when using Safari. The preview pane seems to overlap with the code editor. Anyone else seeing this?</p>",
+		"keywords": ["Fragments", "Safari", "UI", "Bug"],
+		"question": true,
+		"replies": [
+			{"author": "frank.tanaka", "replyIndex": 15, "answer": false, "upvotes": 7, "downvotes": 0},
+			{"author": "carla.rivera", "replyIndex": 16, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "bob.chen", "replyIndex": 29, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 30, "answer": true, "upvotes": 12, "downvotes": 0}
+		]
+	},
+	{
+		"author": "alice.morgan",
+		"category": "FORUM-CAT-BEST-PRACTICES",
+		"title": "Optimizing Liferay for High Traffic Sites",
+		"body": "<p>We're expecting a massive traffic spike next month. What are the most important configurations to tune in Liferay to handle high concurrency?</p>",
+		"keywords": ["Performance", "Tuning", "Scaling"],
+		"question": false,
+		"replies": [
+			{"author": "bob.chen", "replyIndex": 17, "answer": false, "upvotes": 14, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 18, "answer": false, "upvotes": 11, "downvotes": 0},
+			{"author": "elena.petrov", "replyIndex": 31, "answer": false, "upvotes": 8, "downvotes": 0},
+			{"author": "grace.obi", "replyIndex": 32, "answer": true, "upvotes": 22, "downvotes": 0}
+		]
+	},
+	{
+		"author": "bob.chen",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Client Extension not loading in production",
+		"body": "<p>My React-based Client Extension works fine on my local machine, but it fails to load in our production environment. The console says 'failed to fetch dynamically imported module'.</p>",
+		"keywords": ["Client Extensions", "React", "Production"],
+		"question": true,
+		"replies": [
+			{"author": "lilly.zhao", "replyIndex": 19, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "frank.tanaka", "replyIndex": 20, "answer": false, "upvotes": 10, "downvotes": 0},
+			{"author": "carla.rivera", "replyIndex": 33, "answer": false, "upvotes": 6, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 34, "answer": true, "upvotes": 15, "downvotes": 0}
+		]
+	},
+	{
+		"author": "dan.novak",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Testing the new AI Search features in 2025.Q4",
+		"body": "<p>Has anyone tried the new AI Search features in 2025.Q4 yet? I'm curious about the accuracy of the vector embeddings and the infrastructure requirements.</p>",
+		"keywords": ["AI", "Search", "Elasticsearch", "2025.Q4"],
+		"question": true,
+		"replies": [
+			{"author": "alice.morgan", "replyIndex": 37, "answer": false, "upvotes": 9, "downvotes": 0},
+			{"author": "bob.chen", "replyIndex": 38, "answer": true, "upvotes": 14, "downvotes": 0},
+			{"author": "carla.rivera", "replyIndex": 39, "answer": false, "upvotes": 7, "downvotes": 0}
+		]
+	}
+]

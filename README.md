@@ -145,6 +145,37 @@ Map these fields differently depending on which Display Page Template you are ed
 
 ---
 
+## Demo Data
+
+The `setup/demo/` directory contains scripts for populating and clearing forum content in a development environment.
+
+### Import
+
+```bash
+python3 setup/demo/create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
+```
+
+The script creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role, a set of Forum Messages with keywords distributed across those categories, and replies to each message authored by different users.
+
+| Argument | Default | Description |
+| :--- | :--- | :--- |
+| `siteId` | *(required)* | Site (group) ID to scope all entries to |
+| `BASE_URL` | `http://localhost:8080` | Liferay portal base URL |
+| `--email` | `test@liferay.com` | Admin account email |
+| `--password` | `test` | Admin account password |
+
+### Delete
+
+```bash
+python3 setup/demo/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
+```
+
+Deletes all Forum Reply and Forum Message entries for the given site. Forum Votes are removed automatically via cascade. Forum Categories and the demo user accounts are left in place.
+
+The arguments are identical to the import script above.
+
+---
+
 ## Known Limitations (Fragments)
 
 ### View Count Not Incremented for Guest Users

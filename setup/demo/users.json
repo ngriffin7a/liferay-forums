@@ -1,0 +1,50 @@
+[
+	{
+		"screenName": "alice.morgan",
+		"emailAddress": "alice.morgan@example.xyz",
+		"givenName": "Alice",
+		"familyName": "Morgan"
+	},
+	{
+		"screenName": "bob.chen",
+		"emailAddress": "bob.chen@example.xyz",
+		"givenName": "Bob",
+		"familyName": "Chen"
+	},
+	{
+		"screenName": "carla.rivera",
+		"emailAddress": "carla.rivera@example.xyz",
+		"givenName": "Carla",
+		"familyName": "Rivera"
+	},
+	{
+		"screenName": "dan.novak",
+		"emailAddress": "dan.novak@example.xyz",
+		"givenName": "Dan",
+		"familyName": "Novak"
+	},
+	{
+		"screenName": "elena.petrov",
+		"emailAddress": "elena.petrov@example.xyz",
+		"givenName": "Elena",
+		"familyName": "Petrov"
+	},
+	{
+		"screenName": "frank.tanaka",
+		"emailAddress": "frank.tanaka@example.xyz",
+		"givenName": "Frank",
+		"familyName": "Tanaka"
+	},
+	{
+		"screenName": "grace.obi",
+		"emailAddress": "grace.obi@example.xyz",
+		"givenName": "Grace",
+		"familyName": "Obi"
+	},
+	{
+		"screenName": "lilly.zhao",
+		"emailAddress": "lilly.zhao@example.xyz",
+		"givenName": "Lilly",
+		"familyName": "Zhao"
+	}
+]

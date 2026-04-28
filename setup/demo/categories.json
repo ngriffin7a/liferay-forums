@@ -1,0 +1,22 @@
+[
+	{
+		"erc": "FORUM-CAT-GENERAL-DISCUSSION",
+		"categoryName": "General Discussion",
+		"categoryDescription": "Community news, announcements, and off-topic conversations."
+	},
+	{
+		"erc": "FORUM-CAT-TECHNICAL-HELP",
+		"categoryName": "Technical Help",
+		"categoryDescription": "Troubleshooting, configuration, and developer-to-developer assistance."
+	},
+	{
+		"erc": "FORUM-CAT-FEATURE-REQUESTS",
+		"categoryName": "Feature Requests",
+		"categoryDescription": "Propose and discuss new ideas for future platform updates."
+	},
+	{
+		"erc": "FORUM-CAT-BEST-PRACTICES",
+		"categoryName": "Best Practices",
+		"categoryDescription": "Proven patterns, architectural advice, and optimization strategies."
+	}
+]
