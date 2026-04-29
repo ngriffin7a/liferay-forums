@@ -61,7 +61,7 @@ The following **Release** feature flags must be enabled before deploying.
 
 ## Page Layout and Fragment Placement
 
-The forums application is assembled using a combination of standard pages and Display Page Templates.
+The forums application is assembled using a combination of standard pages and Display Page Templates. The site initializer creates the standard pages described below automatically — they are defined in `site-initializer/layouts/`. The layout diagrams serve as a preview of how the fragments are arranged on those auto-created pages.
 
 ### Page: Forums
 *Friendly URL: `/forums` — Main entry point for the forums.*
