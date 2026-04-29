@@ -244,6 +244,20 @@ A Spring Boot Microservice Client Extension can be registered as an Object Actio
 
 There is an unavoidable brief window (milliseconds to low seconds depending on load) between the entry being created and the microservice deleting it. In practice this is acceptable given that banning is rare and the moderation fragment provides a backstop for any content that appears during that window.
 
+### No Endpoints for Discovering Subscribed Users
+
+Research discovered a hard feature gap when building a Spring Boot Microservice Client Extension to power email/notification delivery for forum subscriptions — specifically, sending a notification to all users subscribed to a topic when a new reply is posted: **Liferay's headless REST APIs have no endpoint that returns which users are subscribed to a given Object entry (or Message Boards thread equivalent).**
+
+The only subscription endpoints in the `headless-admin-user` API are scoped to the calling user: `GET /o/headless-admin-user/v1.0/my-user-account/subscriptions` returns the subscriptions belonging to the authenticated user making the request. There is no admin-facing endpoint that lists *all* subscribers for a resource. The underlying data lives in `SubscriptionLocalService` but is not exposed through any published REST API.
+
+**Workaround 1 — "Forum Subscription" Object**
+
+Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumReply → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
+
+**Workaround 2 — REST Builder Endpoints**
+
+Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumMessage.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
+
 ### "Top Replies" Implemented as "Recent Activity"
 
 The "Recent Activity" tab (formerly "Top Replies") sorts messages using `lastPostDate:desc`. This functions as a "Recently Active" feed rather than filtering for the highest volume of total replies. A new message with 1 reply will surface above an older message with 100 replies.
