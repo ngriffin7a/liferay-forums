@@ -32,6 +32,18 @@ This project is a Fragments and Liferay Objects based replacement for the legacy
 
 ---
 
+## Required Feature Flags
+
+The following **Release** feature flags must be enabled before deploying.
+
+| Ticket | Description |
+| :--- | :--- |
+| LPD-17564 | CMS |
+| LPD-34594 | Root Object Definitions |
+| LPD-11235 | Enhanced Rich Text Editor |
+
+---
+
 ## Fragments
 
 | Fragment Name | Folder | Description |
