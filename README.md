@@ -83,7 +83,7 @@ The forums application is assembled using a combination of standard pages and Di
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> After placing the **Search Bar** widget in the `forums-hero` drop-zone, configure it with the destination search page and any other relevant search settings (scope, placeholder text, etc.).
+> The **Search Bar** widget is automatically present in the `forums-hero` drop-zone. ***Edit its configuration*** to specify the destination search page friendly URL (e.g. `/search`) and any other relevant search settings (scope, placeholder text, etc.).
 
 ### Page: Forums Messages
 *Friendly URL: `/forums-messages` — Hide from page navigation.*
