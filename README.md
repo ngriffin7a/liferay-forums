@@ -70,6 +70,16 @@ The following **Release** feature flags must be enabled before deploying.
 
 The forums application is assembled using a combination of standard pages and Display Page Templates. The site initializer creates the standard pages described below automatically — they are defined in `site-initializer/layouts/`. The layout diagrams serve as a preview of how the fragments are arranged on those auto-created pages.
 
+```
+/
+├── Forum Categories Admin   (hidden from navigation) †
+├── Forums                   (visible)
+├── Forums Messages          (hidden from navigation)
+└── Forums Moderation        (hidden from navigation) †
+```
+
+† Must be ***manually restricted to Site Administrator*** by the Site Administrator after import, as page permissions cannot be set in a site initializer.
+
 ### Page: Forums
 *Friendly URL: `/forums` — Main entry point for the forums.*
 ```
