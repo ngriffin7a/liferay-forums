@@ -1,0 +1,19 @@
+assemble:
+    - from: site-initializer
+      into: site-initializer
+
+forums-site-initializer:
+    description: Liferay Forums — Forums home, message detail, admin, and moderation pages backed by custom Liferay Objects.
+    name: Liferay Forums
+    oAuthApplicationHeadlessServer: forums-site-initializer-oauth-application-headless-server
+    siteExternalReferenceCode: FORUMS
+    siteName: Forums
+    type: siteInitializer
+
+forums-site-initializer-oauth-application-headless-server:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: Forums Site Initializer OAuth Application Headless Server
+    scopes:
+        - Liferay.Headless.Site.everything
+    type: oAuthApplicationHeadlessServer

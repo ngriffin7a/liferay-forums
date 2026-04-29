@@ -1,0 +1,120 @@
+{
+	"enableComments": false,
+	"enableObjectEntryVersioning": false,
+	"enableCategorization": true,
+	"enableFriendlyURLCustomization": false,
+	"accountEntryRestrictedObjectFieldName": "",
+	"enableLocalization": true,
+	"accountEntryRestricted": false,
+	"enableFormContainer": true,
+	"enableObjectEntrySubscription": true,
+	"externalReferenceCode": "FORUM-MESSAGE",
+	"objectFields": [
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Category ID"
+			},
+			"name": "categoryId",
+			"required": false
+		},
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Root Message ID"
+			},
+			"name": "rootMessageId",
+			"required": false
+		},
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Root Message User ID"
+			},
+			"name": "rootMessageUserId",
+			"required": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Title"
+			},
+			"localized": true,
+			"name": "messageTitle",
+			"required": false
+		},
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Last Post By User ID"
+			},
+			"name": "lastPostByUserId",
+			"required": false
+		},
+		{
+			"DBType": "Date",
+			"businessType": "Date",
+			"label": {
+				"en_US": "Last Post Date"
+			},
+			"name": "lastPostDate",
+			"required": false
+		},
+		{
+			"DBType": "BigDecimal",
+			"businessType": "PrecisionDecimal",
+			"label": {
+				"en_US": "Priority"
+			},
+			"name": "priority",
+			"required": false
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"label": {
+				"en_US": "Question"
+			},
+			"name": "question",
+			"required": false
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"label": {
+				"en_US": "View Count"
+			},
+			"name": "viewCount",
+			"required": false
+		}
+	],
+	"scope": "site",
+	"portlet": false,
+	"modifiable": true,
+	"parameterRequired": false,
+	"enableObjectEntryHistory": false,
+	"titleObjectFieldName": "messageTitle",
+	"active": true,
+	"defaultLanguageId": "en_US",
+	"enableIndexSearch": true,
+	"label": {
+		"en_US": "Forum Message"
+	},
+	"panelCategoryKey": "",
+	"pluralLabel": {
+		"en_US": "Forum Messages"
+	},
+	"enableObjectEntrySchedule": false,
+	"system": false,
+	"enableObjectEntryDraft": false,
+	"name": "ForumMessage",
+	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
+}

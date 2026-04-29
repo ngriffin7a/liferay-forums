@@ -1,0 +1,29 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "20",
+					"label": "Messages Per Page",
+					"name": "pageSize",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "c_forummessage",
+					"label": "Message Object URL Route",
+					"name": "messageObjectRoute",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Search Bar",
+					"name": "showSearchBar",
+					"type": "checkbox"
+				}
+			]
+		}
+	]
+}

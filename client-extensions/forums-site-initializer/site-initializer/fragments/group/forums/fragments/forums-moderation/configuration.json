@@ -1,0 +1,16 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "c_forummessage",
+					"label": "Message Object URL Route",
+					"name": "messageObjectRoute",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

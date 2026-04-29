@@ -1,0 +1,44 @@
+{
+	"enableComments": false,
+	"enableObjectEntryVersioning": false,
+	"enableCategorization": true,
+	"enableFriendlyURLCustomization": false,
+	"accountEntryRestrictedObjectFieldName": "",
+	"enableLocalization": false,
+	"accountEntryRestricted": false,
+	"enableFormContainer": true,
+	"enableObjectEntrySubscription": false,
+	"externalReferenceCode": "FORUM-STATS-USER",
+	"objectFields": [
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "User ID"
+			},
+			"name": "statsUserId",
+			"required": false
+		}
+	],
+	"scope": "site",
+	"portlet": false,
+	"modifiable": true,
+	"parameterRequired": false,
+	"enableObjectEntryHistory": false,
+	"titleObjectFieldName": "externalReferenceCode",
+	"active": true,
+	"defaultLanguageId": "en_US",
+	"enableIndexSearch": true,
+	"label": {
+		"en_US": "Forum Stats User"
+	},
+	"panelCategoryKey": "",
+	"pluralLabel": {
+		"en_US": "Forum Stats Users"
+	},
+	"enableObjectEntrySchedule": false,
+	"system": false,
+	"enableObjectEntryDraft": false,
+	"name": "ForumStatsUser",
+	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
+}

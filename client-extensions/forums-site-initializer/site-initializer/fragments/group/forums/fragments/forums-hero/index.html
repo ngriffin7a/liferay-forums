@@ -1,0 +1,85 @@
+<!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
+[#function formatCount n]
+	[#if n gte 1000000]
+		[#return (n / 1000000)?string("0.#") + "M"]
+	[#elseif n gte 1000]
+		[#return (n / 1000)?string("0.#") + "K"]
+	[#else]
+		[#return n?c]
+	[/#if]
+[/#function]
+
+[#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
+[#assign scopeGroup = themeDisplay.getScopeGroup() /]
+[#assign sitePrefix = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
+[#assign messagesData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+[#assign solutionsData = restClient.get("/c/forumreplies/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true")!"" /]
+[#assign membersData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+
+<div class="forums-hero">
+	<div class="forums-hero__backdrop">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-8 text-center">
+					<h1 class="forums-hero__title">
+						${languageUtil.get(locale, "forums-title")}
+					</h1>
+					<p class="forums-hero__description">
+						${languageUtil.get(locale, "forums-description")}
+					</p>
+
+					<div class="forums-hero__drop-zone">
+						<lfr-drop-zone></lfr-drop-zone>
+					</div>
+
+					<div class="forums-hero__stats">
+						<div class="row">
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value">
+										[#if solutionsData?is_hash && solutionsData.totalCount??]
+											${formatCount(solutionsData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "solutions")}</figcaption>
+								</figure>
+							</div>
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value">
+										[#if messagesData?is_hash && messagesData.totalCount??]
+											${formatCount(messagesData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "messages")}</figcaption>
+								</figure>
+							</div>
+							<div class="col-4">
+								<figure class="forums-hero__stat-card">
+									<span class="forums-hero__stat-value">
+										[#if membersData?is_hash && membersData.totalCount??]
+											${formatCount(membersData.totalCount)}
+										[#else]
+											&mdash;
+										[/#if]
+									</span>
+									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "participants")}</figcaption>
+								</figure>
+							</div>
+						</div>
+					</div>
+
+					[#if messagesData?is_hash && messagesData.actions?? && (messagesData.actions["post"]?? || messagesData.actions["create"]??)]
+						<a href="${sitePrefix}${configuration.messagesURL!"/forum-messages"}?compose=true" class="btn forums-hero__cta">
+							${languageUtil.get(locale, "new-forum-message")}
+						</a>
+					[/#if]
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

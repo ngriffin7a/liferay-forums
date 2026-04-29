@@ -1,0 +1,84 @@
+{
+	"enableComments": false,
+	"enableObjectEntryVersioning": false,
+	"enableCategorization": true,
+	"enableFriendlyURLCustomization": false,
+	"accountEntryRestrictedObjectFieldName": "",
+	"enableLocalization": true,
+	"accountEntryRestricted": false,
+	"enableFormContainer": true,
+	"enableObjectEntrySubscription": false,
+	"externalReferenceCode": "FORUM-CATEGORY",
+	"objectFields": [
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Parent Category ID"
+			},
+			"name": "parentCategoryId",
+			"required": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Name"
+			},
+			"localized": true,
+			"name": "categoryName",
+			"required": true
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "RichText",
+			"label": {
+				"en_US": "Description"
+			},
+			"name": "categoryDescription",
+			"required": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"label": {
+				"en_US": "Display Style"
+			},
+			"name": "displayStyle",
+			"required": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"label": {
+				"en_US": "Friendly URL"
+			},
+			"name": "friendlyURL",
+			"required": false
+		}
+	],
+	"scope": "site",
+	"portlet": false,
+	"modifiable": true,
+	"parameterRequired": false,
+	"enableObjectEntryHistory": false,
+	"titleObjectFieldName": "categoryName",
+	"active": true,
+	"defaultLanguageId": "en_US",
+	"enableIndexSearch": true,
+	"label": {
+		"en_US": "Forum Category"
+	},
+	"panelCategoryKey": "",
+	"pluralLabel": {
+		"en_US": "Forum Categories"
+	},
+	"enableObjectEntrySchedule": false,
+	"system": false,
+	"enableObjectEntryDraft": false,
+	"name": "ForumCategory",
+	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
+}

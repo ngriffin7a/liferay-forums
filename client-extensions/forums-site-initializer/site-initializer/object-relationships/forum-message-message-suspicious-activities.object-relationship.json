@@ -1,0 +1,22 @@
+{
+	"objectDefinitionSystem2": false,
+	"parameterObjectFieldName": "",
+	"parameterObjectFieldId": 0,
+	"label": {
+		"en_US": "Message Suspicious Activities"
+	},
+	"reverse": false,
+	"type": "oneToMany",
+	"externalReferenceCode": "REL-MESSAGE-SUSPICIOUS-ACTIVITIES",
+	"edge": false,
+	"objectDefinitionModifiable2": true,
+	"system": false,
+	"name": "messageSuspiciousActivities",
+	"objectDefinitionScope2": "site",
+	"deletionType": "cascade",
+	"objectDefinitionExternalReferenceCode1": "FORUM-MESSAGE",
+	"objectDefinitionExternalReferenceCode2": "FORUM-SUSPICIOUS-ACTIVITY",
+	"objectDefinitionName2": "ForumSuspiciousActivity",
+	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:ForumMessage$]",
+	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:ForumSuspiciousActivity$]"
+}

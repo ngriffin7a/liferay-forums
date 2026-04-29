@@ -1,0 +1,22 @@
+{
+	"objectDefinitionSystem2": false,
+	"parameterObjectFieldName": "",
+	"parameterObjectFieldId": 0,
+	"label": {
+		"en_US": "Reply Votes"
+	},
+	"reverse": false,
+	"type": "oneToMany",
+	"externalReferenceCode": "REL-REPLY-VOTES",
+	"edge": false,
+	"objectDefinitionModifiable2": true,
+	"system": false,
+	"name": "replyVotes",
+	"objectDefinitionScope2": "site",
+	"deletionType": "cascade",
+	"objectDefinitionExternalReferenceCode1": "FORUM-REPLY",
+	"objectDefinitionExternalReferenceCode2": "FORUM-VOTE",
+	"objectDefinitionName2": "ForumVote",
+	"objectDefinitionId1": "[$OBJECT_DEFINITION_ID:ForumReply$]",
+	"objectDefinitionId2": "[$OBJECT_DEFINITION_ID:ForumVote$]"
+}

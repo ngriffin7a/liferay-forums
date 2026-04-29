@@ -1,0 +1,44 @@
+{
+	"enableComments": false,
+	"enableObjectEntryVersioning": false,
+	"enableCategorization": true,
+	"enableFriendlyURLCustomization": false,
+	"accountEntryRestrictedObjectFieldName": "",
+	"enableLocalization": false,
+	"accountEntryRestricted": false,
+	"enableFormContainer": true,
+	"enableObjectEntrySubscription": false,
+	"externalReferenceCode": "FORUM-MESSAGE-FLAG",
+	"objectFields": [
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Message ID"
+			},
+			"name": "flagMessageId",
+			"required": true
+		}
+	],
+	"scope": "site",
+	"portlet": false,
+	"modifiable": true,
+	"parameterRequired": false,
+	"enableObjectEntryHistory": false,
+	"titleObjectFieldName": "externalReferenceCode",
+	"active": true,
+	"defaultLanguageId": "en_US",
+	"enableIndexSearch": true,
+	"label": {
+		"en_US": "Forum Message Flag"
+	},
+	"panelCategoryKey": "",
+	"pluralLabel": {
+		"en_US": "Forum Message Flags"
+	},
+	"enableObjectEntrySchedule": false,
+	"system": false,
+	"enableObjectEntryDraft": false,
+	"name": "ForumMessageFlag",
+	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
+}
