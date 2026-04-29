@@ -16,7 +16,7 @@
 .forums-message-composer__modal {
 	display: none;
 	inset: 0;
-	overflow-y: auto;
+	overflow: hidden;
 	position: fixed;
 	z-index: 1050;
 }
@@ -28,7 +28,9 @@
 /* Dialog sizing */
 .forums-message-composer__dialog {
 	margin: 1.75rem auto;
+	max-height: calc(100vh - 3.5rem);
 	max-width: 960px;
+	overflow-y: auto;
 	padding: 0 1rem;
 	position: relative;
 	width: 100%;
@@ -106,6 +108,16 @@
 .forums-message-composer .form-check-input:checked {
 	background-color: var(--color-brand-primary, #2b6afd);
 	border-color: var(--color-brand-primary, #2b6afd);
+}
+
+/* Prevent CKEditor 5 sticky toolbar from miscalculating its position inside the fixed modal.
+   The sticky panel computes `top` from the absolute page offset, which is wrong in a
+   position:fixed context — override to keep the toolbar in normal document flow. */
+.forums-message-composer .ck-sticky-panel__content_sticky {
+	margin-left: 0 !important;
+	position: static !important;
+	top: auto !important;
+	width: auto !important;
 }
 
 /* Actions */
