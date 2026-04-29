@@ -1,6 +1,6 @@
 # Liferay Forums
 
-This project is a Fragments and Liferay Objects based replacement for the legacy Message Boards / Questions widgets which are deprecated.
+This Liferay Workspace project is a Fragments and Liferay Objects based replacement for the legacy Message Boards / Questions widgets which are deprecated.
 
 ---
 
@@ -23,12 +23,19 @@ This project is a Fragments and Liferay Objects based replacement for the legacy
 
 ## Setup
 
+The main artifact of this project is a Liferay site initializer. Before building it, the following lines in `client-extensions/forums-site-initializer/client-extension.yaml` should be changed in order to specify the site where things should be created:
+
+```yaml
+    siteExternalReferenceCode: FORUMS
+    siteName: Forums
+```
+
+You can then build it using the standard Liferay Workspace wrapper commands (e.g., `./gw build`) and deploy it by copying the resulting artifact to `$LIFERAY_HOME/deploy`.
+
 | File | Description |
 | :--- | :--- |
-| [forums-folder-object-definitions.json](setup/forums-folder-object-definitions.json) | Liferay Object definitions for all Forum data models (`ForumCategory`, `ForumMessage`, `ForumReply`, `ForumVote`, etc.). Import via **Control Panel → Objects → Import Object Folder**. |
-| [setup-forum-permissions.groovy](setup/setup-forum-permissions.groovy) | Groovy script that grants the required Object permissions to the Guest and Site Member roles. Run via **Control Panel → Server Administration → Script**. This step is necessary because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions — Object permissions must be configured explicitly after import. The Headless REST API does not have endpoints that support this yet. It also sets up a Service Access Policy so that non-authenticated users can invoke the REST APIs in order to see forum messages and replies. |
-| [Language_en_US.properties](setup/Language_en_US.properties) | Language key definitions for fragment UI strings. Import via **Control Panel → Configuration → Language Override**. |
-| [delete-forum-object-definitions.py](setup/delete-forum-object-definitions.py) | Utility script that deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for resetting a dev environment. |
+| [setup-forum-permissions.groovy](scripts/groovy/setup-forum-permissions.groovy) | Groovy script that grants the required Object permissions to the Guest and Site Member roles. Run via **Control Panel → Server Administration → Script**. This step is necessary because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions — Object permissions must be configured explicitly after import. The Headless REST API does not have endpoints that support this yet. It also sets up a Service Access Policy so that non-authenticated users can invoke the REST APIs in order to see forum messages and replies. |
+| [delete-forum-object-definitions.py](scripts/python/delete-forum-object-definitions.py) | Utility script that deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for resetting a dev environment. |
 
 ---
 
