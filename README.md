@@ -96,9 +96,13 @@ The forums application is assembled using a combination of standard pages and Di
 
 ## Display Page Templates
 
-> **Why these cannot be exported and re-imported:** Each Liferay Object Definition is assigned a random internal ID suffix (e.g. `com.liferay.object.model.ObjectDefinition#A0Z2`) when it is first published. That suffix is baked into an exported `display-page-template.json` as the `contentType.className`. Because `delete-forum-object-definitions.py` destroys and recreates the Object Definitions on every reset, the suffix changes each time — making any previously exported Display Page Template immediately invalid on re-import. There is no ERC-based resolution path in the Display Page Template importer. **These two Display Page Templates must be created by hand** in each environment after the Object Definitions have been imported.
+The site initializer creates two Display Page Templates automatically — one mapped to `ForumMessage`, one mapped to `ForumReply`. Both use the identical fragment arrangement described below and are defined in `site-initializer/layout-page-templates/display-page-templates/`.
 
-Create two Display Page Templates — one mapped to `ForumMessage`, one mapped to `ForumReply`. Both use the identical fragment arrangement described below.
+> **How Object Definition resolution works:** Liferay's raw Display Page Template export bakes in a volatile internal ID suffix (e.g. `com.liferay.object.model.ObjectDefinition#A0Z2`) as the `contentType.className`, which breaks on re-import whenever Object Definitions are recreated. The site initializer avoids this by using `BundleSiteInitializer`'s token replacement system. When Object Definitions are created during initialization, the method `_replaceObjectDefinitionValues` registers tokens like `OBJECT_DEFINITION_CLASS_NAME:ForumMessage` → `com.liferay.object.model.ObjectDefinition#xxxx`. The `display-page-template.json` uses these tokens:
+> ```json
+> {"contentType": {"className": "[$OBJECT_DEFINITION_CLASS_NAME:ForumMessage$]"}, "name": "Forum Message"}
+> ```
+> The `[$...$]` tokens are resolved at runtime before the layout importer processes the file, so the correct `className` (including its instance-specific `#suffix`) is always injected.
 
 ### Layout
 
@@ -120,7 +124,7 @@ Both Display Page Templates share the same structure:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-Inside the Container, add a **2-column Grid** with a **75% / 25%** split:
+Inside the Container, a **2-column Grid** with a **75% / 25%** split:
 - **Left column:** `forums-message-detail`, then `forums-message-composer`
 - **Right column:** `forums-related-topics`
 
@@ -128,7 +132,7 @@ Inside the Container, add a **2-column Grid** with a **75% / 25%** split:
 
 ### ERC Field Mapping
 
-After building the layout, open each Display Page Template in the page editor and map the hidden ERC fields exposed by the fragments. The `forums-message-detail` and `forums-related-topics` fragments each contain hidden `div` elements that appear as mappable fields in the editor but are not rendered to end-users at runtime.
+The `forums-message-detail` and `forums-related-topics` fragments each contain hidden `div` elements that appear as mappable fields in the page editor but are not rendered to end-users at runtime. The site initializer's `page-definition.json` files pre-configure these mappings.
 
 ```html
 <!-- Exposed as mappable fields in the Content Page Editor; hidden at runtime -->
@@ -136,7 +140,7 @@ After building the layout, open each Display Page Template in the page editor an
 <div id="forumsDetailReplyERC" data-lfr-editable-id="forumsDetailReplyERC" data-lfr-editable-type="text" style="display:none;">Mappable Reply ERC</div>
 ```
 
-Map these fields differently depending on which Display Page Template you are editing:
+Each field is mapped to `ObjectEntry_externalReferenceCode` from the `DisplayPageItem` context, but only in the DPT that corresponds to its object type:
 
 | Field | Forum Message DPT | Forum Reply DPT |
 | :--- | :--- | :--- |
