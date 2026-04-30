@@ -11,11 +11,11 @@ Steps:
   4. Create Forum Messages (with keywords) across categories.
   5. Create Forum Replies on each message by *different* users.
 
-Data files are read from the same directory as this script:
-  - categories.json
-  - users.json
-  - messages.json
-  - replies.json
+Data files are read from the data/ subdirectory:
+  - data/categories.json
+  - data/users.json
+  - data/messages.json
+  - data/replies.json
 
 Usage:
     python3 create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
@@ -38,7 +38,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = SCRIPT_DIR
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 PHOTOS_DIR = os.path.join(SCRIPT_DIR, "profile-photos")
 MAX_WORKERS = 8        # parallel message units
 MAX_REPLY_WORKERS = 3  # parallel replies within a message (lower to avoid server 500s)

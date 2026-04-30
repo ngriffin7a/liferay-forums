@@ -34,8 +34,7 @@ You can then build it using the standard Liferay Workspace wrapper commands (e.g
 
 | File | Description |
 | :--- | :--- |
-| [setup-forum-permissions.groovy](scripts/groovy/setup-forum-permissions.groovy) | Groovy script that grants the required Object permissions to the Guest and Site Member roles. Run via **Control Panel → Server Administration → Script**. This step is necessary because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions — Object permissions must be configured explicitly after import. The Headless REST API does not have endpoints that support this yet. It also sets up a Service Access Policy so that non-authenticated users can invoke the REST APIs in order to see forum messages and replies. |
-| [delete-forum-object-definitions.py](scripts/python/delete-forum-object-definitions.py) | Utility script that deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for resetting a dev environment. |
+| [setup-forum-permissions.groovy](scripts/_01_setup/setup-forum-permissions.groovy) | Groovy script that grants the required Object permissions to the Guest and Site Member roles. Run via **Control Panel → Server Administration → Script**. This step is necessary because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions — Object permissions must be configured explicitly after import. The Headless REST API does not have endpoints that support this yet. It also sets up a Service Access Policy so that non-authenticated users can invoke the REST APIs in order to see forum messages and replies. |
 
 ---
 
@@ -180,15 +179,15 @@ Each field is mapped to `ObjectEntry_externalReferenceCode` from the `DisplayPag
 
 ## Demo Data
 
-The `setup/demo/` directory contains scripts for populating and clearing forum content in a development environment.
+The `scripts/_02_demo/` directory contains scripts for populating a development environment with forum content. The three scripts are numbered and should be run in order.
 
-### Import
+### Step 1 — Create demo data
 
 ```bash
-python3 setup/demo/create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
+python3 scripts/_02_demo/_01_create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
 ```
 
-The script creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role, a set of Forum Messages with keywords distributed across those categories, and replies to each message authored by different users.
+Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Messages with keywords distributed across those categories, and replies to each message authored by different users.
 
 | Argument | Default | Description |
 | :--- | :--- | :--- |
@@ -197,24 +196,36 @@ The script creates the four default Forum Categories (by ERC if they do not alre
 | `--email` | `test@liferay.com` | Admin account email |
 | `--password` | `test` | Admin account password |
 
-### Delete
+### Step 2 — Backfill Forum Stats Users
 
-```bash
-python3 setup/demo/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
-```
+Run [_02_backfill-forum-stats-users.groovy](scripts/_02_demo/_02_backfill-forum-stats-users.groovy) via **Control Panel → Server Administration → Script**.
 
-Deletes all Forum Reply and Forum Message entries for the given site. Forum Votes are removed automatically via cascade. Forum Categories and the demo user accounts are left in place.
+Backfills `ForumStatsUser` records for every user who has posted a message or reply. Without these records, the `forums-hero` fragment displays 0 Members. If re-running, first clear existing records with `scripts/_03_util/delete-forum-stats-users.py` to avoid duplicates.
 
-The arguments are identical to the import script above.
+### Step 3 — Backfill create dates
+
+Run [_03_backfill-create-dates.sql](scripts/_02_demo/_03_backfill-create-dates.sql) against the portal database.
+
+Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `objectentry` table for `ForumMessage` and `ForumReply` entries. This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. After running, flush caches and rebuild indexes:
+
+1. **Control Panel → Server Administration → Resources**
+   - Clear content cached by this VM.
+   - Clear content cached across the cluster.
+   - Clear the database cache.
+2. **Control Panel → Search → Index Actions**
+   - Reindex all search indexes.
 
 ---
 
 ## Utilities
 
+The `scripts/_03_util/` directory contains cleanup and teardown scripts.
+
 | File | Description |
 | :--- | :--- |
-| [delete-forum-stats-users.py](setup/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before executing `backfill-forum-stats-users.groovy` to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 setup/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
-| [backfill-forum-stats-users.groovy](setup/backfill-forum-stats-users.groovy) | Backfills `ForumStatsUser` records for every user who has posted a message or reply. Required when those records are missing after a data import, or for users who posted before the auto-creation logic existed — without them, the `forums-hero` fragment displays 0 Members. Run via **Control Panel → Server Administration → Script** after clearing existing records with `delete-forum-stats-users.py`. |
+| [delete-demo-data.py](scripts/_03_util/delete-demo-data.py) | Deletes all Forum Stats User, Forum Reply, Forum Message, and Forum Category entries for a given site. Forum Votes are removed automatically via cascade. Demo user accounts are left in place. Usage: `python3 scripts/_03_util/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
+| [delete-forum-stats-users.py](scripts/_03_util/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before re-executing Step 2 to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 scripts/_03_util/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
+| [delete-forum-object-definitions.py](scripts/_03_util/delete-forum-object-definitions.py) | Deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for fully resetting a dev environment. |
 
 ---
 
