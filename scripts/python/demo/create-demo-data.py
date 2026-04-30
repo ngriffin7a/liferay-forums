@@ -7,8 +7,9 @@ Create demo forum data via the Liferay DXP Headless API.
 Steps:
   1. Ensure the four default Forum Categories exist (by ERC).
   2. Create demo user accounts and assign "Site Member" role.
-  3. Create Forum Messages (with keywords) across categories.
-  4. Create Forum Replies on each message by *different* users.
+  3. Register each demo user as a ForumStatsUser (drives the hero member count).
+  4. Create Forum Messages (with keywords) across categories.
+  5. Create Forum Replies on each message by *different* users.
 
 Data files are read from the same directory as this script:
   - categories.json
@@ -37,6 +38,7 @@ import requests
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
+PHOTOS_DIR = os.path.join(SCRIPT_DIR, "profile-photos")
 MAX_WORKERS = 8        # parallel message units
 MAX_REPLY_WORKERS = 3  # parallel replies within a message (lower to avoid server 500s)
 
@@ -67,8 +69,7 @@ def _json(resp):
     return resp.json() if resp.content else None
 
 
-def _impersonate(user_id):
-    return {"X-Liferay-Impersonate-User": str(user_id)} if user_id else {}
+
 
 
 # ─── Step 1: Ensure categories ────────────────────────────────────────────
@@ -178,12 +179,72 @@ def ensure_users(admin_session, base, site_id):
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         list(executor.map(assign_role, users))
 
+    print("\n  Uploading profile photos...")
+
+    def upload_photo(user):
+        given = user.get("givenName", "").lower()
+        family = user.get("familyName", "").lower()
+        uid = user["id"]
+        name = f"{user.get('givenName', '')} {user.get('familyName', '')}".strip()
+        photo_path = os.path.join(PHOTOS_DIR, f"{given}-{family}.png")
+        if not os.path.isfile(photo_path):
+            print(f"    ⚠️  No photo for {name} ({given}-{family}.png) — skipping")
+            return
+        with open(photo_path, "rb") as f:
+            files = {"image": (os.path.basename(photo_path), f, "image/png")}
+            resp = admin_session.post(
+                f"{base}/o/headless-admin-user/v1.0/user-accounts/{uid}/image",
+                files=files,
+                headers={"Accept": "*/*"},
+            )
+        if resp.status_code < 300:
+            print(f"    ✅ Photo: {name} (id={uid})")
+        else:
+            print(f"    ❌ Photo failed for {name}: {resp.status_code}")
+
+    for user in users:
+        upload_photo(user)
+
     return users
 
 
-# ─── Steps 3 & 4: Create messages and replies ──────────────────────────────
+# ─── Step 3: Register demo users as Forum Stats Users ────────────────────
 
-def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, base, site_id):
+def ensure_forum_stats_users(admin_session, base, site_id, users):
+    """Create a ForumStatsUser entry for each demo user so the forums-hero
+    participant count is non-zero. Skips users that already have an entry."""
+    print("\n═══ Step 3: Registering demo users as Forum Stats Users ═══")
+
+    def register(user):
+        uid = user["id"]
+        name = f"{user.get('givenName', '')} {user.get('familyName', '')}".strip()
+        resp = admin_session.get(
+            f"{base}/o/c/forumstatsusers/scopes/{site_id}",
+            params={"filter": f"statsUserId eq '{uid}'", "pageSize": 1},
+        )
+        body = _json(resp)
+        if resp.ok and body and body.get("totalCount", 0) > 0:
+            print(f"  ✅ Already registered: {name} (userId={uid})")
+            return False
+        resp2 = admin_session.post(
+            f"{base}/o/c/forumstatsusers/scopes/{site_id}",
+            json={"statsUserId": uid},
+        )
+        if resp2.ok:
+            print(f"  ✅ Registered: {name} (userId={uid})")
+            return True
+        print(f"  ❌ Failed to register {name} (userId={uid}): {resp2.status_code} — {_json(resp2)}")
+        return False
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        results = list(executor.map(register, users))
+
+    print(f"\n  ✅ Forum Stats Users registered: {sum(results)} new entries.")
+
+
+# ─── Steps 4 & 5: Create messages and replies ──────────────────────────────
+
+def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session, base, site_id):
     cat_erc = msg_def["category"]
     title = msg_def["title"]
     body_html = msg_def["body"]
@@ -196,9 +257,9 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
         print(f"  ⚠️  Skipping '{title}' — category {cat_erc} not found")
         return 0, 0
 
-    author_id = user_id_map.get(author_screen)
+    author_session = user_sessions.get(author_screen, admin_session)
 
-    resp = admin_session.post(
+    resp = author_session.post(
         f"{base}/o/c/forummessages/scopes/{site_id}",
         json={
             "messageTitle": title,
@@ -208,7 +269,6 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
             "keywords": keywords,
             "viewCount": random.randint(5, 320),
         },
-        headers=_impersonate(author_id),
     )
     body = _json(resp)
     if not resp.ok or not body or not body.get("id"):
@@ -219,7 +279,7 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
     print(f"  ✅ [{idx+1}/{total}] {title}  (id={msg_id}, author={author_screen})")
 
     # OP reply (message body posted as the first reply)
-    admin_session.post(
+    author_session.post(
         f"{base}/o/c/forumreplies/scopes/{site_id}",
         json={
             "r_messageReplies_c_forumMessageId": msg_id,
@@ -229,19 +289,18 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
             "body": body_html,
             "format": "html",
         },
-        headers=_impersonate(author_id),
     )
 
     def create_reply(pos_and_def):
         pos, reply_def = pos_and_def
         reply_idx = reply_def.get("replyIndex", 0)
         reply_body = REPLY_POOL[reply_idx] if reply_idx < len(REPLY_POOL) else REPLY_POOL[0]
-        reply_author_id = user_id_map.get(reply_def.get("author", ""))
+        reply_session = user_sessions.get(reply_def.get("author", ""), admin_session)
         # Each reply needs a unique subject so Liferay generates a distinct urltitle.
         # Replies sharing the same subject get a duplicate-key 500 under parallel writes.
         subject = f"Re: {title} ({pos + 1})"[:75]
 
-        resp = admin_session.post(
+        resp = reply_session.post(
             f"{base}/o/c/forumreplies/scopes/{site_id}",
             json={
                 "r_messageReplies_c_forumMessageId": msg_id,
@@ -252,7 +311,6 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
                 "format": "html",
                 "answer": reply_def.get("answer", False),
             },
-            headers=_impersonate(reply_author_id),
         )
         body = _json(resp)
         if not resp.ok or not body or not body.get("id"):
@@ -302,13 +360,13 @@ def _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, b
     return sum(r[0] for r in results), sum(r[1] for r in results)
 
 
-def create_messages_and_replies(admin_session, user_id_map, base, site_id, cat_map):
-    print("\n═══ Step 3: Creating Forum Messages ═══")
+def create_messages_and_replies(admin_session, user_sessions, base, site_id, cat_map):
+    print("\n═══ Step 4: Creating Forum Messages ═══")
     total = len(DEMO_MESSAGES)
 
     def task(args):
         idx, msg_def = args
-        return _process_message(idx, total, msg_def, cat_map, user_id_map, admin_session, base, site_id)
+        return _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session, base, site_id)
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         results = list(executor.map(task, enumerate(DEMO_MESSAGES)))
@@ -349,10 +407,18 @@ def main():
         print("\n❌ No users could be created. Aborting.")
         sys.exit(1)
 
-    # Map screen name → user ID for impersonation (Liferay API returns screen name as alternateName)
-    user_id_map = {u.get("alternateName", ""): u["id"] for u in users}
+    # Per-user sessions keyed by screen name — each holds a persistent
+    # HTTP connection so parallelism and connection reuse are preserved.
+    user_sessions = {}
+    for u in users:
+        screen_name = u.get("alternateName", "")
+        email = u.get("emailAddress", "")
+        if screen_name and email:
+            user_sessions[screen_name] = make_session(email, DEMO_USER_PASSWORD)
+    print(f"\n  ✅ Created {len(user_sessions)} per-user sessions.")
 
-    create_messages_and_replies(admin_session, user_id_map, base, site_id, cat_map)
+    ensure_forum_stats_users(admin_session, base, site_id, users)
+    create_messages_and_replies(admin_session, user_sessions, base, site_id, cat_map)
 
     print("\n🎉 Demo data creation complete!")
 

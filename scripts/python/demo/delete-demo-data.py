@@ -5,9 +5,10 @@
 Delete all demo forum data via the Liferay DXP Headless API.
 
 Steps:
-  1. Delete all Forum Reply entries (votes auto-deleted via cascade).
-  2. Delete all Forum Message entries.
-  3. Delete all Forum Category entries.
+  1. Delete all Forum Stats User entries.
+  2. Delete all Forum Reply entries (votes auto-deleted via cascade).
+  3. Delete all Forum Message entries.
+  4. Delete all Forum Category entries.
 
 Usage:
     python3 delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
@@ -109,6 +110,7 @@ def main():
     print(f"Target: {base}  Site ID: {site_id}")
 
     session = make_session(args.email, args.password)
+    delete_collection(session, base, f"/o/c/forumstatsusers/scopes/{site_id}", "/o/c/forumstatsusers", "Forum Stats Users")
     delete_collection(session, base, f"/o/c/forumreplies/scopes/{site_id}",    "/o/c/forumreplies",    "Forum Replies")
     delete_collection(session, base, f"/o/c/forummessages/scopes/{site_id}",   "/o/c/forummessages",   "Forum Messages")
     delete_collection(session, base, f"/o/c/forumcategories/scopes/{site_id}", "/o/c/forumcategories", "Forum Categories")
