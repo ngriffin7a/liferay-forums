@@ -32,6 +32,7 @@ import json
 import os
 import random
 import sys
+from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -41,6 +42,7 @@ DATA_DIR = SCRIPT_DIR
 PHOTOS_DIR = os.path.join(SCRIPT_DIR, "profile-photos")
 MAX_WORKERS = 8        # parallel message units
 MAX_REPLY_WORKERS = 3  # parallel replies within a message (lower to avoid server 500s)
+DATE_RANGE_DAYS = 365  # spread message dates across the last N days
 
 
 def load_json(filename):
@@ -54,6 +56,41 @@ DEMO_MESSAGES = load_json("messages.json")
 REPLY_POOL = load_json("replies.json")
 
 DEMO_USER_PASSWORD = "ForumDemo2026!"
+
+
+def _generate_message_dates(messages):
+    """Assign a displayDate to each message, spread across the past DATE_RANGE_DAYS.
+
+    Messages are sorted chronologically: first message is oldest, last is newest.
+    Returns a list of datetime objects (one per message) in ascending order."""
+    now = datetime.now(timezone.utc)
+    earliest = now - timedelta(days=DATE_RANGE_DAYS)
+    total_seconds = int((now - earliest).total_seconds())
+    count = len(messages)
+
+    # Pick random offsets, sort them so earlier messages get earlier dates
+    offsets = sorted(random.sample(range(total_seconds), count))
+    return [earliest + timedelta(seconds=s) for s in offsets]
+
+
+def _generate_reply_dates(message_date, reply_count):
+    """Generate ascending reply dates after the message date.
+
+    Each reply is 1–48 hours after the previous one, giving a natural
+    conversation cadence.  The OP reply (index 0) is the first entry."""
+    dates = []
+    cursor = message_date
+    for _ in range(reply_count):
+        gap = timedelta(hours=random.uniform(1, 48))
+        cursor = cursor + gap
+        dates.append(cursor)
+    return dates
+
+
+def _fmt_date(dt):
+    """Format a datetime for the Liferay Headless REST API (ISO 8601 / UTC)."""
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 
 def make_session(email, password):
@@ -244,7 +281,7 @@ def ensure_forum_stats_users(admin_session, base, site_id, users):
 
 # ─── Steps 4 & 5: Create messages and replies ──────────────────────────────
 
-def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session, base, site_id):
+def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id):
     cat_erc = msg_def["category"]
     title = msg_def["title"]
     body_html = msg_def["body"]
@@ -259,6 +296,12 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
 
     author_session = user_sessions.get(author_screen, admin_session)
 
+    # Pre-compute reply dates: OP reply + community replies
+    replies_def = msg_def.get("replies", [])
+    reply_dates = _generate_reply_dates(msg_date, 1 + len(replies_def))
+    op_reply_date = reply_dates[0]
+    community_reply_dates = reply_dates[1:]
+
     resp = author_session.post(
         f"{base}/o/c/forummessages/scopes/{site_id}",
         json={
@@ -268,6 +311,7 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
             "question": is_question,
             "keywords": keywords,
             "viewCount": random.randint(5, 320),
+            "displayDate": _fmt_date(msg_date),
         },
     )
     body = _json(resp)
@@ -276,7 +320,7 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
         return 0, 0
 
     msg_id = body["id"]
-    print(f"  ✅ [{idx+1}/{total}] {title}  (id={msg_id}, author={author_screen})")
+    print(f"  ✅ [{idx+1}/{total}] {title}  (id={msg_id}, author={author_screen}, date={_fmt_date(msg_date)})")
 
     # OP reply (message body posted as the first reply)
     author_session.post(
@@ -288,16 +332,22 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
             "subject_i18n": {"en_US": title},
             "body": body_html,
             "format": "html",
+            "displayDate": _fmt_date(op_reply_date),
         },
     )
 
-    def create_reply(pos_and_def):
-        pos, reply_def = pos_and_def
+    if not replies_def:
+        return 0, 0
+
+    # Create replies sequentially to preserve ascending date order
+    total_replies = 0
+    total_votes = 0
+
+    for pos, (reply_def, reply_date) in enumerate(zip(replies_def, community_reply_dates)):
         reply_idx = reply_def.get("replyIndex", 0)
         reply_body = REPLY_POOL[reply_idx] if reply_idx < len(REPLY_POOL) else REPLY_POOL[0]
         reply_session = user_sessions.get(reply_def.get("author", ""), admin_session)
         # Each reply needs a unique subject so Liferay generates a distinct urltitle.
-        # Replies sharing the same subject get a duplicate-key 500 under parallel writes.
         subject = f"Re: {title} ({pos + 1})"[:75]
 
         resp = reply_session.post(
@@ -310,17 +360,35 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
                 "body": reply_body,
                 "format": "html",
                 "answer": reply_def.get("answer", False),
+                "displayDate": _fmt_date(reply_date),
             },
         )
-        body = _json(resp)
-        if not resp.ok or not body or not body.get("id"):
+        resp_body = _json(resp)
+        if not resp.ok or not resp_body or not resp_body.get("id"):
             print(f"    ⚠️  Reply failed on '{title}': {resp.status_code}")
-            return 0, 0
+            # Retry once
+            resp = reply_session.post(
+                f"{base}/o/c/forumreplies/scopes/{site_id}",
+                json={
+                    "r_messageReplies_c_forumMessageId": msg_id,
+                    "r_categoryReplies_c_forumCategoryId": cat_id,
+                    "subject": subject,
+                    "subject_i18n": {"en_US": subject},
+                    "body": reply_body,
+                    "format": "html",
+                    "answer": reply_def.get("answer", False),
+                    "displayDate": _fmt_date(reply_date),
+                },
+            )
+            resp_body = _json(resp)
+            if not resp.ok or not resp_body or not resp_body.get("id"):
+                print(f"    ❌  Reply retry failed on '{title}': {resp.status_code}")
+                continue
 
-        reply_id = body["id"]
+        reply_id = resp_body["id"]
+        total_replies += 1
         upvotes = reply_def.get("upvotes", 0)
         downvotes = reply_def.get("downvotes", 0)
-        vc = 0
 
         for vote_value, count in ((1, upvotes), (-1, downvotes)):
             for _ in range(count):
@@ -329,47 +397,29 @@ def _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session,
                     json={"r_replyVotes_c_forumReplyId": reply_id, "voteValue": vote_value},
                 )
                 if vr.ok:
-                    vc += 1
+                    total_votes += 1
 
         net = upvotes - downvotes
         if net != 0:
             admin_session.patch(f"{base}/o/c/forumreplies/{reply_id}", json={"voteScore": net})
 
-        return 1, vc
-
-    replies_def = msg_def.get("replies", [])
-    if not replies_def:
-        return 0, 0
-
-    indexed = list(enumerate(replies_def))
-
-    with ThreadPoolExecutor(max_workers=min(len(indexed), MAX_REPLY_WORKERS)) as executor:
-        paired = list(zip(indexed, executor.map(create_reply, indexed)))
-
-    results = []
-    retry_items = []
-    for item, (rc, vc) in paired:
-        if rc == 0:
-            retry_items.append(item)
-        else:
-            results.append((rc, vc))
-
-    for item in retry_items:
-        results.append(create_reply(item))
-
-    return sum(r[0] for r in results), sum(r[1] for r in results)
+    return total_replies, total_votes
 
 
 def create_messages_and_replies(admin_session, user_sessions, base, site_id, cat_map):
     print("\n═══ Step 4: Creating Forum Messages ═══")
     total = len(DEMO_MESSAGES)
 
+    # Generate chronologically sorted dates for all messages
+    message_dates = _generate_message_dates(DEMO_MESSAGES)
+    print(f"  Date range: {_fmt_date(message_dates[0])} → {_fmt_date(message_dates[-1])}")
+
     def task(args):
-        idx, msg_def = args
-        return _process_message(idx, total, msg_def, cat_map, user_sessions, admin_session, base, site_id)
+        idx, (msg_def, msg_date) = args
+        return _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id)
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        results = list(executor.map(task, enumerate(DEMO_MESSAGES)))
+        results = list(executor.map(task, enumerate(zip(DEMO_MESSAGES, message_dates))))
 
     total_replies = sum(r[0] for r in results)
     total_votes = sum(r[1] for r in results)
