@@ -22,6 +22,9 @@ if (messageList) {
 	/* DOM refs */
 	var cardsContainer = messageList.querySelector('#forumsMessageListCards');
 	var loadingEl = messageList.querySelector('#forumsMessageListLoading');
+	var skeletonHTML = loadingEl ? loadingEl.innerHTML : '';
+	var skeletonStart = 0;
+	var SKELETON_MIN_MS = 400;
 	var paginationNav = messageList.querySelector('#forumsMessageListPagination');
 	var paginationUl = messageList.querySelector('#forumsMessageListPaginationUl');
 	var headingEl = messageList.querySelector('#forumsMessageListHeading');
@@ -137,12 +140,18 @@ if (messageList) {
 
 	/* Load messages */
 	function loadMessages() {
-		if (loadingEl) {
-			loadingEl.style.display = '';
-		}
 		cardsContainer.querySelectorAll('.forums-message-card').forEach(function(el) { el.remove(); });
+		cardsContainer.querySelectorAll('.forums-message-list__empty').forEach(function(el) { el.remove(); });
 		if (paginationNav) paginationNav.style.display = 'none';
 		if (showingEl) showingEl.style.display = 'none';
+
+		if (loadingEl) {
+			loadingEl.classList.remove('forums-skeleton--fade-out');
+			loadingEl.innerHTML = skeletonHTML;
+			loadingEl.style.display = '';
+			loadingEl.setAttribute('aria-busy', 'true');
+			skeletonStart = Date.now();
+		}
 
 		var filterParts = [];
 		if (categoryId) {
@@ -164,7 +173,7 @@ if (messageList) {
 		Liferay.Util.fetch(url, { headers: headers, method: 'GET' })
 		.then(function(r) { return r.json(); })
 		.then(function(data) {
-			if (loadingEl) loadingEl.style.display = 'none';
+			hideSkeleton();
 
 			if (askBtn) {
 				if (!isBanned && data.actions && (data.actions['post'] || data.actions['create'])) {
@@ -394,10 +403,24 @@ if (messageList) {
 			}); /* close Promise.all().then() */
 		})
 		.catch(function(err) {
-			if (loadingEl) loadingEl.style.display = 'none';
+			hideSkeleton();
 			cardsContainer.innerHTML = '<div class="forums-message-list__empty">' + (messageList.dataset.labelUnableToLoad || 'Unable to load messages.') + '</div>';
 			console.error('ForumsMessageList error:', err);
 		});
+	}
+
+	function hideSkeleton() {
+		if (!loadingEl) return;
+		var elapsed = Date.now() - skeletonStart;
+		var remaining = Math.max(0, SKELETON_MIN_MS - elapsed);
+		setTimeout(function() {
+			loadingEl.classList.add('forums-skeleton--fade-out');
+			setTimeout(function() {
+				loadingEl.style.display = 'none';
+				loadingEl.removeAttribute('aria-busy');
+				loadingEl.classList.remove('forums-skeleton--fade-out');
+			}, 250);
+		}, remaining);
 	}
 
 	/* Delete Modal Setup */

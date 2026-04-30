@@ -377,3 +377,101 @@
 		padding: 0.5rem 0.75rem;
 	}
 }
+
+/* Skeleton */
+
+@keyframes forums-skeleton-shimmer {
+	0%   { background-position: -600px 0; }
+	100% { background-position:  600px 0; }
+}
+
+.forums-skeleton__bar,
+.forums-skeleton__avatar {
+	animation: forums-skeleton-shimmer 1.4s ease infinite;
+	background: linear-gradient(
+		90deg,
+		var(--color-neutral-2, #ebebeb) 25%,
+		var(--color-neutral-1, #f4f4f4) 50%,
+		var(--color-neutral-2, #ebebeb) 75%
+	);
+	background-size: 1200px 100%;
+	border-radius: 4px;
+	height: 0.875rem;
+	margin-bottom: 0.625rem;
+	width: 100%;
+}
+
+.forums-skeleton__bar--title {
+	height: 1.125rem;
+	margin-bottom: 0.5rem;
+}
+
+.forums-skeleton__bar--3q   { width: 75%; }
+.forums-skeleton__bar--half { width: 50%; }
+.forums-skeleton__bar--sm   { width: 8rem; margin-bottom: 0; }
+.forums-skeleton__bar--xs   { width: 5rem; margin-bottom: 0; }
+
+.forums-skeleton__bar--name {
+	height: 0.5rem;
+	margin: 0.125rem auto 0;
+	width: 2.5rem;
+}
+
+.forums-skeleton__bar--name-short {
+	height: 0.5rem;
+	margin: 0.125rem auto 0;
+	width: 1.75rem;
+}
+
+.forums-skeleton__avatar {
+	border-radius: 50%;
+	flex-shrink: 0;
+	height: 48px;
+	margin-bottom: 0.25rem;
+	width: 48px;
+}
+
+.forums-message-list__skeleton-showing {
+	margin-bottom: 1rem;
+}
+
+.forums-message-list__skeleton-card {
+	border: 1px solid var(--color-neutral-2, #d9d9d6);
+	border-radius: 8px;
+	margin-bottom: 0.75rem;
+	padding: 2.1875rem 1.5rem;
+}
+
+.forums-message-list__skeleton-inner {
+	align-items: flex-start;
+	display: flex;
+	gap: 1rem;
+}
+
+.forums-message-list__skeleton-avatar-col {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex-shrink: 0;
+	width: 56px;
+}
+
+.forums-message-list__skeleton-content {
+	flex-grow: 1;
+	min-width: 0;
+}
+
+.forums-message-list__skeleton-meta {
+	display: flex;
+	gap: 1rem;
+	margin-top: 0.5rem;
+}
+
+#forumsMessageListLoading {
+	opacity: 1;
+	transition: opacity 0.25s ease-out;
+}
+
+#forumsMessageListLoading.forums-skeleton--fade-out {
+	opacity: 0;
+}

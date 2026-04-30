@@ -67,9 +67,84 @@
 
 		<!-- Message cards -->
 		<div id="forumsMessageListCards">
-			<div class="text-center py-5" id="forumsMessageListLoading">
-				<div class="spinner-border text-primary" role="status">
-					<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
+			<div id="forumsMessageListLoading" aria-busy="true" aria-label="${languageUtil.get(locale, "loading")}">
+				<div class="forums-message-list__skeleton-showing">
+					<div class="forums-skeleton__bar forums-skeleton__bar--sm"></div>
+				</div>
+				<div class="forums-message-list__skeleton-card">
+					<div class="forums-message-list__skeleton-inner">
+						<div class="forums-message-list__skeleton-avatar-col">
+							<div class="forums-skeleton__avatar"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
+						</div>
+						<div class="forums-message-list__skeleton-content">
+							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--3q"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
+							<div class="forums-message-list__skeleton-meta">
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="forums-message-list__skeleton-card">
+					<div class="forums-message-list__skeleton-inner">
+						<div class="forums-message-list__skeleton-avatar-col">
+							<div class="forums-skeleton__avatar"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
+						</div>
+						<div class="forums-message-list__skeleton-content">
+							<div class="forums-skeleton__bar forums-skeleton__bar--title"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
+							<div class="forums-message-list__skeleton-meta">
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="forums-message-list__skeleton-card">
+					<div class="forums-message-list__skeleton-inner">
+						<div class="forums-message-list__skeleton-avatar-col">
+							<div class="forums-skeleton__avatar"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
+						</div>
+						<div class="forums-message-list__skeleton-content">
+							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--half"></div>
+							<div class="forums-skeleton__bar"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
+							<div class="forums-message-list__skeleton-meta">
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="forums-message-list__skeleton-card">
+					<div class="forums-message-list__skeleton-inner">
+						<div class="forums-message-list__skeleton-avatar-col">
+							<div class="forums-skeleton__avatar"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
+						</div>
+						<div class="forums-message-list__skeleton-content">
+							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--3q"></div>
+							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
+							<div class="forums-message-list__skeleton-meta">
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -101,6 +101,7 @@ if (messageDetail) {
 	function runMessageDetail(resolvedMessageId, replyId) {
 	messageId = resolvedMessageId;
 	var targetReplyId = replyId || null;
+	var skeletonShownAt = Date.now();
 	if (!messageId) {
 		if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelNoMessage || 'No message selected.') + '</div>';
 		return;
@@ -884,6 +885,14 @@ if (messageDetail) {
 
 	/* Load messages */
 	function loadMessages() {
+		/* Re-show skeleton during pagination / refresh reloads */
+		if (loadingEl) {
+			loadingEl.classList.remove('forums-skeleton--fade-out');
+			loadingEl.style.display = '';
+			loadingEl.setAttribute('aria-busy', 'true');
+			skeletonShownAt = Date.now();
+		}
+
 		Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId + '?filter='
 			+ encodeURIComponent('r_messageReplies_c_forumMessageId eq \'' + messageId + '\'')
 			+ '&sort=dateCreated:asc&page=' + currentReplyPage
@@ -893,13 +902,15 @@ if (messageDetail) {
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(data) {
-			if (loadingEl) { loadingEl.style.display = 'none'; loadingEl.removeAttribute('aria-busy'); }
 
 			var messages = data.items || [];
 			var totalCount = data.totalCount || 0;
 			var lastPage = data.lastPage || 1;
 
-			if (messages.length === 0) return;
+			if (messages.length === 0) {
+				if (loadingEl) { loadingEl.style.display = 'none'; loadingEl.removeAttribute('aria-busy'); }
+				return;
+			}
 			
 			if (isBanned) {
 				messages.forEach(function(msg) {
@@ -1153,6 +1164,21 @@ if (messageDetail) {
 			attachAnswerHandlers();
 			attachDeleteHandlers();
 			attachEditReplyHandlers();
+
+			/* Hide skeleton after render, with a minimum display time to prevent flash */
+			if (loadingEl) {
+				var elapsed = Date.now() - skeletonShownAt;
+				var minDisplayMs = 600;
+				var remainingMs = Math.max(0, minDisplayMs - elapsed);
+				setTimeout(function() {
+					loadingEl.classList.add('forums-skeleton--fade-out');
+					setTimeout(function() {
+						loadingEl.style.display = 'none';
+						loadingEl.removeAttribute('aria-busy');
+						loadingEl.classList.remove('forums-skeleton--fade-out');
+					}, 250);
+				}, remainingMs);
+			}
 
 			/* Scroll to a specific reply when the fragment is on a Forum Reply Display Page */
 			if (targetReplyId) {
