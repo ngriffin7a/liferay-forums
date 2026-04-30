@@ -485,6 +485,15 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	gap: 0.375rem;
 }
 
+#forumsDetailLoading {
+	opacity: 1;
+	transition: opacity 0.25s ease-out;
+}
+
+#forumsDetailLoading.forums-skeleton--fade-out {
+	opacity: 0;
+}
+
 /* Responsive */
 
 @media (max-width: 767.98px) {
