@@ -21,10 +21,10 @@
 		<div class="container">
 			<div class="row justify-content-center">
 				<div class="col-lg-8 text-center">
-					<h1 class="forums-hero__title">
+					<h1 class="text-white mb-2">
 						${languageUtil.get(locale, "forums-title")}
 					</h1>
-					<p class="forums-hero__description">
+					<p class="lead text-white-50 mb-4">
 						${languageUtil.get(locale, "forums-description")}
 					</p>
 
@@ -32,49 +32,49 @@
 						<lfr-drop-zone></lfr-drop-zone>
 					</div>
 
-					<div class="forums-hero__stats">
+					<div class="forums-hero__stats mb-4">
 						<div class="row">
 							<div class="col-4">
-								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value">
+								<figure class="text-center mb-0 py-3">
+									<span class="forums-hero__stat-value text-white">
 										[#if solutionsData?is_hash && solutionsData.totalCount??]
 											${formatCount(solutionsData.totalCount)}
 										[#else]
 											&mdash;
 										[/#if]
 									</span>
-									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "solutions")}</figcaption>
+									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "solutions")}</figcaption>
 								</figure>
 							</div>
 							<div class="col-4">
-								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value">
+								<figure class="text-center mb-0 py-3">
+									<span class="forums-hero__stat-value text-white">
 										[#if messagesData?is_hash && messagesData.totalCount??]
 											${formatCount(messagesData.totalCount)}
 										[#else]
 											&mdash;
 										[/#if]
 									</span>
-									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "messages")}</figcaption>
+									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "messages")}</figcaption>
 								</figure>
 							</div>
 							<div class="col-4">
-								<figure class="forums-hero__stat-card">
-									<span class="forums-hero__stat-value">
+								<figure class="text-center mb-0 py-3">
+									<span class="forums-hero__stat-value text-white">
 										[#if membersData?is_hash && membersData.totalCount??]
 											${formatCount(membersData.totalCount)}
 										[#else]
 											&mdash;
 										[/#if]
 									</span>
-									<figcaption class="forums-hero__stat-label">${languageUtil.get(locale, "participants")}</figcaption>
+									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "participants")}</figcaption>
 								</figure>
 							</div>
 						</div>
 					</div>
 
 					[#if messagesData?is_hash && messagesData.actions?? && (messagesData.actions["post"]?? || messagesData.actions["create"]??)]
-						<a href="${sitePrefix}${configuration.messagesURL!"/forum-messages"}?compose=true" class="btn forums-hero__cta">
+						<a href="${sitePrefix}${configuration.messagesURL!"/forum-messages"}?compose=true" class="btn btn-primary btn-lg">
 							${languageUtil.get(locale, "new-forum-message")}
 						</a>
 					[/#if]

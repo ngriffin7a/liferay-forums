@@ -1,107 +1,42 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
+
+/* The hero is a bespoke banner Clay does not provide a component for, so it
+   keeps a small amount of custom CSS. All colors are driven by real Style Book
+   tokens (--dark, --primary, --border-radius) so the site owner can reconfigure
+   the experience, and typography/spacing reuse Clay/Bootstrap utility classes
+   in the markup. */
+
 .forums-hero {
+	border-radius: var(--border-radius-lg, 0.5rem);
 	overflow: hidden;
 }
 
 .forums-hero__backdrop {
-	background-color: var(--color-neutral-9, #202a44);
-	background-image: linear-gradient(135deg, var(--color-neutral-9, #202a44) 0%, var(--color-brand-primary-darken-3, #18305f) 100%);
+	background-image: linear-gradient(
+		135deg,
+		var(--dark, #272833) 0%,
+		var(--primary-d2, #002b66) 100%
+	);
 	padding: 4rem 0 3rem;
 }
 
-.forums-hero__title {
-	color: var(--color-neutral-0, #ffffff);
-	font-size: 2.5rem;
-	font-weight: 700;
-	letter-spacing: -0.02em;
-	margin-bottom: 0.75rem;
+.forums-hero__stat-value {
+	display: block;
+	font-size: 2rem;
+	font-weight: var(--font-weight-bolder, 700);
+	line-height: 1.2;
 }
 
-.forums-hero__description {
-	color: var(--color-brand-primary-lighten-4, #a7befe);
-	font-size: 1.125rem;
-	line-height: 1.6;
-	margin-bottom: 2rem;
-}
-
-
-/* Drop Zone */
+/* Drop zone for the Search Bar widget */
 
 .forums-hero__drop-zone {
 	margin: 0 auto 2.5rem;
 	max-width: 560px;
 }
 
-/* Stats */
-
-.forums-hero__stats {
-	margin-bottom: 2rem;
-}
-
-.forums-hero__stat-card {
-	padding: 1rem 0.5rem;
-}
-
-.forums-hero__stat-value {
-	color: var(--color-neutral-0, #ffffff);
-	display: block;
-	font-size: 2rem;
-	font-weight: 700;
-	line-height: 1.2;
-}
-
-.forums-hero__stat-label {
-	color: var(--color-brand-primary-lighten-3, #88a9fe);
-	display: block;
-	font-size: 0.8125rem;
-	font-weight: 500;
-	letter-spacing: 0.05em;
-	margin-top: 0.25rem;
-	text-transform: uppercase;
-}
-
-/* CTA Button */
-
-.forums-hero__cta {
-	background-color: var(--color-brand-primary, #2b6afd);
-	border: 2px solid var(--color-brand-primary, #2b6afd);
-	border-radius: 4px;
-	color: var(--color-neutral-0, #ffffff);
-	display: inline-block;
-	font-size: 1rem;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	padding: 0.75rem 2rem;
-	text-decoration: none;
-	transition: all 0.2s ease;
-}
-
-.forums-hero__cta:hover {
-	background-color: var(--color-brand-primary-darken-1, #2554bd);
-	border-color: var(--color-brand-primary-darken-1, #2554bd);
-	color: var(--color-neutral-0, #ffffff);
-	text-decoration: none;
-	transform: translateY(-1px);
-}
-
-.forums-hero__cta:active {
-	background-color: var(--color-brand-primary-darken-2, #1f3d7a);
-	transform: translateY(0);
-}
-
-/* Responsive */
-
 @media (max-width: 767.98px) {
 	.forums-hero__backdrop {
 		padding: 2.5rem 0 2rem;
-	}
-
-	.forums-hero__title {
-		font-size: 1.75rem;
-	}
-
-	.forums-hero__description {
-		font-size: 1rem;
 	}
 
 	.forums-hero__stat-value {
