@@ -43,7 +43,6 @@
 }
 
 .forums-message-card__username {
-	color: var(--secondary, #6b6c7e);
 	display: block;
 	font-size: 0.75rem;
 	margin-top: 0.5rem;
