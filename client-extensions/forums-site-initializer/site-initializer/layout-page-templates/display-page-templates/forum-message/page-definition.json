@@ -76,7 +76,7 @@
 													},
 													"fragmentConfig": {
 														"communityURL": "/forums",
-														"messagesURL": "/forum-messages",
+														"messagesURL": "/forums-messages",
 														"repliesPageSize": "10"
 													},
 													"fragmentFields": [

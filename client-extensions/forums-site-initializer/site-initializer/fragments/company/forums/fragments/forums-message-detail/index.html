@@ -1,4 +1,6 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
+[#assign scopeGroup = themeDisplay.getScopeGroup() /]
+[#assign forumsHome = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
 <div class="forums-message-detail panel panel-secondary" id="forumsMessageDetail"
 	data-label-unknown="${languageUtil.get(locale, "unknown")}"
 	data-label-no-message="${languageUtil.get(locale, "no-message-selected")}"
@@ -49,7 +51,7 @@
 		<!-- Breadcrumb -->
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb" id="forumsDetailBreadcrumb">
-				<li class="breadcrumb-item"><a class="breadcrumb-link" href="?">${languageUtil.get(locale, "forums")}</a></li>
+				<li class="breadcrumb-item"><a class="breadcrumb-link" href="${forumsHome}">${languageUtil.get(locale, "forums")}</a></li>
 				<li class="breadcrumb-item"><a class="breadcrumb-link" href="#" id="forumsDetailBreadcrumbCategory">${languageUtil.get(locale, "category")}</a></li>
 				<li class="breadcrumb-item active"><a class="breadcrumb-link" aria-current="page" href="#" id="forumsDetailBreadcrumbMessage">${languageUtil.get(locale, "message")}</a></li>
 			</ol>
@@ -183,7 +185,7 @@
 
 		<!-- Topic Navigation -->
 		<div class="forums-message-detail__topic-nav" id="forumsDetailTopicNav">
-			<a href="?" class="forums-message-detail__topic-nav-link" id="forumsDetailAllTopics"><span aria-hidden="true">&laquo; </span>${languageUtil.get(locale, "all-forum-categories")}</a>
+			<a href="${forumsHome}" class="forums-message-detail__topic-nav-link" id="forumsDetailAllTopics"><span aria-hidden="true">&laquo; </span>${languageUtil.get(locale, "all-forum-categories")}</a>
 			<a href="#" class="forums-message-detail__topic-nav-link" id="forumsDetailCategoryLink" style="display:none;"></a>
 		</div>
 

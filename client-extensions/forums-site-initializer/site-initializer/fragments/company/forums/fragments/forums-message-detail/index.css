@@ -140,11 +140,6 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	padding-left: 1rem;
 }
 
-.forums-message-detail__reply-card--nested {
-	background-color: var(--gray-100, #f1f2f5);
-	border-left: 3px solid var(--gray-400, #cdced9);
-	padding-left: 1rem;
-}
 
 .forums-message-detail__reply-card--targeted {
 	animation: forums-reply-target-flash 2s ease forwards;
