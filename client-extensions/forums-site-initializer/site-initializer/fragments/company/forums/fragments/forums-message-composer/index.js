@@ -184,11 +184,15 @@ if (messageComposer) {
 	function showModal() {
 		_modalTrigger = document.activeElement;
 		if (modal) {
-			modal.classList.add('is-visible');
+			modal.style.display = 'block';
+			modal.classList.add('show');
 			modal.setAttribute('aria-hidden', 'false');
 		}
-		if (backdrop) backdrop.classList.add('is-visible');
-		document.body.style.overflow = 'hidden';
+		if (backdrop) {
+			backdrop.style.display = 'block';
+			backdrop.classList.add('show');
+		}
+		document.body.classList.add('modal-open');
 		/* Move focus to the first focusable element inside the dialog */
 		var focusable = modal && modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
 		if (focusable) focusable.focus();
@@ -196,11 +200,15 @@ if (messageComposer) {
 
 	function hideModal() {
 		if (modal) {
-			modal.classList.remove('is-visible');
+			modal.classList.remove('show');
+			modal.style.display = 'none';
 			modal.setAttribute('aria-hidden', 'true');
 		}
-		if (backdrop) backdrop.classList.remove('is-visible');
-		document.body.style.overflow = '';
+		if (backdrop) {
+			backdrop.classList.remove('show');
+			backdrop.style.display = 'none';
+		}
+		document.body.classList.remove('modal-open');
 		resetForm();
 		/* Return focus to the element that opened the modal */
 		if (_modalTrigger && typeof _modalTrigger.focus === 'function') {
@@ -239,7 +247,7 @@ if (messageComposer) {
 
 	/* Close on Escape key */
 	document.addEventListener('keydown', function(e) {
-		if (e.key === 'Escape' && modal && modal.classList.contains('is-visible')) {
+		if (e.key === 'Escape' && modal && modal.classList.contains('show')) {
 			hideModal();
 		}
 	});
