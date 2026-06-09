@@ -55,8 +55,11 @@ if (forumsMod) {
 	}
 
 	function getReasonBadgeClass(reason) {
-		var safe = (reason || 'other').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
-		return 'forums-moderation__reason-badge forums-moderation__reason-badge--' + safe;
+		if (reason === 'spam') return 'label label-warning';
+		if (reason === 'harmful-dangerous-acts' || reason === 'harassment-bullying' || reason === 'nudity-sexual-content') {
+			return 'label label-danger';
+		}
+		return 'label label-secondary';
 	}
 
 	function showConfirmModal(message, confirmLabel, onConfirm) {
@@ -110,15 +113,9 @@ if (forumsMod) {
 	}
 
 	function showToast(message) {
-		var toast = document.createElement('div');
-		toast.className = 'forums-moderation-toast';
-		toast.textContent = message;
-		flagList.parentNode.insertBefore(toast, flagList);
-		setTimeout(function() { toast.classList.add('forums-moderation-toast--visible'); }, 10);
-		setTimeout(function() {
-			toast.classList.remove('forums-moderation-toast--visible');
-			setTimeout(function() { toast.remove(); }, 300);
-		}, 3000);
+		if (Liferay.Util && Liferay.Util.openToast) {
+			Liferay.Util.openToast({ message: message, type: 'success' });
+		}
 	}
 
 	/* Tab click handlers */
@@ -193,7 +190,7 @@ if (forumsMod) {
 			var lastPage = data.lastPage || 1;
 
 			if (items.length === 0) {
-				flagList.innerHTML = '<div class="list-group-item text-muted">' + (forumsMod.dataset.labelNoBans || 'No bans found.') + '</div>';
+				flagList.innerHTML = '<div class="list-group-item text-secondary">' + (forumsMod.dataset.labelNoBans || 'No bans found.') + '</div>';
 				return;
 			}
 
@@ -206,7 +203,7 @@ if (forumsMod) {
 				titleLink.className = 'forums-moderation__message-title font-weight-bold';
 				titleLink.textContent = (forumsMod.dataset.labelUserId || 'User ID: {0}').replace('{0}', ban.banUserId);
 				var metaDiv = document.createElement('div');
-				metaDiv.className = 'forums-moderation__flag-meta mt-1';
+				metaDiv.className = 'forums-moderation__flag-meta text-secondary small mt-1';
 				var dateSpan = document.createElement('span');
 				dateSpan.textContent = (forumsMod.dataset.labelBannedOn || 'Banned on: {0}').replace('{0}', formatDate(ban.dateCreated));
 				metaDiv.appendChild(dateSpan);
@@ -288,7 +285,7 @@ if (forumsMod) {
 			var lastPage = data.lastPage || 1;
 
 			if (items.length === 0) {
-				flagList.innerHTML = '<div class="list-group-item text-muted">' + (forumsMod.dataset.labelNoFlags || 'No flagged messages found.') + '</div>';
+				flagList.innerHTML = '<div class="list-group-item text-secondary">' + (forumsMod.dataset.labelNoFlags || 'No flagged messages found.') + '</div>';
 				return;
 			}
 
@@ -322,7 +319,7 @@ if (forumsMod) {
 				titleLink.title = forumsMod.dataset.labelViewMessage || 'View Message';
 
 				var metaDiv = document.createElement('div');
-				metaDiv.className = 'forums-moderation__flag-meta';
+				metaDiv.className = 'forums-moderation__flag-meta text-secondary small';
 
 				/* Reporter */
 				var reportedByTmpl = forumsMod.dataset.labelReportedBy || 'Reported by {0}';
@@ -340,7 +337,7 @@ if (forumsMod) {
 
 				/* Status badge */
 				var statusBadge = document.createElement('span');
-				statusBadge.className = 'forums-moderation__status-badge forums-moderation__status-badge--' + (isValidated ? 'validated' : 'pending');
+				statusBadge.className = 'label ' + (isValidated ? 'label-success' : 'label-warning');
 				statusBadge.textContent = isValidated
 					? (forumsMod.dataset.labelValidated || 'Validated')
 					: (forumsMod.dataset.labelPending || 'Pending');

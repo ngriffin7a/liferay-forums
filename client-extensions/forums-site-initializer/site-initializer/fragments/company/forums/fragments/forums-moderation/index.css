@@ -1,43 +1,12 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
+
+/* Tabs, cards, list-group, pagination, reason/status labels and toasts are all
+   standard Clay components driven by the Style Book tokens. The only custom
+   rules here are structural layout helpers (Bootstrap 4 / Clay has no `gap`
+   utilities) for the flag rows — they carry no colors. */
+
 .forums-moderation {
 	padding: 1rem;
-}
-
-.forums-moderation__card {
-	background-color: transparent;
-	border: 1px solid var(--color-neutral-2, #d9d9d6);
-	border-radius: 8px;
-	box-shadow: none;
-}
-
-.forums-moderation__title {
-	color: var(--color-neutral-9, #202a44);
-	margin-bottom: 1.5rem;
-}
-
-/* Tabs */
-
-.forums-moderation__tabs {
-	margin-bottom: 1.25rem;
-}
-
-.forums-moderation__tabs .nav-link {
-	color: var(--color-neutral-6, #6a7791);
-	cursor: pointer;
-	font-size: 0.9375rem;
-	font-weight: 500;
-}
-
-.forums-moderation__tabs .nav-link.active {
-	border-bottom: 2px solid var(--color-brand-primary, #2b6afd);
-	color: var(--color-brand-primary, #2b6afd);
-	font-weight: 600;
-}
-
-/* Flag list */
-
-.forums-moderation__list {
-	margin-bottom: 1rem;
 }
 
 .forums-moderation__flag-item {
@@ -46,7 +15,6 @@
 	flex-wrap: wrap;
 	gap: 0.75rem;
 	justify-content: space-between;
-	padding: 1rem 1.25rem;
 }
 
 .forums-moderation__flag-info {
@@ -58,134 +26,31 @@
 }
 
 .forums-moderation__message-title {
-	color: var(--color-brand-primary, #2b6afd);
-	font-size: 0.9375rem;
 	font-weight: 600;
 	overflow: hidden;
-	text-decoration: none;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.forums-moderation__message-title:hover {
-	text-decoration: underline;
-}
-
 .forums-moderation__flag-meta {
 	align-items: center;
-	color: var(--color-neutral-5, #8c95a8);
 	display: flex;
 	flex-wrap: wrap;
-	font-size: 0.8125rem;
-	gap: 0.75rem;
+	gap: 0.5rem;
 }
-
-.forums-moderation__reason-badge {
-	border-radius: 4px;
-	display: inline-block;
-	font-size: 0.75rem;
-	font-weight: 600;
-	padding: 0.2rem 0.5rem;
-}
-
-.forums-moderation__reason-badge--spam {
-	background-color: #fef3cd;
-	color: #856404;
-}
-
-.forums-moderation__reason-badge--harmful-dangerous-acts {
-	background-color: #f8d7da;
-	color: #721c24;
-}
-
-.forums-moderation__reason-badge--harassment-bullying {
-	background-color: #f8d7da;
-	color: #721c24;
-}
-
-.forums-moderation__reason-badge--nudity-sexual-content {
-	background-color: #f8d7da;
-	color: #721c24;
-}
-
-.forums-moderation__reason-badge--other {
-	background-color: var(--color-neutral-1, #f4f4f4);
-	color: var(--color-neutral-6, #6a7791);
-}
-
-/* Status badge */
-
-.forums-moderation__status-badge {
-	border-radius: 4px;
-	display: inline-block;
-	font-size: 0.75rem;
-	font-weight: 600;
-	padding: 0.2rem 0.5rem;
-}
-
-.forums-moderation__status-badge--pending {
-	background-color: #fff3cd;
-	color: #856404;
-}
-
-.forums-moderation__status-badge--validated {
-	background-color: var(--color-state-success-lighten-2, #e4efe4);
-	color: var(--color-state-success-darken-1, #007c00);
-}
-
-/* Actions */
 
 .forums-moderation__flag-actions {
 	align-items: center;
 	display: flex;
 	flex-shrink: 0;
+	flex-wrap: wrap;
 	gap: 0.5rem;
 }
 
-/* Pagination */
-
-.forums-moderation__pagination {
-	margin-top: 0.5rem;
-}
-
-.forums-moderation__pagination .page-link {
-	border-color: var(--color-neutral-2, #d9d9d6);
-	color: var(--color-brand-primary, #2b6afd);
-}
-
-.forums-moderation__pagination .page-item.active .page-link {
-	background-color: var(--color-brand-primary, #2b6afd);
-	border-color: var(--color-brand-primary, #2b6afd);
-	color: var(--color-neutral-0, #ffffff);
-}
-
-/* Toast */
-
-.forums-moderation-toast {
-	background-color: var(--color-state-success-lighten-2, #e4efe4);
-	border: 1px solid var(--color-state-success-lighten-1, #8cc18c);
-	border-radius: 6px;
-	color: var(--color-state-success-darken-1, #007c00);
-	font-size: 0.9375rem;
-	font-weight: 500;
-	margin-bottom: 1rem;
-	opacity: 0;
-	padding: 0.75rem 1.25rem;
-	transform: translateY(-0.5rem);
-	transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.forums-moderation-toast--visible {
-	opacity: 1;
-	transform: translateY(0);
-}
-
-/* Responsive */
-
 @media (max-width: 767.98px) {
 	.forums-moderation__flag-item {
-		flex-direction: column;
 		align-items: flex-start;
+		flex-direction: column;
 	}
 
 	.forums-moderation__flag-actions {
