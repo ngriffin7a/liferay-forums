@@ -78,15 +78,28 @@ if (forumsMod) {
 		modal.setAttribute('aria-labelledby', 'forumsModConfirmHeading');
 
 		modal.innerHTML = `
-			<div class="modal-dialog modal-dialog-sm modal-dialog-centered">
+			<div class="modal-dialog modal-dialog-sm modal-dialog-centered modal-danger">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h1 class="modal-title" id="forumsModConfirmHeading" tabindex="-1">${Liferay.Util.escapeHTML(message)}</h1>
+						<h1 class="modal-title" tabindex="-1">
+							<div class="modal-title-indicator">
+								<svg class="lexicon-icon lexicon-icon-exclamation-full" role="presentation"><use href="${Liferay.ThemeDisplay.getPathThemeImages()}/clay/icons.svg#exclamation-full"></use></svg>
+							</div>
+							<span id="forumsModConfirmHeading">${Liferay.Util.escapeHTML(confirmLabel)}</span>
+						</h1>
+						<button class="close btn btn-unstyled" type="button" id="forumsModConfirmClose" aria-label="${Liferay.Util.escapeHTML(forumsMod.dataset.labelCancel || 'Cancel')}">
+							<svg class="lexicon-icon lexicon-icon-times" focusable="false" role="presentation"><use href="${Liferay.ThemeDisplay.getPathThemeImages()}/clay/icons.svg#times"></use></svg>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="liferay-modal-body">${Liferay.Util.escapeHTML(message)}</div>
 					</div>
 					<div class="modal-footer">
-						<div class="btn-group-spaced" role="group">
-							<button class="btn btn-secondary" type="button" id="forumsModConfirmCancel">${Liferay.Util.escapeHTML(forumsMod.dataset.labelCancel || 'Cancel')}</button>
-							<button class="btn btn-danger" type="button" id="forumsModConfirmOk">${Liferay.Util.escapeHTML(confirmLabel)}</button>
+						<div class="modal-item-last">
+							<div class="btn-group-spaced" role="group">
+								<button class="btn btn-secondary" type="button" id="forumsModConfirmCancel">${Liferay.Util.escapeHTML(forumsMod.dataset.labelCancel || 'Cancel')}</button>
+								<button class="btn btn-danger" type="button" id="forumsModConfirmOk">${Liferay.Util.escapeHTML(confirmLabel)}</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -95,21 +108,28 @@ if (forumsMod) {
 		document.body.appendChild(modal);
 		var previousFocus = document.activeElement;
 
+		function onKeydown(e) {
+			if (e.key === 'Escape') closeModal();
+		}
+
 		function closeModal() {
+			document.removeEventListener('keydown', onKeydown);
 			modal.remove();
 			if (previousFocus) previousFocus.focus();
 		}
 
 		modal.querySelector('#forumsModConfirmCancel').addEventListener('click', closeModal);
+		modal.querySelector('#forumsModConfirmClose').addEventListener('click', closeModal);
 		modal.querySelector('#forumsModConfirmOk').addEventListener('click', function() {
 			closeModal();
 			onConfirm();
 		});
-		modal.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape') closeModal();
+		modal.addEventListener('click', function(e) {
+			if (e.target === modal) closeModal();
 		});
+		document.addEventListener('keydown', onKeydown);
 
-		modal.querySelector('#forumsModConfirmHeading').focus();
+		modal.querySelector('.modal-title').focus();
 	}
 
 	function showToast(message) {
