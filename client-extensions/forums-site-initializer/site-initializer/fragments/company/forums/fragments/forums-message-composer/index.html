@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
 <div class="forums-message-composer" id="forumsMessageComposer"
-	data-label-new-forum-message="${languageUtil.get(locale, "new-forum-message")}"
+	data-label-new-forum-message="New Discussion"
 	data-label-post-a-reply="${languageUtil.get(locale, "post-a-reply")}"
 	data-label-details="${languageUtil.get(locale, "details")}"
 	data-label-your-reply="${languageUtil.get(locale, "your-reply")}"
@@ -19,28 +19,30 @@
 	data-label-banned-warning="${languageUtil.get(locale, "your-account-has-been-banned-from-participating-in-the-forums")}">
 
 	<!-- Backdrop -->
-	<div class="forums-message-composer__backdrop" id="forumsMessageComposerBackdrop"></div>
+	<div class="modal-backdrop fade" id="forumsMessageComposerBackdrop" style="display:none;"></div>
 
-	<!-- Modal dialog -->
-	<div class="forums-message-composer__modal" id="forumsMessageComposerModal" role="dialog" aria-modal="true" aria-labelledby="forumsMessageComposerTitle" aria-hidden="true">
-		<div class="forums-message-composer__dialog">
-			<div class="forums-message-composer__card">
+	<!-- Modal dialog (Clay modal) -->
+	<div class="modal fade forums-message-composer__modal" id="forumsMessageComposerModal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="forumsMessageComposerTitle" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+			<div class="modal-content">
 
-				<div class="forums-message-composer__header">
-					<h5 class="forums-message-composer__title" id="forumsMessageComposerTitle">${languageUtil.get(locale, "new-forum-message")}</h5>
-					<button type="button" class="forums-message-composer__close" id="forumsMessageComposerCloseBtn" aria-label="${languageUtil.get(locale, "close")}">
-						<span aria-hidden="true">&times;</span>
+				<div class="modal-header">
+					<h5 class="modal-title" id="forumsMessageComposerTitle">New Discussion</h5>
+					<button type="button" class="close" id="forumsMessageComposerCloseBtn" aria-label="${languageUtil.get(locale, "close")}">
+						<svg class="lexicon-icon lexicon-icon-times" focusable="false" role="presentation">
+							<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#times"></use>
+						</svg>
 					</button>
 				</div>
 
-				<div class="forums-message-composer__body">
+				<div class="modal-body">
 					<form id="forumsMessageComposerForm" novalidate>
 						<div class="forums-message-composer__layout">
 							<div class="forums-message-composer__layout-left" id="forumsMessageComposerLeftCol">
 								<!-- Category selector (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerCategoryGroup">
-									<label for="forumsMessageComposerCategory" class="forums-message-composer__label">${languageUtil.get(locale, "category")}</label>
-									<select class="custom-select" id="forumsMessageComposerCategory" required aria-describedby="forumsMessageComposerCategoryError">
+									<label for="forumsMessageComposerCategory" class="font-weight-bold">${languageUtil.get(locale, "category")}</label>
+									<select class="form-control" id="forumsMessageComposerCategory" required aria-describedby="forumsMessageComposerCategoryError">
 										<option value="">${languageUtil.get(locale, "select-a-category")}</option>
 									</select>
 									<div class="invalid-feedback" id="forumsMessageComposerCategoryError">${languageUtil.get(locale, "please-select-a-category")}</div>
@@ -48,14 +50,14 @@
 
 								<!-- Subject (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerSubjectGroup">
-									<label for="forumsMessageComposerSubject" class="forums-message-composer__label">${languageUtil.get(locale, "subject")}</label>
+									<label for="forumsMessageComposerSubject" class="font-weight-bold">${languageUtil.get(locale, "subject")}</label>
 									<input type="text" class="form-control" id="forumsMessageComposerSubject" placeholder="${languageUtil.get(locale, "enter-a-descriptive-title")}" required maxlength="255" aria-describedby="forumsMessageComposerSubjectError">
 									<div class="invalid-feedback" id="forumsMessageComposerSubjectError">${languageUtil.get(locale, "please-enter-a-subject")}</div>
 								</div>
 								
 								<!-- Tags selector (new message mode) -->
 								<div class="form-group" id="forumsMessageComposerTagsGroup">
-									<label class="forums-message-composer__label" for="forumsMessageComposerTagsInput" id="forumsMessageComposerTagsLabel">${languageUtil.get(locale, "tags")}</label>
+									<label class="font-weight-bold" for="forumsMessageComposerTagsInput" id="forumsMessageComposerTagsLabel">${languageUtil.get(locale, "tags")}</label>
 									<div class="input-group" style="min-height: 2.125rem;">
 										<div class="input-group-item">
 											<div class="form-control form-control-tag-group input-group">
@@ -82,19 +84,19 @@
 								<!-- Mark as question checkbox (new message mode) -->
 								<div class="form-group form-check" id="forumsMessageComposerQuestionGroup">
 									<input type="checkbox" class="form-check-input" id="forumsMessageComposerQuestion" checked>
-									<label class="form-check-label forums-message-composer__label--check" for="forumsMessageComposerQuestion">${languageUtil.get(locale, "mark-as-question")}</label>
+									<label class="form-check-label" for="forumsMessageComposerQuestion">${languageUtil.get(locale, "mark-as-question")}</label>
 								</div>
 
 								<!-- Subscribe checkbox (new message mode) -->
 								<div class="form-group form-check" id="forumsMessageComposerSubscribeGroup">
 									<input type="checkbox" class="form-check-input" id="forumsMessageComposerSubscribe" checked>
-									<label class="form-check-label forums-message-composer__label--check" for="forumsMessageComposerSubscribe">${languageUtil.get(locale, "subscribe-to-this-message")}</label>
+									<label class="form-check-label" for="forumsMessageComposerSubscribe">${languageUtil.get(locale, "subscribe-to-this-message")}</label>
 								</div>
 							</div>
 
 							<div class="forums-message-composer__layout-right" id="forumsMessageComposerRightCol">
 								<div class="form-group forums-message-composer__body-group" id="forumsMessageComposerBodyGroup">
-									<label for="forumsMessageComposerBody" class="forums-message-composer__label" id="forumsMessageComposerBodyLabel">${languageUtil.get(locale, "details")}</label>
+									<label for="forumsMessageComposerBody" class="font-weight-bold" id="forumsMessageComposerBodyLabel">${languageUtil.get(locale, "details")}</label>
 									<div id="${fragmentElementId}-forumsMessageComposerBody-wrapper" class="forums-message-composer__editor-wrapper">
 										[@liferay_layout["render-editor"] content="" name=fragmentElementId + "-forumsMessageComposerBody" label="" /]
 									</div>
@@ -103,23 +105,23 @@
 							</div>
 						</div>
 
-						<!-- Actions -->
-						<div class="forums-message-composer__actions">
-							<button type="button" class="btn btn-outline-secondary" id="forumsMessageComposerCancel">${languageUtil.get(locale, "cancel")}</button>
-							<button type="submit" class="btn forums-message-composer__submit" id="forumsMessageComposerSubmit">${languageUtil.get(locale, "post")}</button>
-						</div>
 					</form>
 
-					<!-- Status messages (outside form so they stay visible when form is hidden) -->
-					<div class="alert alert-success mt-3" id="forumsMessageComposerSuccess" style="display:none;" aria-live="polite">
-						${languageUtil.get(locale, "post-submitted-successfully")}
+						<!-- Status messages (outside form so they stay visible when form is hidden) -->
+						<div class="alert alert-success mt-3" id="forumsMessageComposerSuccess" style="display:none;" aria-live="polite">
+							${languageUtil.get(locale, "post-submitted-successfully")}
+						</div>
+						<div class="alert alert-danger mt-3" id="forumsMessageComposerError" style="display:none;" role="alert">
+							${languageUtil.get(locale, "an-error-occurred")}
+						</div>
 					</div>
-					<div class="alert alert-danger mt-3" id="forumsMessageComposerError" style="display:none;" role="alert">
-						${languageUtil.get(locale, "an-error-occurred")}
-					</div>
-				</div>
 
+					<div class="modal-footer">
+						<button type="button" class="btn btn-outline-secondary" id="forumsMessageComposerCancel">${languageUtil.get(locale, "cancel")}</button>
+						<button type="submit" form="forumsMessageComposerForm" class="btn btn-primary" id="forumsMessageComposerSubmit">${languageUtil.get(locale, "post")}</button>
+					</div>
+
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
