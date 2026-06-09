@@ -314,7 +314,7 @@ if (messageList) {
 					+ '<div class="autofit-row">'
 					+ '<div class="autofit-col forums-message-card__avatar-col text-center">'
 					+ avatarHtml
-					+ '<div class="forums-message-card__username text-truncate">' + Liferay.Util.escapeHTML(creatorName) + '</div>'
+					+ '<div class="forums-message-card__username text-secondary text-truncate">' + Liferay.Util.escapeHTML(creatorName) + '</div>'
 					+ '</div>'
 					+ '<div class="autofit-col autofit-col-expand forums-message-card__content">'
 					+ '<h5 class="card-title forums-message-card__title">'
