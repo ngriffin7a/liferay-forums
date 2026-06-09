@@ -1,19 +1,20 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
-<div class="forums-related-topics" id="forumsRelatedTopics"
+<div class="forums-related-topics panel panel-secondary" id="forumsRelatedTopics"
 	data-label-no-related="${languageUtil.get(locale, "no-related-topics-found")}"
 	data-label-untitled="${languageUtil.get(locale, "untitled")}"
 	data-label-unable-to-load="${languageUtil.get(locale, "unable-to-load-related-topics")}"
 	data-label-flagged="${languageUtil.get(locale, "flagged")}">
-	<!-- Mappable Message ERC fields — visible in the Content Page Editor for mapping, hidden at runtime -->
-	<div id="forumsRelatedTopicsERC" data-lfr-editable-id="forumsRelatedTopicsERC" data-lfr-editable-type="text" style="display: none;">Mappable Message ERC</div>
-	<div id="forumsRelatedTopicsReplyERC" data-lfr-editable-id="forumsRelatedTopicsReplyERC" data-lfr-editable-type="text" style="display: none;">Mappable Reply ERC</div>
+	<div class="panel-body">
+		<!-- Mappable Message ERC fields — visible in the Content Page Editor for mapping, hidden at runtime -->
+		<div id="forumsRelatedTopicsERC" data-lfr-editable-id="forumsRelatedTopicsERC" data-lfr-editable-type="text" style="display: none;">Mappable Message ERC</div>
+		<div id="forumsRelatedTopicsReplyERC" data-lfr-editable-id="forumsRelatedTopicsReplyERC" data-lfr-editable-type="text" style="display: none;">Mappable Reply ERC</div>
 
-	<h5 class="forums-related-topics__title">
-		${languageUtil.get(locale, "related-topics")}
-	</h5>
-	<div class="list-group" id="forumsRelatedTopicsList">
-		<div class="text-center py-3" id="forumsRelatedTopicsLoading">
-			<div class="spinner-border spinner-border-sm text-primary" role="status">
+		<h5 class="panel-title text-dark">
+			${languageUtil.get(locale, "related-topics")}
+		</h5>
+		<div class="list-group list-group-flush" id="forumsRelatedTopicsList">
+			<div class="text-center py-3" id="forumsRelatedTopicsLoading">
+				<span class="loading-animation loading-animation-sm" aria-hidden="true"></span>
 				<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
 			</div>
 		</div>
