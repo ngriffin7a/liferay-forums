@@ -56,7 +56,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 		}).slice(0, 5);
 
 		if (items.length === 0) {
-			listEl.innerHTML = '<div class="forums-related-topics__empty">' + (relatedTopics.dataset.labelNoRelated || 'No related topics found.') + '</div>';
+			listEl.innerHTML = '<div class="text-secondary text-center py-2">' + (relatedTopics.dataset.labelNoRelated || 'No related topics found.') + '</div>';
 			return;
 		}
 
@@ -103,7 +103,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 	})
 	.catch(function(err) {
 		if (loadingEl) loadingEl.remove();
-		listEl.innerHTML = '<div class="forums-related-topics__empty">' + (relatedTopics.dataset.labelUnableToLoad || 'Unable to load related topics.') + '</div>';
+		listEl.innerHTML = '<div class="text-secondary text-center py-2">' + (relatedTopics.dataset.labelUnableToLoad || 'Unable to load related topics.') + '</div>';
 		console.error('ForumsRelatedTopics error:', err);
 	});
 	} // end runRelatedTopics
@@ -138,7 +138,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 			if (!erc) {
 				if (loadingEl) loadingEl.remove();
-				listEl.innerHTML = '<div class="forums-related-topics__empty">' + (relatedTopics.dataset.labelErcNotMapped || 'Message ERC is not mapped.') + '</div>';
+				listEl.innerHTML = '<div class="text-secondary text-center py-2">' + (relatedTopics.dataset.labelErcNotMapped || 'Message ERC is not mapped.') + '</div>';
 			} else {
 				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
