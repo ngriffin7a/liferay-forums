@@ -272,9 +272,22 @@ if (messageComposer) {
 		renderTags();
 	}
 
-	/* Close via X button, Cancel button, or backdrop click */
+	/* "page" mode renders the form on its own screen (no modal); "modal" mode
+	   keeps the Clay dialog used for replies and edits. */
+	var formMode = messageComposer.dataset.formMode || 'modal';
+
+	/* Close via X button, Cancel button, or backdrop click. In page mode the
+	   Cancel button just navigates back instead of closing a dialog. */
 	if (closeBtn) closeBtn.addEventListener('click', hideModal);
-	if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
+	if (cancelBtn) {
+		cancelBtn.addEventListener('click', function() {
+			if (formMode === 'page') {
+				window.history.back();
+			} else {
+				hideModal();
+			}
+		});
+	}
 	if (backdrop) backdrop.addEventListener('click', hideModal);
 
 	/* Close on Escape key */

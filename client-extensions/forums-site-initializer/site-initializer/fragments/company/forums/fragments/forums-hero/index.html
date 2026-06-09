@@ -74,7 +74,7 @@
 					</div>
 
 					[#if messagesData?is_hash && messagesData.actions?? && (messagesData.actions["post"]?? || messagesData.actions["create"]??)]
-						<a href="${sitePrefix}${configuration.messagesURL!"/forums-messages"}?compose=true" class="btn btn-primary btn-lg">
+						<a href="${sitePrefix}/new-discussion" class="btn btn-primary btn-lg">
 							${languageUtil.get(locale, "new-forum-message")}
 						</a>
 					[/#if]
