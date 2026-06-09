@@ -193,9 +193,9 @@ if (messageComposer) {
 			backdrop.classList.add('show');
 		}
 		document.body.classList.add('modal-open');
-		/* Move focus to the first focusable element inside the dialog */
-		var focusable = modal && modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-		if (focusable) focusable.focus();
+		/* Move focus into the dialog itself (not the close button) so screen
+		   readers announce the modal and Esc/Tab work from a neutral start. */
+		if (modal) modal.focus();
 	}
 
 	function hideModal() {
@@ -382,6 +382,10 @@ if (messageComposer) {
 			var composeMessageId = trigger.getAttribute('data-forums-message-id') || messageId;
 			var composeCategoryId = trigger.getAttribute('data-forums-category-id') || categoryIdParam;
 			var composeMessageId = trigger.getAttribute('data-forums-message-id') || null;
+			/* For a reply to another reply, the root ForumMessage id is the
+			   foreign key (data-forums-message-id) and the reply being answered
+			   is the threading parent (data-forums-parent-id). */
+			var composeParentId = trigger.getAttribute('data-forums-parent-id') || composeMessageId;
 			var rawTags = trigger.getAttribute('data-forums-tags');
 			var parsedTags = [];
 			if (rawTags) {
@@ -390,7 +394,7 @@ if (messageComposer) {
 			window.forumsOpenComposeModal({
 				messageId: trigger.hasAttribute('data-forums-reply') ? composeMessageId : null,
 				categoryId: composeCategoryId,
-				parentMessageId: composeMessageId,
+				parentMessageId: composeParentId,
 				tags: parsedTags
 			});
 		}
