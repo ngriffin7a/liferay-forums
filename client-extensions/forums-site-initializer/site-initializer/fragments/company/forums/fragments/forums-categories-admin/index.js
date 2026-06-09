@@ -148,9 +148,9 @@ if (forumsCategoriesAdmin) {
 								'<input type="text" class="form-control" id="' + descFieldId + '" aria-label="' + labelDesc + '">' +
 							'</div>' +
 						'</div>' +
-						'<div class="col-md-2">' +
-							'<button type="submit" class="btn btn-sm btn-primary w-100 mb-1">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
-							'<button type="button" class="btn btn-sm btn-outline-secondary w-100 cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
+						'<div class="col-md-auto">' +
+							'<button type="submit" class="btn btn-sm btn-primary mr-2">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
+							'<button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
 						'</div>' +
 					'</div>';
 
@@ -272,15 +272,28 @@ if (forumsCategoriesAdmin) {
 		modal.setAttribute('aria-labelledby', 'forumsCatAdminConfirmHeading');
 
 		modal.innerHTML = `
-			<div class="modal-dialog modal-dialog-sm modal-dialog-centered">
+			<div class="modal-dialog modal-dialog-sm modal-dialog-centered modal-danger">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h1 class="modal-title" id="forumsCatAdminConfirmHeading" tabindex="-1">${Liferay.Util.escapeHTML(message)}</h1>
+						<h1 class="modal-title" tabindex="-1">
+							<div class="modal-title-indicator">
+								<svg class="lexicon-icon lexicon-icon-exclamation-full" role="presentation"><use href="${clayIconsUrl}#exclamation-full"></use></svg>
+							</div>
+							<span id="forumsCatAdminConfirmHeading">${Liferay.Util.escapeHTML(confirmLabel)}</span>
+						</h1>
+						<button class="close btn btn-unstyled" type="button" id="forumsCatAdminConfirmClose" aria-label="${Liferay.Util.escapeHTML(forumsCategoriesAdmin.dataset.labelCancel || 'Cancel')}">
+							<svg class="lexicon-icon lexicon-icon-times" focusable="false" role="presentation"><use href="${clayIconsUrl}#times"></use></svg>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="liferay-modal-body">${Liferay.Util.escapeHTML(message)}</div>
 					</div>
 					<div class="modal-footer">
-						<div class="btn-group-spaced" role="group">
-							<button class="btn btn-secondary" type="button" id="forumsCatAdminConfirmCancel">${Liferay.Util.escapeHTML(forumsCategoriesAdmin.dataset.labelCancel || 'Cancel')}</button>
-							<button class="btn btn-danger" type="button" id="forumsCatAdminConfirmOk">${Liferay.Util.escapeHTML(confirmLabel)}</button>
+						<div class="modal-item-last">
+							<div class="btn-group-spaced" role="group">
+								<button class="btn btn-secondary" type="button" id="forumsCatAdminConfirmCancel">${Liferay.Util.escapeHTML(forumsCategoriesAdmin.dataset.labelCancel || 'Cancel')}</button>
+								<button class="btn btn-danger" type="button" id="forumsCatAdminConfirmOk">${Liferay.Util.escapeHTML(confirmLabel)}</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -289,21 +302,28 @@ if (forumsCategoriesAdmin) {
 		document.body.appendChild(modal);
 		var previousFocus = document.activeElement;
 
+		function onKeydown(e) {
+			if (e.key === 'Escape') closeModal();
+		}
+
 		function closeModal() {
+			document.removeEventListener('keydown', onKeydown);
 			modal.remove();
 			if (previousFocus) previousFocus.focus();
 		}
 
 		modal.querySelector('#forumsCatAdminConfirmCancel').addEventListener('click', closeModal);
+		modal.querySelector('#forumsCatAdminConfirmClose').addEventListener('click', closeModal);
 		modal.querySelector('#forumsCatAdminConfirmOk').addEventListener('click', function() {
 			closeModal();
 			onConfirm();
 		});
-		modal.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape') closeModal();
+		modal.addEventListener('click', function(e) {
+			if (e.target === modal) closeModal();
 		});
+		document.addEventListener('keydown', onKeydown);
 
-		modal.querySelector('#forumsCatAdminConfirmHeading').focus();
+		modal.querySelector('.modal-title').focus();
 	}
 
 	function deleteCategory(deleteUrl, id) {
