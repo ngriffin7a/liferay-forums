@@ -70,84 +70,32 @@
 		<!-- Message cards -->
 		<div id="forumsMessageListCards">
 			<div id="forumsMessageListLoading" aria-busy="true" aria-label="${languageUtil.get(locale, "loading")}">
-				<div class="forums-message-list__skeleton-showing">
-					<div class="forums-skeleton__bar forums-skeleton__bar--sm"></div>
-				</div>
-				<div class="forums-message-list__skeleton-card">
-					<div class="forums-message-list__skeleton-inner">
-						<div class="forums-message-list__skeleton-avatar-col">
-							<div class="forums-skeleton__avatar"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
-						</div>
-						<div class="forums-message-list__skeleton-content">
-							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--3q"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
-							<div class="forums-message-list__skeleton-meta">
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-							</div>
-						</div>
+				<svg class="forums-skeleton-defs" width="0" height="0" aria-hidden="true" focusable="false">
+					<defs>
+						<linearGradient id="forumsSkeletonGradientList" x1="0" y1="0" x2="1" y2="0">
+							<stop offset="0%" style="stop-color:var(--gray-200, #e7e7ed)"/>
+							<stop offset="50%" style="stop-color:var(--gray-100, #f1f2f5)"/>
+							<stop offset="100%" style="stop-color:var(--gray-200, #e7e7ed)"/>
+							<animate attributeName="x1" values="-1;1" dur="1.4s" repeatCount="indefinite"/>
+							<animate attributeName="x2" values="0;2" dur="1.4s" repeatCount="indefinite"/>
+						</linearGradient>
+					</defs>
+				</svg>
+				[#list 1..4 as i]
+					<div class="forums-skeleton-card">
+						<svg class="forums-skeleton-avatar" width="44" height="44" viewBox="0 0 44 44" role="presentation" aria-hidden="true">
+							<circle cx="22" cy="22" r="22" fill="url(#forumsSkeletonGradientList)" />
+						</svg>
+						<svg class="forums-skeleton-fill" viewBox="0 0 100 74" preserveAspectRatio="none" height="74" role="presentation" aria-hidden="true">
+							<rect x="0" y="0" width="68" height="16" rx="2" fill="url(#forumsSkeletonGradientList)" />
+							<rect x="0" y="26" width="100" height="11" rx="2" fill="url(#forumsSkeletonGradientList)" />
+							<rect x="0" y="44" width="82" height="11" rx="2" fill="url(#forumsSkeletonGradientList)" />
+							<rect x="0" y="64" width="12" height="9" rx="2" fill="url(#forumsSkeletonGradientList)" />
+							<rect x="18" y="64" width="12" height="9" rx="2" fill="url(#forumsSkeletonGradientList)" />
+							<rect x="36" y="64" width="12" height="9" rx="2" fill="url(#forumsSkeletonGradientList)" />
+						</svg>
 					</div>
-				</div>
-				<div class="forums-message-list__skeleton-card">
-					<div class="forums-message-list__skeleton-inner">
-						<div class="forums-message-list__skeleton-avatar-col">
-							<div class="forums-skeleton__avatar"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
-						</div>
-						<div class="forums-message-list__skeleton-content">
-							<div class="forums-skeleton__bar forums-skeleton__bar--title"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
-							<div class="forums-message-list__skeleton-meta">
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="forums-message-list__skeleton-card">
-					<div class="forums-message-list__skeleton-inner">
-						<div class="forums-message-list__skeleton-avatar-col">
-							<div class="forums-skeleton__avatar"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
-						</div>
-						<div class="forums-message-list__skeleton-content">
-							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--half"></div>
-							<div class="forums-skeleton__bar"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--3q"></div>
-							<div class="forums-message-list__skeleton-meta">
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="forums-message-list__skeleton-card">
-					<div class="forums-message-list__skeleton-inner">
-						<div class="forums-message-list__skeleton-avatar-col">
-							<div class="forums-skeleton__avatar"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--name-short"></div>
-						</div>
-						<div class="forums-message-list__skeleton-content">
-							<div class="forums-skeleton__bar forums-skeleton__bar--title forums-skeleton__bar--3q"></div>
-							<div class="forums-skeleton__bar forums-skeleton__bar--half"></div>
-							<div class="forums-message-list__skeleton-meta">
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-								<div class="forums-skeleton__bar forums-skeleton__bar--xs"></div>
-							</div>
-						</div>
-					</div>
-				</div>
+				[/#list]
 			</div>
 		</div>
 

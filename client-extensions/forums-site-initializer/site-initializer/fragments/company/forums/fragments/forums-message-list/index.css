@@ -136,94 +136,38 @@
 	}
 }
 
-/* Loading skeleton (bespoke — Clay has no multi-line skeleton component).
-   Colors come from the Style Book gray tokens. */
+/* Loading skeleton: self-contained SVG content-loaders (the shimmer animation
+   lives in the SVG via SMIL, colors come from the gray Style Book tokens), so
+   no bespoke skeleton CSS is needed beyond layout spacing and the fade-out. */
 
-@keyframes forums-skeleton-shimmer {
-	0%   { background-position: -600px 0; }
-	100% { background-position:  600px 0; }
+.forums-skeleton-defs {
+	height: 0;
+	position: absolute;
+	width: 0;
 }
 
-.forums-skeleton__bar,
-.forums-skeleton__avatar {
-	animation: forums-skeleton-shimmer 1.4s ease infinite;
-	background: linear-gradient(
-		90deg,
-		var(--gray-200, #e7e7ed) 25%,
-		var(--gray-100, #f1f2f5) 50%,
-		var(--gray-200, #e7e7ed) 75%
-	);
-	background-size: 1200px 100%;
-	border-radius: var(--border-radius, 0.25rem);
-	height: 0.875rem;
-	margin-bottom: 0.625rem;
-	width: 100%;
-}
-
-.forums-skeleton__bar--title {
-	height: 1.125rem;
-	margin-bottom: 0.5rem;
-}
-
-.forums-skeleton__bar--3q   { width: 75%; }
-.forums-skeleton__bar--half { width: 50%; }
-.forums-skeleton__bar--sm   { width: 8rem; margin-bottom: 0; }
-.forums-skeleton__bar--xs   { width: 5rem; margin-bottom: 0; }
-
-.forums-skeleton__bar--name {
-	height: 0.5rem;
-	margin: 0.125rem auto 0;
-	width: 2.5rem;
-}
-
-.forums-skeleton__bar--name-short {
-	height: 0.5rem;
-	margin: 0.125rem auto 0;
-	width: 1.75rem;
-}
-
-.forums-skeleton__avatar {
-	border-radius: 50%;
-	flex-shrink: 0;
-	height: 48px;
-	margin-bottom: 0.25rem;
-	width: 48px;
-}
-
-.forums-message-list__skeleton-showing {
-	margin-bottom: 1rem;
-}
-
-.forums-message-list__skeleton-card {
+.forums-skeleton-card {
+	align-items: flex-start;
 	border: 1px solid var(--gray-200, #e7e7ed);
 	border-radius: var(--border-radius, 0.25rem);
+	display: flex;
+	gap: 1rem;
 	margin-bottom: 0.75rem;
-	padding: 2.1875rem 1.5rem;
+	padding: 1.25rem 1.5rem;
 }
 
-.forums-message-list__skeleton-inner {
-	align-items: flex-start;
-	display: flex;
-	gap: 1rem;
-}
-
-.forums-message-list__skeleton-avatar-col {
-	align-items: center;
-	display: flex;
-	flex-direction: column;
+.forums-skeleton-avatar {
 	flex-shrink: 0;
-	width: 56px;
+	height: 44px;
+	width: 44px;
 }
 
-.forums-message-list__skeleton-content {
-	flex-grow: 1;
+.forums-skeleton-fill {
+	display: block;
+	flex: 1;
+	height: 74px;
 	min-width: 0;
-}
-
-.forums-message-list__skeleton-meta {
-	display: flex;
-	gap: 1rem;
-	margin-top: 0.5rem;
+	width: 100%;
 }
 
 #forumsMessageListLoading {
