@@ -42,3 +42,16 @@
 		flex: none;
 	}
 }
+
+/* Page mode: the composer is rendered full-screen as a single-column form
+   (Subject, then Category, then the rest) instead of inside a modal. */
+.forums-message-composer__single-column {
+	display: flex;
+	flex-direction: column;
+}
+
+.forums-message-composer__page-footer {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1.5rem;
+}
