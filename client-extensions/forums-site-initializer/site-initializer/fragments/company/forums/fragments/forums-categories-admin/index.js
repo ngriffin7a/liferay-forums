@@ -66,7 +66,7 @@ if (forumsCategoriesAdmin) {
 			var items = data.items || [];
 
 			if (items.length === 0) {
-				listEl.innerHTML = '<li class="list-group-item text-muted">' + (forumsCategoriesAdmin.dataset.labelNoCategories || 'No categories found.') + '</li>';
+				listEl.innerHTML = '<li class="list-group-item text-secondary">' + (forumsCategoriesAdmin.dataset.labelNoCategories || 'No categories found.') + '</li>';
 				return;
 			}
 
@@ -78,14 +78,14 @@ if (forumsCategoriesAdmin) {
 				viewContainer.className = 'd-flex justify-content-between align-items-center w-100';
 
 				var infoDiv = document.createElement('div');
-				infoDiv.className = 'forums-categories-admin__cat-info flex-grow-1';
+				infoDiv.className = 'd-flex flex-column flex-grow-1';
 
 				var nameSpan = document.createElement('span');
-				nameSpan.className = 'forums-categories-admin__cat-name';
+				nameSpan.className = 'font-weight-bold';
 				nameSpan.textContent = cat.categoryName || forumsCategoriesAdmin.dataset.labelUnnamed || 'Unnamed';
 
 				var descSpan = document.createElement('span');
-				descSpan.className = 'forums-categories-admin__cat-desc';
+				descSpan.className = 'text-secondary small';
 				descSpan.textContent = cat.categoryDescription || '';
 
 				infoDiv.appendChild(nameSpan);
