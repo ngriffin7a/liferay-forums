@@ -216,37 +216,36 @@ if (messageDetail) {
 		var replyBtnSpacerClass = (hasEditAction || hasDeleteAction) ? ' mr-2' : '';
 		var editBtnSpacerClass = hasDeleteAction ? ' mr-2' : '';
 		var canMarkAnswer = isMessageQuestion && (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId))) && depth === 0;
+		var isAuthor = opCreatorId && String(creator.id) === String(opCreatorId);
 
-		return `<div class="card forums-message-detail__reply-card${solClass}${depthClass}" data-message-id="${msg.id}"${depthStyle}>
-			<div class="card-body forums-message-detail__reply-layout">
-				<div class="align-items-center d-inline-flex justify-content-start text-secondary mr-3 forums-vote" data-message-id="${msg.id}">
-					<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="Upvote">
-						<span class="inline-item inline-item-before">
-							<svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg>
-						</span>
-					</button>
-					<span class="font-weight-bold p-1 forums-vote__score" data-vote-score="${msg.id}">${score}</span>
-					<button class="btn-thumbs-down btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${downActive}" type="button" aria-pressed="${isDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${msg.id}"` : ' disabled'} title="Downvote">
-						<span class="inline-item inline-item-before">
-							<svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg>
-						</span>
-					</button>
+		return `<div class="forums-message-detail__reply-card${solClass}${depthClass}" data-message-id="${msg.id}"${depthStyle}>
+			<div class="autofit-row forums-message-detail__reply-layout">
+				<div class="autofit-col mr-2">
+					${renderAvatar(creator, 'sm')}
 				</div>
-				<div class="forums-message-detail__reply-content">
+				<div class="autofit-col autofit-col-expand forums-message-detail__reply-content">
+					<div class="forums-message-detail__reply-header">
+						<span class="text-dark font-weight-bold">${Liferay.Util.escapeHTML(name)}</span>
+						${isAuthor ? `<span class="label label-info">${messageDetail.dataset.labelAuthor || 'Author'}</span>` : ''}
+						<span class="text-secondary small">${date}</span>
+					</div>
 					${isSolution ? `<span class="label label-success forums-vote__accepted-badge mb-2">&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}</span>` : ''}
 					<div class="forums-message-detail__reply-body">${body}</div>
-					<div class="forums-message-detail__reply-author">
-						<div class="forums-message-detail__reply-author-info">
-							${renderAvatar(creator, 'sm')}
-							<span class="forums-message-detail__reply-name">${Liferay.Util.escapeHTML(name)}</span>
-							<span class="forums-message-detail__reply-date">${date}</span>
+					<div class="forums-message-detail__reply-actions">
+						${canReply ? `<button class="btn btn-outline-secondary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_messageReplies_c_forumMessageId}" data-forums-parent-id="${msg.id}"><span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></span>${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
+						<div class="align-items-center d-inline-flex text-secondary forums-vote" data-message-id="${msg.id}">
+							<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelUpvote || 'Upvote'}">
+								<span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg></span>
+							</button>
+							<span class="font-weight-bold p-1 forums-vote__score" data-vote-score="${msg.id}">${score}</span>
+							<button class="btn-thumbs-down btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${downActive}" type="button" aria-pressed="${isDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelDownvote || 'Downvote'}">
+								<span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg></span>
+							</button>
 						</div>
-						<div class="forums-message-detail__reply-actions">
-							${canMarkAnswer ? `<button class="btn btn-sm mr-2 ${isSolution ? 'btn-success' : 'btn-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
-							${canReply ? `<button class="btn btn-secondary btn-sm${replyBtnSpacerClass}" data-forums-compose data-forums-reply data-forums-message-id="${msg.id}" title="${messageDetail.dataset.labelReply || 'Reply'}" aria-label="${messageDetail.dataset.labelReply || 'Reply'}"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></button>` : ''}
-							${hasEditAction ? `<button class="btn btn-secondary btn-sm forums-edit-reply-btn${editBtnSpacerClass}" data-message-id="${msg.id}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
-							${hasDeleteAction ? `<button class="btn btn-danger btn-sm forums-delete-btn" data-delete-url="${msg.actions['delete'].href}" title="${messageDetail.dataset.labelDelete || 'Delete'}" aria-label="${messageDetail.dataset.labelDelete || 'Delete'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
-						</div>
+						<button class="btn btn-unstyled btn-sm forums-share-btn" type="button" data-message-id="${msg.id}"><span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-link" role="presentation"><use href="${clayIconsUrl}#link"></use></svg></span>${messageDetail.dataset.labelShareLink || 'Share Link'}</button>
+						${canMarkAnswer ? `<button class="btn btn-sm ${isSolution ? 'btn-success' : 'btn-outline-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
+						${hasEditAction ? `<button class="btn btn-outline-secondary btn-sm forums-edit-reply-btn" data-message-id="${msg.id}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
+						${hasDeleteAction ? `<button class="btn btn-outline-danger btn-sm forums-delete-btn" data-delete-url="${msg.actions['delete'].href}" title="${messageDetail.dataset.labelDelete || 'Delete'}" aria-label="${messageDetail.dataset.labelDelete || 'Delete'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
 					</div>
 				</div>
 			</div>
@@ -505,6 +504,21 @@ if (messageDetail) {
 			})
 			.catch(function(err) { console.error('Mark answer error:', err); });
 		}
+	}
+
+	function attachShareHandlers() {
+		messageDetail.querySelectorAll('.forums-share-btn').forEach(function(btn) {
+			btn.addEventListener('click', function(e) {
+				e.preventDefault();
+				var url = window.location.href;
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(url).catch(function() {});
+				}
+				if (Liferay.Util && Liferay.Util.openToast) {
+					Liferay.Util.openToast({ message: messageDetail.dataset.labelLinkCopied || 'Link copied to clipboard.', type: 'success' });
+				}
+			});
+		});
 	}
 
 	function attachAnswerHandlers() {
@@ -1174,6 +1188,7 @@ if (messageDetail) {
 			attachAnswerHandlers();
 			attachDeleteHandlers();
 			attachEditReplyHandlers();
+			attachShareHandlers();
 
 			/* Hide skeleton after render, with a minimum display time to prevent flash */
 			if (loadingEl) {
