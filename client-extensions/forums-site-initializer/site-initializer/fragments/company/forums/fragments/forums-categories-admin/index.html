@@ -23,9 +23,9 @@
 		</div>
 	</div>
 	<div class="container">
-		<div class="card forums-categories-admin__card" style="display:none;">
-			<div class="card-body">
-				<h3 class="forums-categories-admin__title">
+		<div class="panel panel-secondary forums-categories-admin__card" style="display:none;">
+			<div class="panel-body">
+				<h3 class="mb-4 text-dark">
 					${languageUtil.get(locale, "forum-categories-admin")}
 				</h3>
 
@@ -33,39 +33,38 @@
 					${languageUtil.get(locale, "forum-categories-admin-info")}
 				</div>
 
-				<div class="forums-categories-admin__actions mb-4" id="forumsCategoriesAdminSeedSection"
+				<div class="mb-4" id="forumsCategoriesAdminSeedSection"
 					style="display:none;">
 					<button class="btn btn-primary" id="forumsCategoriesAdminSeedBtn">${languageUtil.get(locale, "seed-default-categories")}</button>
 					<span id="forumsCategoriesAdminSeedStatus" class="ml-2 text-success"
 						style="display:none;" aria-live="polite">${languageUtil.get(locale, "seeding-complete")}</span>
 				</div>
 
-				<h4 id="forumsCategoriesAdminAddHeading" style="display:none;">${languageUtil.get(locale, "add-custom-category")}</h4>
+				<h4 class="text-dark" id="forumsCategoriesAdminAddHeading" style="display:none;">${languageUtil.get(locale, "add-custom-category")}</h4>
 				<form id="forumsCategoriesAdminAddForm" class="mb-4" style="display:none;">
 					<div class="row align-items-end">
-						<div class="col-md-5">
+						<div class="col-md-6">
 							<div class="form-group mb-md-0">
 								<label for="forumsCategoriesAdminCatName">${languageUtil.get(locale, "category-name")}</label>
 								<input type="text" class="form-control" id="forumsCategoriesAdminCatName" required>
 							</div>
 						</div>
-						<div class="col-md-5">
+						<div class="col-md">
 							<div class="form-group mb-md-0">
 								<label for="forumsCategoriesAdminCatDesc">${languageUtil.get(locale, "description")}</label>
 								<input type="text" class="form-control" id="forumsCategoriesAdminCatDesc">
 							</div>
 						</div>
-						<div class="col-md-2">
-							<button type="submit" class="btn btn-outline-primary w-100" id="forumsCategoriesAdminAddBtn">${languageUtil.get(locale, "add")}</button>
+						<div class="col-md-auto">
+							<button type="submit" class="btn btn-outline-primary" id="forumsCategoriesAdminAddBtn">${languageUtil.get(locale, "add")}</button>
 						</div>
 					</div>
 				</form>
 
-				<h4>${languageUtil.get(locale, "existing-categories")}</h4>
+				<h4 class="text-dark">${languageUtil.get(locale, "existing-categories")}</h4>
 				<div class="text-center py-3" id="forumsCategoriesAdminLoading">
-					<div class="spinner-border spinner-border-sm text-primary" role="status">
-						<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
-					</div>
+					<span class="loading-animation loading-animation-sm" aria-hidden="true"></span>
+					<span class="sr-only">${languageUtil.get(locale, "loading")}</span>
 				</div>
 				<ul class="list-group" id="forumsCategoriesAdminCategoryList" aria-live="polite" aria-relevant="additions removals">
 					<!-- Populated by JS -->
