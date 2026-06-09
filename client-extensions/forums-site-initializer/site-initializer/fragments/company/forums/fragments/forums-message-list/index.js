@@ -67,6 +67,14 @@ if (messageList) {
 		return name.charAt(0).toUpperCase();
 	}
 
+	/* Utility: stable avatar color from the Clay sticker-outline-0..9 palette */
+	function avatarColorClass(creator) {
+		var key = String((creator && (creator.id || creator.name)) || '');
+		var n = 0;
+		for (var i = 0; i < key.length; i++) { n = (n + key.charCodeAt(i)) % 10; }
+		return 'sticker-outline-' + n;
+	}
+
 	function displayName(creator) {
 		if (!creator) return '';
 		var given = creator.givenName || '';
@@ -188,7 +196,7 @@ if (messageList) {
 			var lastPage = data.lastPage || 1;
 
 			if (items.length === 0) {
-				cardsContainer.innerHTML = '<div class="forums-message-list__empty">' + (messageList.dataset.labelNoMessages || 'No messages found.') + '</div>';
+				cardsContainer.innerHTML = '<div class="forums-message-list__empty text-secondary text-center py-5">' + (messageList.dataset.labelNoMessages || 'No messages found.') + '</div>';
 				return;
 			}
 
@@ -272,19 +280,20 @@ if (messageList) {
 					if (preview.length > 160) preview = preview.substring(0, 160) + '...';
 				}
 
-				/* Avatar */
+				/* Avatar (Clay sticker) */
+				var avatarColor = avatarColorClass(msg.creator);
 				var avatarHtml;
 				if (creatorImage) {
-					avatarHtml = '<div class="forums-message-card__avatar"><img src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></div>';
+					avatarHtml = '<span class="sticker sticker-circle sticker-lg ' + avatarColor + '"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></span></span>';
 				} else {
-					avatarHtml = '<div class="forums-message-card__avatar">' + avatarInitial(creatorName) + '</div>';
+					avatarHtml = '<span class="sticker sticker-circle sticker-lg ' + avatarColor + '"><span class="sticker-overlay">' + avatarInitial(creatorName) + '</span></span>';
 				}
 
 				/* Solved badge */
 				var solvedBadge = '';
 				if (msg.question && hasSolution) {
 					var solvedText = messageList.dataset.labelSolved || 'Solved';
-					solvedBadge = '<span class="forums-message-card__solved">' + checkIcon + ' ' + solvedText + '</span>';
+					solvedBadge = '<span class="forums-message-card__solved text-success font-weight-semi-bold ml-2">' + checkIcon + ' ' + solvedText + '</span>';
 				}
 
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
@@ -300,19 +309,20 @@ if (messageList) {
 					flaggedBadge = '<span class="forums-message-card__solved text-danger ml-2"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
 				}
 
-				html += '<div class="forums-message-card">'
-					+ '<div class="forums-message-card__inner">'
-					+ '<div class="forums-message-card__avatar-col">'
+				html += '<div class="card forums-message-card">'
+					+ '<div class="card-body">'
+					+ '<div class="autofit-row">'
+					+ '<div class="autofit-col forums-message-card__avatar-col text-center">'
 					+ avatarHtml
-					+ '<span class="forums-message-card__username">' + Liferay.Util.escapeHTML(creatorName) + '</span>'
+					+ '<div class="forums-message-card__username text-truncate">' + Liferay.Util.escapeHTML(creatorName) + '</div>'
 					+ '</div>'
-					+ '<div class="forums-message-card__content">'
-					+ '<h5 class="forums-message-card__title">'
+					+ '<div class="autofit-col autofit-col-expand forums-message-card__content">'
+					+ '<h5 class="card-title forums-message-card__title">'
 					+ (topicHref ? '<a href="' + topicHref + '">' + Liferay.Util.escapeHTML(title) + '</a>' : '<span>' + Liferay.Util.escapeHTML(title) + '</span>')
 					+ solvedBadge
 					+ flaggedBadge
 					+ '</h5>'
-					+ '<p class="forums-message-card__preview">' + Liferay.Util.escapeHTML(preview) + '</p>'
+					+ '<p class="forums-message-card__preview text-secondary">' + Liferay.Util.escapeHTML(preview) + '</p>'
 					+ (function() {
 						var messageTags = msg.keywords || [];
 						if (messageTags.length === 0) return '';
@@ -323,13 +333,14 @@ if (messageList) {
 						tHtml += '</div>';
 						return tHtml;
 					})()
-					+ '<div class="forums-message-card__meta">'
+					+ '<div class="forums-message-card__meta text-secondary small">'
 					+ '<span class="forums-message-card__meta-item">' + clockIcon + ' ' + timeAgo(dateStr) + '</span>'
 					+ '<span class="forums-message-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (messageList.dataset.labelXReply || '{0} reply').replace('{0}', replyCount) : (messageList.dataset.labelXReplies || '{0} replies').replace('{0}', replyCount)) + '</span>'
 					+ '<span class="forums-message-card__meta-item">' + eyeIcon + ' ' + (msg.viewCount || 0) + '</span>'
 					+ (msg.actions && msg.actions['delete']
-						? '<span class="forums-message-card__meta-item ml-auto ms-auto"><button class="btn btn-danger btn-sm forums-list-delete-btn" data-delete-url="' + msg.actions['delete'].href + '" title="' + (messageList.dataset.labelDelete || 'Delete') + '" aria-label="' + (messageList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
+						? '<span class="forums-message-card__meta-item ml-auto"><button class="btn btn-danger btn-sm forums-list-delete-btn" data-delete-url="' + msg.actions['delete'].href + '" title="' + (messageList.dataset.labelDelete || 'Delete') + '" aria-label="' + (messageList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
 						: '')
+					+ '</div>'
 					+ '</div>'
 					+ '</div>'
 					+ '</div>'
@@ -404,7 +415,7 @@ if (messageList) {
 		})
 		.catch(function(err) {
 			hideSkeleton();
-			cardsContainer.innerHTML = '<div class="forums-message-list__empty">' + (messageList.dataset.labelUnableToLoad || 'Unable to load messages.') + '</div>';
+			cardsContainer.innerHTML = '<div class="forums-message-list__empty text-secondary text-center py-5">' + (messageList.dataset.labelUnableToLoad || 'Unable to load messages.') + '</div>';
 			console.error('ForumsMessageList error:', err);
 		});
 	}

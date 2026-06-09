@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
-<div class="forums-message-list" id="forumsMessageList"
+<div class="forums-message-list panel panel-secondary" id="forumsMessageList"
 	data-label-all-messages="${languageUtil.get(locale, "all-discussions")}"
 	data-label-category="${languageUtil.get(locale, "category")}"
 	data-label-no-messages="${languageUtil.get(locale, "no-messages-found")}"
@@ -21,39 +21,41 @@
 	data-label-views="${languageUtil.get(locale, "views")}"
 	data-label-all-categories="${languageUtil.get(locale, "all-categories")}"
 	data-label-showing="${languageUtil.get(locale, "showing-x-of-x-items")}">
-	<div class="container-fluid">
+	<div class="panel-body">
 
 		<!-- Breadcrumb -->
-		<nav aria-label="breadcrumb" class="forums-message-list__breadcrumb">
+		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb" id="forumsMessageListBreadcrumb">
-				<li class="breadcrumb-item"><a href="?">${languageUtil.get(locale, "forums")}</a></li>
-				<li class="breadcrumb-item active" aria-current="page" id="forumsMessageListCategoryName">${languageUtil.get(locale, "all-discussions")}</li>
+				<li class="breadcrumb-item"><a class="breadcrumb-link" href="?">${languageUtil.get(locale, "forums")}</a></li>
+				<li class="breadcrumb-item active"><a class="breadcrumb-link" aria-current="page" href="#" id="forumsMessageListCategoryName">${languageUtil.get(locale, "all-discussions")}</a></li>
 			</ol>
 		</nav>
 
 		<!-- Header row: Category name + search + CTA -->
 		<div class="forums-message-list__header">
-			<h2 class="forums-message-list__heading" id="forumsMessageListHeading">${languageUtil.get(locale, "all-discussions")}</h2>
+			<h2 class="mb-0 text-dark" id="forumsMessageListHeading">${languageUtil.get(locale, "all-discussions")}</h2>
 			<div class="forums-message-list__actions">
-				<select class="custom-select forums-message-list__category-filter" id="forumsMessageListCategoryFilter" aria-label="${languageUtil.get(locale, "filter-by-category")}">
+				<select class="form-control forums-message-list__category-filter" id="forumsMessageListCategoryFilter" aria-label="${languageUtil.get(locale, "filter-by-category")}">
 					<option value="">${languageUtil.get(locale, "all-categories")}</option>
 				</select>
 				<div class="forums-message-list__search input-group" id="forumsMessageListSearch">
-					<input type="text" class="form-control" id="forumsMessageListSearchInput" placeholder="${languageUtil.get(locale, "search-messages")}" aria-label="${languageUtil.get(locale, "search-messages")}">
-					<div class="input-group-append">
-						<button class="btn btn-outline-secondary" type="button" id="forumsMessageListSearchBtn" aria-label="${languageUtil.get(locale, "search-messages")}">
-							<svg class="lexicon-icon lexicon-icon-search" role="presentation" width="16" height="16">
-								<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#search"></use>
-							</svg>
-						</button>
+					<div class="input-group-item">
+						<input type="text" class="form-control input-group-inset input-group-inset-after" id="forumsMessageListSearchInput" placeholder="${languageUtil.get(locale, "search-messages")}" aria-label="${languageUtil.get(locale, "search-messages")}">
+						<div class="input-group-inset-item input-group-inset-item-after">
+							<button class="btn btn-unstyled" type="button" id="forumsMessageListSearchBtn" aria-label="${languageUtil.get(locale, "search-messages")}">
+								<svg class="lexicon-icon lexicon-icon-search" focusable="false" role="presentation">
+									<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#search"></use>
+								</svg>
+							</button>
+						</div>
 					</div>
 				</div>
-				<button type="button" class="btn forums-message-list__cta" id="forumsMessageListAskBtn" data-forums-compose style="display: none;">${languageUtil.get(locale, "new-forum-message")}</button>
+				<button type="button" class="btn btn-primary text-nowrap" id="forumsMessageListAskBtn" data-forums-compose style="display: none;">New Discussion</button>
 			</div>
 		</div>
 
 		<!-- Tab filters -->
-		<ul class="nav forums-message-list__tabs" id="forumsMessageListTabs" role="tablist">
+		<ul class="nav nav-tabs mb-4" id="forumsMessageListTabs" role="tablist">
 			<li class="nav-item" role="presentation">
 				<a class="nav-link active" href="#" data-sort="dateCreated:desc" role="tab" id="forumsTabRecent" aria-selected="true">${languageUtil.get(locale, "recent")}</a>
 			</li>
@@ -63,7 +65,7 @@
 		</ul>
 
 		<!-- Showing x-y of total -->
-		<div id="forumsMessageListShowing" class="forums-message-list__showing" style="display:none;"></div>
+		<div id="forumsMessageListShowing" class="text-secondary small mb-3" style="display:none;"></div>
 
 		<!-- Message cards -->
 		<div id="forumsMessageListCards">
@@ -150,7 +152,7 @@
 		</div>
 
 		<!-- Pagination -->
-		<nav aria-label="${languageUtil.get(locale, "message-pagination")}" id="forumsMessageListPagination" class="forums-message-list__pagination" style="display:none;">
+		<nav aria-label="${languageUtil.get(locale, "message-pagination")}" id="forumsMessageListPagination" class="mt-4" style="display:none;">
 			<ul class="pagination justify-content-center" id="forumsMessageListPaginationUl">
 			</ul>
 		</nav>
