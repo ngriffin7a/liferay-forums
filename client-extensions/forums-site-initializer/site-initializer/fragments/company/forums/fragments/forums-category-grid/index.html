@@ -5,37 +5,45 @@
 [#assign categoriesData = restClient.get("/c/forumcategories/scopes/" + scopeGroupId + "?pageSize=" + pageSize + "&sort=categoryName:asc")!"" /]
 [#assign baseHref = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") + (configuration.messagesURL!"/forum-messages") /]
 
-<div class="forums-category-grid">
+<div class="forums-category-grid my-5">
 	<div class="container">
-		<h2 class="forums-category-grid__title">
+		<h2 class="text-center text-dark mb-5">
 			${languageUtil.get(locale, "browse-categories")}
 		</h2>
 
 		<div class="justify-content-center row">
 			[#if categoriesData?is_hash && categoriesData.items?has_content]
 				[#list categoriesData.items as cat]
-					<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2">
-						<a href="${baseHref}?categoryId=${cat.id}" class="forums-category-grid__card">
-							<div class="forums-category-grid__card-icon">
-								<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
-									<path d="M14 1H2c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zm-1 12H3V3h10v10z"/>
-									<path d="M5 5h6v1H5zM5 7h6v1H5zM5 9h4v1H5z"/>
-								</svg>
+					<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-4">
+						<a href="${baseHref}?categoryId=${cat.id}" class="card card-interactive card-interactive-secondary h-100 text-decoration-none forums-category-grid__card">
+							<div class="card-body d-flex flex-column h-100">
+								<div class="sticker sticker-outline-0 border-0 mb-3">
+									<span class="sticker-overlay">
+										<svg class="lexicon-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+											<path d="M14 1H2c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zm-1 12H3V3h10v10z"/>
+											<path d="M5 5h6v1H5zM5 7h6v1H5zM5 9h4v1H5z"/>
+										</svg>
+									</span>
+								</div>
+								<div class="card-title">
+									[#if cat.categoryName?has_content]
+										${cat.categoryName?html}
+									[#else]
+										${languageUtil.get(locale, "unnamed-category")}
+									[/#if]
+								</div>
+								<p class="card-text text-secondary forums-category-grid__card-desc">${(cat.categoryDescription!"")?html}</p>
+								<span class="forums-category-grid__card-arrow text-primary mt-auto align-self-end" aria-hidden="true">
+									<svg class="lexicon-icon lexicon-icon-angle-right" role="presentation">
+										<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#angle-right"></use>
+									</svg>
+								</span>
 							</div>
-							<div class="forums-category-grid__card-name">
-								[#if cat.categoryName?has_content]
-									${cat.categoryName?html}
-								[#else]
-									${languageUtil.get(locale, "unnamed-category")}
-								[/#if]
-							</div>
-							<div class="forums-category-grid__card-desc">${(cat.categoryDescription!"")?html}</div>
-							<span class="forums-category-grid__card-arrow">&rsaquo;</span>
 						</a>
 					</div>
 				[/#list]
 			[#else]
-				<div class="col-12 forums-category-grid__empty">
+				<div class="col-12 text-center text-secondary py-5">
 					${languageUtil.get(locale, "no-categories-found")}
 				</div>
 			[/#if]
