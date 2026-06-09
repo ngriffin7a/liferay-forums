@@ -192,66 +192,30 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	}
 }
 
-/* Loading skeleton (bespoke — Clay has no multi-line skeleton component).
-   Colors come from the Style Book gray tokens. */
+/* Loading skeleton: self-contained SVG content-loaders (the shimmer animation
+   lives in the SVG via SMIL, colors come from the gray Style Book tokens), so
+   no bespoke skeleton CSS is needed beyond layout spacing and the fade-out. */
 
-@keyframes forums-skeleton-shimmer {
-	0%   { background-position: -600px 0; }
-	100% { background-position:  600px 0; }
+.forums-skeleton-defs {
+	height: 0;
+	position: absolute;
+	width: 0;
 }
 
-.forums-skeleton__bar,
-.forums-skeleton__avatar {
-	animation: forums-skeleton-shimmer 1.4s ease infinite;
-	background: linear-gradient(
-		90deg,
-		var(--gray-200, #e7e7ed) 25%,
-		var(--gray-100, #f1f2f5) 50%,
-		var(--gray-200, #e7e7ed) 75%
-	);
-	background-size: 1200px 100%;
-	border-radius: var(--border-radius, 0.25rem);
-	height: 0.875rem;
-	margin-bottom: 0.625rem;
+.forums-skeleton-titlerow {
+	display: block;
+	margin-bottom: 1.5rem;
 	width: 100%;
 }
 
-.forums-skeleton__bar--title  { height: 1.75rem; margin-bottom: 0; }
-.forums-skeleton__bar--btn    { flex-shrink: 0; height: 2rem; margin-bottom: 0; width: 5rem; }
-.forums-skeleton__bar--3q     { width: 75%; }
-.forums-skeleton__bar--half   { width: 50%; }
-.forums-skeleton__bar--sm     { width: 8rem; margin-bottom: 0; }
-.forums-skeleton__bar--xs     { width: 5rem; margin-bottom: 0; }
-
-.forums-skeleton__avatar {
-	border-radius: 50%;
-	flex-shrink: 0;
-	height: 48px;
-	margin-bottom: 0;
-	width: 48px;
-}
-
-.forums-skeleton__avatar--sm {
-	height: 32px;
-	width: 32px;
-}
-
-.forums-message-detail__skeleton-title-row {
-	align-items: center;
-	display: flex;
-	gap: 1rem;
-	justify-content: space-between;
-	margin-bottom: 1.5rem;
-}
-
-.forums-message-detail__skeleton-card {
+.forums-skeleton-card {
 	border: 1px solid var(--gray-200, #e7e7ed);
 	border-radius: var(--border-radius, 0.25rem);
 	margin-bottom: 1rem;
 	padding: 1.5rem;
 }
 
-.forums-message-detail__skeleton-author {
+.forums-skeleton-author {
 	align-items: center;
 	border-top: 1px solid var(--gray-200, #e7e7ed);
 	display: flex;
@@ -260,10 +224,22 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	padding-top: 1rem;
 }
 
-.forums-message-detail__skeleton-author-lines {
-	display: flex;
-	flex-direction: column;
-	gap: 0.375rem;
+.forums-skeleton-avatar {
+	flex-shrink: 0;
+	height: 40px;
+	width: 40px;
+}
+
+.forums-skeleton-avatar--sm {
+	height: 32px;
+	width: 32px;
+}
+
+.forums-skeleton-fill {
+	display: block;
+	flex: 1;
+	min-width: 0;
+	width: 100%;
 }
 
 #forumsDetailLoading {
