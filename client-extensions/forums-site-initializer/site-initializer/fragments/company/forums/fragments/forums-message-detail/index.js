@@ -201,7 +201,6 @@ if (messageDetail) {
 		var date = formatDate(msg.dateCreated);
 		var score = msg.voteScore || 0;
 		var solClass = isSolution ? ' forums-message-detail__reply-card--solution' : '';
-		var depthClass = depth > 0 ? ' forums-message-detail__reply-card--nested' : '';
 		var depthStyle = depth > 0 ? ' style="margin-left:' + (depth * 2.5) + 'rem"' : '';
 		var userVote = userVoteMap[msg.id];
 		var upActive = userVote && userVote.voteValue === 1 ? ' active' : '';
@@ -218,7 +217,7 @@ if (messageDetail) {
 		var canMarkAnswer = isMessageQuestion && (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId))) && depth === 0;
 		var isAuthor = opCreatorId && String(creator.id) === String(opCreatorId);
 
-		return `<div class="forums-message-detail__reply-card${solClass}${depthClass}" data-message-id="${msg.id}"${depthStyle}>
+		return `<div class="forums-message-detail__reply-card${solClass}" data-message-id="${msg.id}"${depthStyle}>
 			<div class="autofit-row forums-message-detail__reply-layout">
 				<div class="autofit-col mr-2">
 					${renderAvatar(creator, 'sm')}
@@ -649,7 +648,7 @@ if (messageDetail) {
 								var opSection = messageDetail.querySelector('#forumsDetailOP');
 								if (opSection) opSection.style.opacity = '0.5';
 								var breadcrumbCatEl = messageDetail.querySelector('#forumsDetailBreadcrumbCategory');
-								var messagesBase = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forum-messages');
+								var messagesBase = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forums-messages');
 								var targetHref = (breadcrumbCatEl && breadcrumbCatEl.href) ? breadcrumbCatEl.href
 									: (messageCategoryFK ? messagesBase + '?categoryId=' + messageCategoryFK : messagesBase);
 								setTimeout(function() {
@@ -857,7 +856,7 @@ if (messageDetail) {
 			.then(function(r) { return r.json(); })
 			.then(function(cat) {
 				var catName = cat.categoryName || messageDetail.dataset.labelCategory || 'Category';
-				var messagesHref = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forum-messages');
+				var messagesHref = sitePrefix + ((typeof configuration !== 'undefined' && configuration.messagesURL) ? configuration.messagesURL : '/forums-messages');
 				var catURL = messagesHref + '?categoryId=' + categoryFK;
 
 				if (breadcrumbCategory) {
