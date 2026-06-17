@@ -1,8 +1,50 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 
-/* The list, links and empty state are rendered with Clay's `list-group` and
-   utility classes, so no custom styling is needed. The only rules here reveal
-   the hidden ERC mapping fields while editing the page. */
+/* Nudge the whole fragment 5px down so the heading isn't quite flush with
+   the top of the section. This is a soft visual alignment toward the
+   message-detail title baseline on the left column — not a precise
+   baseline match, just less jarring than the heading sitting at the very
+   top edge. */
+
+.forums-related-topics {
+	margin-top: var(--spacer-1, 0.25rem);
+}
+
+/* The previous Clay `panel-title` class on the heading enforced an UPPERCASE
+   text-transform and a 0.875rem font-size; this rule replaces it with a
+   plain title-case heading at lead size. */
+
+.forums-related-topics__heading {
+	font-size: var(--lead-font-size, 1.25rem);
+	margin-bottom: var(--spacer-4, 1.5rem);
+}
+
+/* List items: drop the dividers and the hover background so each row reads
+   as a plain anchor link. Also align rows to the fragment edge (no
+   list-group padding) so they line up with the heading, and use a 1rem
+   gap on the flex list-group container for an even 16px space between
+   each link. */
+
+.forums-related-topics .list-group {
+	gap: 1rem;
+}
+
+.forums-related-topics .list-group-item {
+	border: 0;
+	padding: 0;
+}
+
+.forums-related-topics .list-group-item-action {
+	color: var(--primary, #0b5fff);
+}
+
+.forums-related-topics .list-group-item-action:hover,
+.forums-related-topics .list-group-item-action:focus,
+.forums-related-topics .list-group-item-action.hover {
+	background-color: transparent;
+	color: var(--primary-d2, #004ad7);
+	text-decoration: underline;
+}
 
 body.has-edit-mode-menu #forumsRelatedTopicsERC,
 body.has-edit-mode-menu #forumsRelatedTopicsReplyERC {
