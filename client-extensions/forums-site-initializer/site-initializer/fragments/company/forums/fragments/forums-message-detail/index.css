@@ -40,17 +40,21 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-message-detail__post-body {
+	font-size: 1rem;
 	margin-bottom: 1.5rem;
 }
 
 .forums-message-detail__reply-body {
-	margin-bottom: 1rem;
+	margin-bottom: 0.75rem;
+}
+
+.forums-message-detail__reply-body > *:last-child {
+	margin-bottom: 0;
 }
 
 .forums-message-detail__post-body pre,
 .forums-message-detail__reply-body pre {
 	background-color: var(--gray-100, #f1f2f5);
-	border: 1px solid var(--gray-200, #e7e7ed);
 	border-radius: var(--border-radius, 0.25rem);
 	overflow-x: auto;
 	padding: 1rem;
@@ -72,31 +76,60 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 
 /* Tags */
 
+.forums-message-detail__tags-bar {
+	align-items: center;
+	display: flex;
+	gap: var(--spacer-4, 1.5rem);
+	justify-content: space-between;
+	margin-bottom: var(--spacer-4, 1.5rem);
+}
+
 .forums-message-detail__tags {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.375rem;
-	margin-bottom: 1.25rem;
 }
 
-/* Author / byline bars */
+/* OP-author badge: a pastel-blue chip using the theme's `--blue-l5`
+   light token. Falls back to the equivalent Classic theme value so
+   third-party Style Books that redefine `--blue-l5` automatically
+   propagate. */
 
-.forums-message-detail__author-bar {
-	align-items: center;
-	border-top: 1px solid var(--gray-200, #e7e7ed);
+.forums-message-detail__author-badge {
+	background-color: var(--blue-l5, #e5f1ff);
+	border-color: var(--blue-l5, #e5f1ff);
+	color: var(--blue-d2, #005fcc);
+}
+
+/* Solved banner layout. Uses `display: flex` from a scoped rule instead
+   of Bootstrap's `.d-flex` utility (which is `!important` and would
+   defeat the inline `style="display:none"` we toggle from JS). */
+
+.forums-message-detail__solved-banner {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 1rem;
-	justify-content: space-between;
-	margin-top: 1.5rem;
-	padding-top: 1rem;
 }
+
+/* OP tag chips: a neutral light-gray fill with near-black text, pairing
+   `--secondary-l3` and `--dark-d2` from the Classic theme so the chip
+   reads as a quiet categorical marker (not a CTA). */
+
+.forums-message-detail__tag {
+	background-color: var(--secondary-l3, #e7e7ed);
+	border-color: var(--secondary-l3, #e7e7ed);
+	color: var(--dark-d2, #111116);
+}
+
+/* Author info — sits between the title and the post body */
 
 .forums-message-detail__author-info,
 .forums-message-detail__reply-author-info {
 	align-items: center;
 	display: flex;
 	gap: 0.75rem;
+}
+
+.forums-message-detail__author-info {
+	margin-bottom: 1.5rem;
 }
 
 .forums-message-detail__post-actions,
@@ -123,21 +156,28 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-message-detail__reply-actions {
-	margin-top: 0.75rem;
+	gap: 1rem;
+}
+
+.forums-message-detail__reply-card .forums-vote__btn {
+	border-radius: 50%;
 }
 
 .forums-message-detail__reply-card {
-	border-bottom: 1px solid var(--gray-200, #e7e7ed);
 	padding: 1.25rem 0;
 }
 
-.forums-message-detail__reply-card:last-child {
-	border-bottom: 0;
-}
+/* Reply marked as the accepted solution: a soft success-tinted card.
+   `--success-l2` provides the pastel green fill from the Classic theme
+   (falls back to its hex equivalent), and `--border-radius-lg` rounds
+   the corners. Padding is set on all sides because the bg fill needs
+   horizontal breathing room (the base reply-card has vertical-only
+   padding). */
 
 .forums-message-detail__reply-card--solution {
-	border-left: 3px solid var(--primary, #0b5fff);
-	padding-left: 1rem;
+	background-color: var(--success-l2, #edf9f0);
+	border-radius: var(--border-radius-lg, 0.5rem);
+	padding: 1.25rem;
 }
 
 
@@ -168,28 +208,32 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	margin-bottom: 0.75rem;
 }
 
-.forums-message-detail__section-header--solution {
+/* "Answer selected by [author]" annotation: shown on the accepted reply's
+   header row, pushed to the far right with `margin-left: auto`. Combines
+   Clay's `.small` (matches the date's font-size) with `--success` color
+   from the theme; the author name itself is semibold. */
+
+.forums-message-detail__answer-selected-by {
+	align-items: center;
 	color: var(--success, #287d3c);
+	display: inline-flex;
+	font-weight: 400;
+	gap: 0.25rem;
+	margin-left: auto;
+}
+
+.forums-message-detail__answer-selected-by-name {
+	font-weight: 600;
 }
 
 /* Topic navigation */
 
 .forums-message-detail__topic-nav {
-	border-top: 1px solid var(--gray-200, #e7e7ed);
 	display: flex;
 	gap: 1.5rem;
 	justify-content: center;
-	margin-top: 1.5rem;
-	padding-top: 1.5rem;
-}
-
-/* Responsive */
-
-@media (max-width: 767.98px) {
-	.forums-message-detail__author-bar {
-		align-items: flex-start;
-		flex-direction: column;
-	}
+	margin-bottom: var(--spacer-4, 1.5rem);
+	margin-top: var(--spacer-5, 3rem);
 }
 
 /* Loading skeleton: self-contained SVG content-loaders (the shimmer animation
@@ -209,19 +253,15 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-skeleton-card {
-	border: 1px solid var(--gray-200, #e7e7ed);
-	border-radius: var(--border-radius, 0.25rem);
 	margin-bottom: 1rem;
-	padding: 1.5rem;
+	padding: 1.5rem 0;
 }
 
 .forums-skeleton-author {
 	align-items: center;
-	border-top: 1px solid var(--gray-200, #e7e7ed);
 	display: flex;
 	gap: 0.75rem;
 	margin-top: 1.25rem;
-	padding-top: 1rem;
 }
 
 .forums-skeleton-avatar {
