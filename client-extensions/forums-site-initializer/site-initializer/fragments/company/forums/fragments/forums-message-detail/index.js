@@ -95,6 +95,51 @@ if (messageDetail) {
 		});
 	}
 
+	/* Reply options dropdown vanilla JS fallback (delegated: reply cards are
+	   re-rendered on pagination, so we bind once on the fragment root). The menu
+	   is positioned `fixed` while open so an ancestor's overflow:hidden (the page
+	   / section wrapper) cannot clip it. */
+	function closeReplyOptionMenus(except) {
+		messageDetail.querySelectorAll('.forums-message-detail__reply-options .dropdown-menu.show').forEach(function (menu) {
+			if (menu === except) return;
+			menu.classList.remove('show');
+			menu.style.position = '';
+			menu.style.top = '';
+			menu.style.left = '';
+			menu.style.right = '';
+			menu.style.zIndex = '';
+			var toggle = menu.previousElementSibling;
+			if (toggle) toggle.setAttribute('aria-expanded', 'false');
+		});
+	}
+	messageDetail.addEventListener('click', function (e) {
+		var toggle = e.target.closest('[id^="forumsReplyOptions_"]');
+		if (!toggle) return;
+		e.preventDefault();
+		var menu = toggle.nextElementSibling;
+		if (!menu || !menu.classList.contains('dropdown-menu')) return;
+		var willOpen = !menu.classList.contains('show');
+		closeReplyOptionMenus(menu);
+		if (willOpen) {
+			var rect = toggle.getBoundingClientRect();
+			menu.style.position = 'fixed';
+			menu.style.top = Math.round(rect.bottom + 2) + 'px';
+			menu.style.left = 'auto';
+			menu.style.right = Math.round(window.innerWidth - rect.right) + 'px';
+			menu.style.zIndex = '1050';
+		}
+		menu.classList.toggle('show', willOpen);
+		toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+	});
+	document.addEventListener('click', function (e) {
+		if (!e.target.closest('.forums-message-detail__reply-options')) closeReplyOptionMenus(null);
+	});
+	document.addEventListener('keydown', function (e) {
+		if (e.key === 'Escape') closeReplyOptionMenus(null);
+	});
+	window.addEventListener('scroll', function () { closeReplyOptionMenus(null); }, true);
+	window.addEventListener('resize', function () { closeReplyOptionMenus(null); });
+
 	function runMessageDetail(resolvedMessageId, replyId) {
 	messageId = resolvedMessageId;
 	var targetReplyId = replyId || null;
