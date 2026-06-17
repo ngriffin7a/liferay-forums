@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
+assemble:
+    -   fromTask: bootJar
+liferay-forumsmicroservice-oauth-application-user-agent:
+    .serviceAddress: localhost:58082
+    .serviceScheme: http
+    name: ForumsMicroservice OAuth Application User Agent
+    scopes:
+        -   Liferay.Headless.Admin.User.everything
+        -   Liferay.Headless.Object.everything
+        -   c_forummessage.everything
+        -   c_forumreply.everything
+        -   Liferay.Forum.Subscriptions.everything
+        -   Liferay.Headless.User.Notification.everything
+        -   Liferay.Headless.Admin.Site.everything
+        -   Liferay.Object.Admin.REST.everything
+    type: oAuthApplicationUserAgent
+liferay-forumsmicroservice-object-action-new-reply:
+    name: ForumsMicroservice Object Action New Reply
+    oAuth2ApplicationExternalReferenceCode: liferay-forumsmicroservice-oauth-application-user-agent
+    resourcePath: /object-action/new-reply
+    type: objectAction
+liferay-forumsmicroservice-object-action-new-message:
+    name: ForumsMicroservice Object Action New Message
+    oAuth2ApplicationExternalReferenceCode: liferay-forumsmicroservice-oauth-application-user-agent
+    resourcePath: /object-action/new-message
+    type: objectAction

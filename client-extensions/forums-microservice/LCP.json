@@ -1,0 +1,37 @@
+{
+	"cpu": 2,
+	"memory": 512,
+	"env": {
+		"LIFERAY_ROUTES_CLIENT_EXTENSION": "/etc/liferay/lxc/ext-init-metadata",
+		"LIFERAY_ROUTES_DXP": "/etc/liferay/lxc/dxp-metadata"
+	},
+	"environments": {
+		"infra": {
+			"deploy": false
+		}
+	},
+	"id": "forumsmicroservice",
+	"kind": "Deployment",
+	"livenessProbe": {
+		"httpGet": {
+			"path": "/ready",
+			"port": 58082
+		},
+		"failureThreshold": 60,
+		"periodSeconds": 20,
+		"timeoutSeconds": 10
+	},
+	"loadBalancer": {
+		"targetPort": 58082
+	},
+	"readinessProbe": {
+		"httpGet": {
+			"path": "/ready",
+			"port": 58082
+		},
+		"failureThreshold": 60,
+		"periodSeconds": 20,
+		"timeoutSeconds": 10
+	},
+	"scale": 1
+}

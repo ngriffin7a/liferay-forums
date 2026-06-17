@@ -1,4 +1,9 @@
 .DS_Store
+# Local environment files holding secrets (keep the committed template).
+**/.env
+!**/.env.example
+# Local LXC configtree created by run-local.sh
+**/.configtree
 **/*.iml
 **/.ivy
 **/.classpath
