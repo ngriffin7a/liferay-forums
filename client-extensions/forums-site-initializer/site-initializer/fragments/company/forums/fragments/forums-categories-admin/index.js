@@ -104,6 +104,7 @@ if (forumsCategoriesAdmin) {
 					editBtn.className = 'btn btn-sm btn-outline-secondary mr-2';
 					editBtn.title = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
 					editBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
+					editBtn.setAttribute('data-tooltip-align', 'top');
 					editBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="' + clayIconsUrl + '#pencil"></use></svg>';
 					actionsDiv.appendChild(editBtn);
 				}
@@ -114,6 +115,7 @@ if (forumsCategoriesAdmin) {
 					delBtn.className = 'btn btn-sm btn-outline-danger';
 					delBtn.title = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
 					delBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
+					delBtn.setAttribute('data-tooltip-align', 'top');
 					delBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg>';
 					delBtn.addEventListener('click', function() {
 						deleteCategory(cat.actions['delete'].href, cat.id);
@@ -136,21 +138,21 @@ if (forumsCategoriesAdmin) {
 					var labelName = forumsCategoriesAdmin.dataset.labelCategoryName || 'Category Name';
 					var labelDesc = forumsCategoriesAdmin.dataset.labelDescription || 'Description';
 					editForm.innerHTML = '<div class="row align-items-end">' +
-						'<div class="col-md-5">' +
-							'<div class="form-group mb-md-0">' +
+						'<div class="col-12 col-md">' +
+							'<div class="form-group mb-3 mb-md-0">' +
 								'<label for="' + nameFieldId + '" class="sr-only">' + labelName + '</label>' +
 								'<input type="text" class="form-control" id="' + nameFieldId + '" aria-label="' + labelName + '" required>' +
 							'</div>' +
 						'</div>' +
-						'<div class="col-md-5">' +
-							'<div class="form-group mb-md-0">' +
+						'<div class="col-12 col-md">' +
+							'<div class="form-group mb-3 mb-md-0">' +
 								'<label for="' + descFieldId + '" class="sr-only">' + labelDesc + '</label>' +
 								'<input type="text" class="form-control" id="' + descFieldId + '" aria-label="' + labelDesc + '">' +
 							'</div>' +
 						'</div>' +
-						'<div class="col-md-auto">' +
-							'<button type="submit" class="btn btn-sm btn-primary mr-2">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
-							'<button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
+						'<div class="col-12 col-md-auto mt-3 mt-md-0">' +
+							'<button type="submit" class="btn btn-primary mr-2">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
+							'<button type="button" class="btn btn-outline-secondary cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
 						'</div>' +
 					'</div>';
 
