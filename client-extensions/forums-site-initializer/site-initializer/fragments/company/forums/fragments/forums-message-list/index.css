@@ -6,6 +6,10 @@
    clamping, inline icon alignment) plus the bespoke loading skeleton — none of
    them hard-code brand colors. */
 
+.forums-message-list {
+	margin-bottom: var(--spacer-7, 6rem);
+}
+
 /* Header */
 
 .forums-message-list__header {
@@ -28,7 +32,7 @@
 }
 
 .forums-message-list__search {
-	max-width: 240px;
+	max-width: 320px;
 }
 
 /* Message card */
@@ -40,12 +44,6 @@
 .forums-message-card__avatar-col {
 	flex-shrink: 0;
 	width: 64px;
-}
-
-.forums-message-card__username {
-	display: block;
-	font-size: 0.75rem;
-	margin-top: 0.5rem;
 }
 
 .forums-message-card__title {
@@ -84,6 +82,12 @@
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	margin-bottom: 0.5rem;
+}
+
+.forums-message-card__tag {
+	background-color: var(--secondary-l3, #e7e7ed);
+	border-color: var(--secondary-l3, #e7e7ed);
+	color: var(--dark-d2, #111116);
 }
 
 .forums-message-card__meta {
@@ -128,10 +132,6 @@
 		align-items: center;
 		gap: 0.5rem;
 		width: auto;
-	}
-
-	.forums-message-card__username {
-		margin-top: 0;
 	}
 }
 
