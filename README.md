@@ -244,12 +244,7 @@ A `GET /ready` endpoint serves as the unauthenticated readiness/liveness probe. 
 
 Email is delivered through Liferay's notification-queue REST API (`/o/notification/v1.0/notification-queue-entries`) and in-portal notifications through the custom `forum-subscriptions` module — there is no direct SMTP.
 
-> **Dependency:** the microservice requires the custom **`forum-subscriptions` REST Builder OSGi module** to be deployed to the portal. It exists to fill two gaps in Liferay's published headless APIs that the microservice cannot work around on its own:
->
-> 1. **Subscriber discovery.** When users subscribe to a topic or category, Liferay stores that in its internal `Subscription` table via the built-in Object subscribe/unsubscribe HATEOAS actions — but **no published REST endpoint returns the list of users subscribed to a given Object entry** (the only headless subscription endpoint, `my-user-account/subscriptions`, is scoped to the *calling* user). The module exposes `GET /o/forum-subscriptions/v1.0/messages/{id}/subscribers`, which calls `SubscriptionLocalService` server-side to return the full subscriber list (user IDs + email addresses) the microservice fans notifications out to. Without it the microservice has no way to learn *who* to notify.
-> 2. **Web (in-portal) notifications.** The module also exposes a `web-notifications` endpoint that creates in-portal notifications for a batch of user IDs, since the microservice (running off-portal) cannot invoke the internal notification service directly.
->
-> Because this is a traditional OSGi artifact rather than a Client Extension, it cannot run on Liferay SaaS — see the Known Limitations note for the full rationale.
+> **Dependency:** the microservice cannot work on its own. It relies on the custom [`forum-subscriptions` REST Builder module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) for two capabilities missing from Liferay's published headless APIs: **subscriber discovery** (`GET /messages/{messageId}/subscribers`) and **batch in-portal notifications** (`POST /web-notifications`). See that section for what each endpoint does, why the platform forces a custom module, and the SaaS caveat.
 
 ### Building & deploying
 
@@ -286,6 +281,45 @@ cp .env.example .env   # then edit values
 | `FORUMS_SITE_BASE_URL` | No | `https://www.example.xyz` | Base URL prepended to the site-relative display-page path in email/web notifications, so links resolve to the deployed site. |
 
 The OAuth user-agent application (ERC `liferay-forumsmicroservice-oauth-application-user-agent`) and the two object actions are declared in [`client-extension.yaml`](client-extensions/forums-microservice/client-extension.yaml); the remaining settings live in [`application-default.properties`](client-extensions/forums-microservice/src/main/resources/application-default.properties).
+
+---
+
+## Forum Subscriptions RESTBuilder OSGi Module (`forum-subscriptions`)
+
+[`modules/forum-subscriptions`](modules/forum-subscriptions) is a custom **REST Builder** OSGi module that publishes the small headless API the [Forums Microservice](#forums-microservice-client-extension) depends on. It exists to fill two gaps in Liferay's *published* headless APIs:
+
+1. **Subscriber discovery.** When users subscribe to a topic, Liferay records it in its internal `Subscription` table via the built-in Object subscribe/unsubscribe HATEOAS actions — but **no published REST endpoint returns the list of users subscribed to a given Object entry**. The only headless subscription endpoint, `my-user-account/subscriptions`, is scoped to the *calling* user. So the microservice has no platform way to learn *whom* to notify.
+2. **Web (in-portal) notifications.** Creating an in-portal (bell-panel) notification requires the internal `UserNotificationEventLocalService`, which an off-portal microservice cannot invoke directly.
+
+The module is generated and structured like Liferay's own headless modules, as four sub-modules:
+
+| Sub-module | Role |
+| :--- | :--- |
+| `headless-forum-subscriptions-api` | DTOs (`Subscriber`, `WebNotification`) and resource interfaces. |
+| `headless-forum-subscriptions-impl` | The OSGi runtime: JAX-RS application, resource implementations, and the notification handler. The only hand-written logic lives here. |
+| `headless-forum-subscriptions-client` | Generated Java client JAR (`com.liferay.headless.forum.subscriptions.client`). |
+| `headless-forum-subscriptions-test` | Generated integration-test scaffolding. |
+
+All endpoints live under the base URI **`/o/forum-subscriptions/v1.0`** and are guarded by the OAuth2 scope **`Liferay.Forum.Subscriptions.everything`** — the same scope the microservice's user-agent application requests.
+
+### Endpoints
+
+| Method & path | Backing platform service | Purpose |
+| :--- | :--- | :--- |
+| `GET /messages/{messageId}/subscribers` | `SubscriptionLocalService` | Returns `{userId, emailAddress}` for every user subscribed to the `ForumMessage` with the given ID. |
+| `POST /web-notifications` | `UserNotificationEventLocalService` | Creates an in-portal notification (`subject` / `body` / `url`) for a batch of `userIds`. |
+
+`SubscriberResourceImpl` resolves the `ForumMessage` object definition by ERC (`FORUM-MESSAGE`) to obtain its internal class name, then calls `SubscriptionLocalService.getSubscriptions(companyId, className, messageId)` — the exact server-side call the missing headless endpoint would have made — and maps each `Subscription`'s user to an email address.
+
+`WebNotificationResourceImpl` fans the request out to `UserNotificationEventLocalService.sendUserNotificationEvents(...)` once per user ID under the portlet name `LiferayForums`. A companion `ForumUserNotificationHandler` (registered for that same portlet name) interprets those events into the clickable entries that appear in the user's notification (bell) panel.
+
+### Permissions & access
+
+Access is gated by the **`Liferay.Forum.Subscriptions.everything` OAuth2 scope** — only a token carrying that scope (i.e. the microservice's user-agent application) can reach the endpoints. The resource implementations then call Liferay *LocalServices* (`SubscriptionLocalService`, `UserLocalService`, `UserNotificationEventLocalService`), which run below the permission layer, so within that scope the microservice can read any topic's subscriber list and notify any user — exactly the back-end-service behavior it needs. Treat the scope as sensitive: anything holding a token with it can enumerate subscriber email addresses and push notifications to arbitrary users, so grant it only to the microservice's user-agent app — never to end-user-facing roles.
+
+> The `LiberalPermissionChecker` in the generated `*ResourceFactoryImpl` is standard Liferay REST Builder boilerplate for the framework's optional permission-bypass path. It is **not** engaged here: the builder defaults to `checkPermissions = true` and nothing in this module opts out, so requests run with the caller's real permission checker.
+
+> **SaaS caveat:** because this is a traditional OSGi artifact rather than a Client Extension, it requires a self-hosted or PaaS environment and **cannot be deployed on Liferay SaaS** — the underlying reason this whole approach is framed as a workaround. See [No Endpoints for Discovering Subscribed Users](#no-endpoints-for-discovering-subscribed-users).
 
 ---
 
