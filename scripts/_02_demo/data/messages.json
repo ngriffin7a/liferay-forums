@@ -146,5 +146,125 @@
 			{"author": "bob.chen", "replyIndex": 38, "answer": true, "upvotes": 14, "downvotes": 0},
 			{"author": "carla.rivera", "replyIndex": 39, "answer": false, "upvotes": 7, "downvotes": 0}
 		]
+	},
+	{
+		"author": "miguel.santos",
+		"category": "FORUM-CAT-GENERAL-DISCUSSION",
+		"title": "Just joined the community — hi from Lisbon!",
+		"body": "<p>Hey everyone, I'm Miguel, joining from Lisbon. I've been working with Liferay for about 18 months — started on a 7.4 project doing classic OSGi modules, but I've been spending most of my time lately on Headless APIs and Objects. The shift from JSP/portlet thinking to pure REST consumers has been refreshing, even if it took a while to internalize.</p><p>Right now I'm building an internal HR portal where employees can submit time-off requests through a Custom Element CX that talks to a Forum Object on the back end. I'm sure I'll have plenty of questions about edge cases (workflow integration, scoping, OAuth flows for the JS client) and I hope I can also contribute back on the topics where I've burned enough hours to have an opinion.</p>",
+		"keywords": ["introduction", "community", "headless"],
+		"question": false,
+		"replies": [
+			{"author": "alice.morgan", "replyIndex": 47, "answer": false, "upvotes": 6, "downvotes": 0},
+			{"author": "lilly.zhao", "replyIndex": 40, "answer": false, "upvotes": 2, "downvotes": 0}
+		]
+	},
+	{
+		"author": "nadia.ahmed",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "OAuth2 token expiration handling with custom providers",
+		"body": "<p>I'm integrating Liferay with a custom OAuth2 provider (not Google/Azure — an internal IdP based on Keycloak). The initial login flow works fine: tokens come back, the user gets authenticated, and we can call protected REST endpoints. The problem starts about an hour later, when the access token expires.</p><p>From what I can tell, Liferay's OAuth2 client module receives the 401 response but doesn't automatically exchange the refresh_token for a new access_token. Users just get bumped to the login page mid-session, which is obviously not great for an SPA experience. I've looked through <code>com.liferay.oauth2.provider.*</code> but I'm not sure if the refresh logic lives there or in a separate filter.</p><p>Has anyone wired up automatic refresh against a custom IdP successfully? Is there a hook/extension point I should be overriding, or do I need to write a custom <strong>AutoLogin</strong> implementation that handles the refresh handshake?</p>",
+		"keywords": ["OAuth2", "Authentication", "Tokens"],
+		"question": true,
+		"replies": [
+			{"author": "elena.petrov", "replyIndex": 41, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "bob.chen", "replyIndex": 42, "answer": true, "upvotes": 11, "downvotes": 0},
+			{"author": "frank.tanaka", "replyIndex": 43, "answer": false, "upvotes": 3, "downvotes": 0}
+		]
+	},
+	{
+		"author": "oliver.brandt",
+		"category": "FORUM-CAT-BEST-PRACTICES",
+		"title": "Folder structure for multi-environment Client Extensions",
+		"body": "<p>Our <code>client-extensions/</code> directory has grown to about 22 CXs across 4 environments (dev, qa, staging, prod) and it's becoming hard to reason about. We currently keep one folder per CX with environment-specific values inline in <code>client-extension.yaml</code>, but that means a config tweak for prod ends up touching the same file devs commit changes to constantly. Merge conflicts every Monday.</p><p>I've seen a couple of approaches floating around — keeping a single <code>client-extension.yaml</code> per CX with property placeholders that get substituted at build time from an env-specific properties file, or splitting the CX folder itself into <code>shared/</code> + <code>per-env/</code> subfolders. Both feel like they're working around the tooling rather than embracing it.</p><p>For teams running 15+ CXs, what's the structure that actually scales? Curious whether anyone has tried generating CX folders from a template (Cookiecutter / Yeoman style) so the consistency is enforced by tooling instead of convention.</p>",
+		"keywords": ["Client Extensions", "Structure", "Workflow"],
+		"question": false,
+		"replies": [
+			{"author": "miguel.santos", "replyIndex": 44, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 45, "answer": false, "upvotes": 9, "downvotes": 0},
+			{"author": "priya.kapoor", "replyIndex": 46, "answer": false, "upvotes": 7, "downvotes": 0}
+		]
+	},
+	{
+		"author": "priya.kapoor",
+		"category": "FORUM-CAT-FEATURE-REQUESTS",
+		"title": "Bulk Object Entry import via CSV in the admin UI",
+		"body": "<p>Today, the only ways to bulk-load Object Entries are the Headless Batch Engine API and the <code>*.batch-engine-data.json</code> files in site-initializers. Both require a developer in the loop. For business admins who just need to seed 500 rows from an Excel export, that's a real friction point — they end up shipping the CSV to engineering and waiting a day.</p><p>What I'd love to see is a simple <strong>Import CSV</strong> button on the Object detail page in Control Panel that maps columns to Object fields (with a preview step) and accepts the file directly. The mapping could even be saved as a named profile so recurring imports become one click. The Batch Engine is already there under the hood; this would just be a UI on top.</p><p>I know there are workarounds (custom workflow, dedicated admin portlets, etc.), but for adoption among non-technical site admins, a first-class UI matters. Has this been discussed at any of the recent DXP roadmap reviews?</p>",
+		"keywords": ["Objects", "CSV", "Admin UI", "Feature Request"],
+		"question": false,
+		"replies": [
+			{"author": "alice.morgan", "replyIndex": 48, "answer": false, "upvotes": 18, "downvotes": 0},
+			{"author": "grace.obi", "replyIndex": 49, "answer": false, "upvotes": 12, "downvotes": 0},
+			{"author": "nadia.ahmed", "replyIndex": 50, "answer": false, "upvotes": 6, "downvotes": 0}
+		]
+	},
+	{
+		"author": "carla.rivera",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Workflow Designer not triggering after publish",
+		"body": "<p>I built a 4-step approval workflow in the Kaleo Designer (Initial → Manager Review → Finance Review → Approved/Rejected), published it from the UI, and assigned it to my <code>PurchaseOrder</code> Object via the Workflow tab. Entries are getting created without errors, but the workflow never seems to fire — no notifications, no task assignments, nothing in the My Workflow Tasks portlet.</p><p>What's really throwing me off is that the Workflow Logs panel is completely empty. Not just no <em>tasks</em> — no log entries at all, as if the workflow definition wasn't even associated with the Object. I double-checked the assignment in <strong>Control Panel → Objects → PurchaseOrder → Workflow</strong> and the dropdown clearly shows my workflow selected.</p><p>Where would you start debugging this? I'm wondering if it's a permissions issue (the entry creator can't initiate the workflow?), a transaction isolation thing (the workflow lookup happens in a different transaction than the entry insert?), or just a stale cache. The site has been restarted twice with no change.</p>",
+		"keywords": ["Workflow", "Kaleo", "Debug"],
+		"question": true,
+		"replies": [
+			{"author": "frank.tanaka", "replyIndex": 51, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "oliver.brandt", "replyIndex": 52, "answer": true, "upvotes": 13, "downvotes": 0},
+			{"author": "bob.chen", "replyIndex": 53, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "lilly.zhao", "replyIndex": 54, "answer": false, "upvotes": 3, "downvotes": 0}
+		]
+	},
+	{
+		"author": "frank.tanaka",
+		"category": "FORUM-CAT-BEST-PRACTICES",
+		"title": "Lessons from a 6-month migration from 7.4 to 2025.Q4",
+		"body": "<p>We just wrapped up a long upgrade from Liferay 7.4 GA1 to 2025.Q4 for a 200k-user customer portal — six months of testing, three production rehearsals, and one very tense weekend. Now that the dust has settled, here are the things I wish someone had hammered into me on day one.</p><p>The biggest surprise was the <strong>OSGi module compatibility cliff</strong>. About 40% of our 60 custom modules needed at least one code change beyond a recompile — mostly around removed taglibs, the new headless modules replacing legacy REST endpoints, and Service Builder regenerating differently. Plan for a full audit and reserve at least 2-3 weeks for it. Don't trust that a clean Gradle build means \"it works\".</p><p><img src=\"https://picsum.photos/seed/liferay-migration/720/360\" alt=\"Migration timeline diagram\" style=\"max-width: 100%; height: auto; border-radius: var(--border-radius-lg, 0.5rem); margin: 0.5rem 0;\" /></p><p>The other under-discussed area is <strong>data migration for Custom Fields</strong>. We had ~3M entries with expando attributes that we wanted to move to Object fields. The official upgrade process doesn't touch these — you need a custom upgrade step or batch script. Do it before flipping production traffic, because doing it live with users actively writing is a nightmare. Happy to share our batch scripts if useful.</p>",
+		"keywords": ["Migration", "Upgrade", "7.4", "2025.Q4"],
+		"question": false,
+		"replies": [
+			{"author": "elena.petrov", "replyIndex": 55, "answer": false, "upvotes": 22, "downvotes": 0},
+			{"author": "miguel.santos", "replyIndex": 56, "answer": false, "upvotes": 8, "downvotes": 0},
+			{"author": "alice.morgan", "replyIndex": 57, "answer": false, "upvotes": 11, "downvotes": 0}
+		]
+	},
+	{
+		"author": "lilly.zhao",
+		"category": "FORUM-CAT-GENERAL-DISCUSSION",
+		"title": "Anyone going to DEVCON 2026?",
+		"body": "<p>Liferay DEVCON 2026 is happening in October and I'm getting my travel approved. Last year's edition was honestly one of the most useful conferences I went to — the hallway track was where I actually got answers to a couple of architecture decisions that had been blocking us for months. Curious who else is planning to be there from this community.</p><p>I'm thinking about proposing a session on lessons learned scaling Client Extensions in regulated industries (we're in healthcare and there are a lot of \"can you actually do that?\" conversations we've had to navigate). Even if I don't end up speaking, I'd love to organize an informal community meetup the evening before the conference kicks off — a small group, ideally in walking distance from the venue, just so people who only know each other from the forums can put faces to handles.</p>",
+		"keywords": ["DEVCON", "Community", "Events"],
+		"question": false,
+		"replies": [
+			{"author": "oliver.brandt", "replyIndex": 58, "answer": false, "upvotes": 9, "downvotes": 0},
+			{"author": "carla.rivera", "replyIndex": 59, "answer": false, "upvotes": 5, "downvotes": 0}
+		]
+	},
+	{
+		"author": "grace.obi",
+		"category": "FORUM-CAT-TECHNICAL-HELP",
+		"title": "Persistent sessions across multiple Liferay nodes",
+		"body": "<p>We're running a 4-node Liferay cluster behind nginx with sticky sessions (ip_hash). It works fine for the happy path — a user lands on node A, all their requests go back to A, performance is great. The problem is failover: when node A is taken out (rolling restart, autoscaling event, whatever), the user's session is just gone. They get bounced to the login screen mid-action, which has been our #1 complaint in the post-rollout user feedback.</p><p>I've read about Tomcat's session replication via DeltaManager but the docs warn that it doesn't play well with Liferay's session attributes (some of which aren't <code>Serializable</code>). Then there's the option of moving sessions to Redis or a JDBC-backed session store, but I'm not sure which is the supported path on 2025.Q4 — the documentation I've found is mostly written for 7.4.</p><p>For folks running multi-node clusters in production today, what's the actual setup? Specifically interested in: what session store you're using, whether you needed any portal-ext tweaks, and how big the performance hit is. Also whether 2025.Q4 changed anything here vs 7.4.</p>",
+		"keywords": ["Cluster", "Sessions", "Load Balancing"],
+		"question": true,
+		"replies": [
+			{"author": "frank.tanaka", "replyIndex": 60, "answer": false, "upvotes": 7, "downvotes": 0},
+			{"author": "dan.novak", "replyIndex": 61, "answer": true, "upvotes": 16, "downvotes": 0},
+			{"author": "nadia.ahmed", "replyIndex": 62, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "priya.kapoor", "replyIndex": 63, "answer": false, "upvotes": 6, "downvotes": 0}
+		]
+	},
+	{
+		"author": "elena.petrov",
+		"category": "FORUM-CAT-BEST-PRACTICES",
+		"title": "Caching strategies for high-traffic forum-style sites",
+		"body": "<p>I'd love to hear how others are tuning caches for read-heavy public sites (forums, knowledge bases, news sites). We're prepping for an expected 10x traffic bump this fall and our current setup — default Ehcache + a thin Varnish layer — was put together kind of opportunistically a few years ago. I want to revisit it with intention rather than just bumping Xmx and hoping.</p><p>Specifically I'm curious about three layers: (1) <strong>Liferay's internal entity caches</strong> — are people still tweaking <code>ehcache-cluster-link.xml</code> or has 2025.Q4 moved to something else? (2) <strong>Fragment / page output caches</strong> — for anonymous traffic on cacheable pages, what's the realistic hit rate you're getting in production? (3) <strong>CDN edge caching</strong> for HTML — we've been afraid to do this because of personalization, but the recent CDN docs hint at vary-by-segment which would unblock us.</p><p>Less interested in benchmarks (every workload is different) and more in pragmatic guidance: \"do this before this, watch out for X gotcha, this knob looks tempting but is a trap.\" War stories welcome.</p>",
+		"keywords": ["Caching", "Performance", "Varnish", "CDN"],
+		"question": false,
+		"replies": [
+			{"author": "alice.morgan", "replyIndex": 64, "answer": false, "upvotes": 12, "downvotes": 0},
+			{"author": "miguel.santos", "replyIndex": 65, "answer": false, "upvotes": 7, "downvotes": 0},
+			{"author": "bob.chen", "replyIndex": 66, "answer": false, "upvotes": 10, "downvotes": 0},
+			{"author": "oliver.brandt", "replyIndex": 67, "answer": false, "upvotes": 6, "downvotes": 0},
+			{"author": "lilly.zhao", "replyIndex": 68, "answer": false, "upvotes": 5, "downvotes": 0},
+			{"author": "grace.obi", "replyIndex": 69, "answer": false, "upvotes": 8, "downvotes": 0}
+		]
 	}
 ]
