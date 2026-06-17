@@ -4,11 +4,28 @@ var messageList = fragmentElement.querySelector('#forumsMessageList');
 if (messageList) {
 	var portalURL = Liferay.ThemeDisplay.getPortalURL();
 	var scopeGroupId = Liferay.ThemeDisplay.getScopeGroupId();
+	var pathFriendlyURLPublic = Liferay.ThemeDisplay.getPathFriendlyURLPublic();
+	var sitePrefix = '';
+	if (pathFriendlyURLPublic) {
+		var pubPath = pathFriendlyURLPublic + '/';
+		if (window.location.pathname.indexOf(pubPath) === 0) {
+			var rest = window.location.pathname.substring(pubPath.length);
+			var slugEnd = rest.indexOf('/');
+			var siteSlug = slugEnd === -1 ? rest : rest.substring(0, slugEnd);
+			sitePrefix = pathFriendlyURLPublic + '/' + siteSlug;
+		}
+	}
 	var headers = {
 		'Accept': 'application/json',
 		'Content-Type': 'application/json'
 	};
 	var clayIconsUrl = Liferay.ThemeDisplay.getPathThemeImages() + '/clay/icons.svg';
+
+	/* Point first breadcrumb crumb ("Forums") at the configured community home */
+	var homeCrumb = messageList.querySelector('#forumsMessageListBreadcrumbHome');
+	if (homeCrumb) {
+		homeCrumb.href = sitePrefix + ((typeof configuration !== 'undefined' && configuration.communityURL) ? configuration.communityURL : '/forums');
+	}
 
 	/* State */
 	var currentSort = 'dateCreated:desc';
@@ -280,13 +297,14 @@ if (messageList) {
 					if (preview.length > 160) preview = preview.substring(0, 160) + '...';
 				}
 
-				/* Avatar (Clay sticker) */
-				var avatarColor = avatarColorClass(msg.creator);
+				/* Avatar (Clay sticker). Image stickers use `sticker-user-icon`
+				   (white bg + subtle gray ring); initial-based stickers use
+				   the colored `sticker-outline-N` palette. */
 				var avatarHtml;
 				if (creatorImage) {
-					avatarHtml = '<span class="sticker sticker-circle sticker-lg ' + avatarColor + '"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></span></span>';
+					avatarHtml = '<span class="sticker sticker-circle sticker-lg"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creatorImage) + '" alt="' + Liferay.Util.escapeHTML(creatorName) + '"></span></span>';
 				} else {
-					avatarHtml = '<span class="sticker sticker-circle sticker-lg ' + avatarColor + '"><span class="sticker-overlay">' + avatarInitial(creatorName) + '</span></span>';
+					avatarHtml = '<span class="sticker sticker-circle sticker-lg ' + avatarColorClass(msg.creator) + '"><span class="sticker-overlay">' + avatarInitial(creatorName) + '</span></span>';
 				}
 
 				/* Solved badge */
@@ -296,10 +314,9 @@ if (messageList) {
 					solvedBadge = '<span class="forums-message-card__solved text-success font-weight-semi-bold ml-2">' + checkIcon + ' ' + solvedText + '</span>';
 				}
 
-				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
 				var messageObjectRoute = configuration.messageObjectRoute || 'c_forummessage';
 				var topicHref = msg.friendlyUrlPath
-					? Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath
+					? sitePrefix + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath
 					: null;
 				if (!topicHref) missingDisplayPage = true;
 
@@ -314,7 +331,6 @@ if (messageList) {
 					+ '<div class="autofit-row">'
 					+ '<div class="autofit-col forums-message-card__avatar-col text-center">'
 					+ avatarHtml
-					+ '<div class="forums-message-card__username text-secondary text-truncate">' + Liferay.Util.escapeHTML(creatorName) + '</div>'
 					+ '</div>'
 					+ '<div class="autofit-col autofit-col-expand forums-message-card__content">'
 					+ '<h5 class="card-title forums-message-card__title">'
@@ -328,17 +344,17 @@ if (messageList) {
 						if (messageTags.length === 0) return '';
 						var tHtml = '<div class="forums-message-card__tags">';
 						messageTags.forEach(function(tag) {
-							tHtml += '<span class="label label-secondary forums-message-card__tag"><span class="label-item label-item-expand">' + Liferay.Util.escapeHTML(tag) + '</span></span>';
+							tHtml += '<span class="label label-lg forums-message-card__tag"><span class="label-item label-item-expand">' + Liferay.Util.escapeHTML(tag) + '</span></span>';
 						});
 						tHtml += '</div>';
 						return tHtml;
 					})()
 					+ '<div class="forums-message-card__meta text-secondary small">'
 					+ '<span class="forums-message-card__meta-item">' + clockIcon + ' ' + timeAgo(dateStr) + '</span>'
-					+ '<span class="forums-message-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (messageList.dataset.labelXReply || '{0} reply').replace('{0}', replyCount) : (messageList.dataset.labelXReplies || '{0} replies').replace('{0}', replyCount)) + '</span>'
+					+ '<span class="forums-message-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (messageList.dataset.labelXReply || '{0} comment').replace('{0}', replyCount) : (messageList.dataset.labelXReplies || '{0} comments').replace('{0}', replyCount)) + '</span>'
 					+ '<span class="forums-message-card__meta-item">' + eyeIcon + ' ' + (msg.viewCount || 0) + '</span>'
 					+ (msg.actions && msg.actions['delete']
-						? '<span class="forums-message-card__meta-item ml-auto"><button class="btn btn-danger btn-sm forums-list-delete-btn" data-delete-url="' + msg.actions['delete'].href + '" title="' + (messageList.dataset.labelDelete || 'Delete') + '" aria-label="' + (messageList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
+						? '<span class="forums-message-card__meta-item ml-auto"><button class="btn btn-monospaced btn-sm btn-outline-danger forums-list-delete-btn" data-delete-url="' + msg.actions['delete'].href + '" title="' + (messageList.dataset.labelDelete || 'Delete') + '" aria-label="' + (messageList.dataset.labelDelete || 'Delete') + '"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg></button></span>'
 						: '')
 					+ '</div>'
 					+ '</div>'

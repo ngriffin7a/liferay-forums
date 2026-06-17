@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
-<div class="forums-message-list panel panel-secondary" id="forumsMessageList"
+<div class="forums-message-list" id="forumsMessageList"
 	data-label-all-messages="${languageUtil.get(locale, "all-discussions")}"
 	data-label-category="${languageUtil.get(locale, "category")}"
 	data-label-no-messages="${languageUtil.get(locale, "no-messages-found")}"
@@ -15,8 +15,8 @@
 	data-label-x-minutes-ago="${languageUtil.get(locale, "x-minutes-ago")}"
 	data-label-x-hours-ago="${languageUtil.get(locale, "x-hours-ago")}"
 	data-label-x-days-ago="${languageUtil.get(locale, "x-days-ago")}"
-	data-label-x-reply="${languageUtil.get(locale, "x-reply-singular")}"
-	data-label-x-replies="${languageUtil.get(locale, "x-replies-plural")}"
+	data-label-x-reply="${languageUtil.get(locale, "x-reply")}"
+	data-label-x-replies="${languageUtil.get(locale, "x-replies")}"
 	data-label-flagged="${languageUtil.get(locale, "flagged")}"
 	data-label-views="${languageUtil.get(locale, "views")}"
 	data-label-all-categories="${languageUtil.get(locale, "all-categories")}"
@@ -26,7 +26,7 @@
 		<!-- Breadcrumb -->
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb" id="forumsMessageListBreadcrumb">
-				<li class="breadcrumb-item"><a class="breadcrumb-link" href="?">${languageUtil.get(locale, "forums")}</a></li>
+				<li class="breadcrumb-item"><a class="breadcrumb-link" id="forumsMessageListBreadcrumbHome" href="#">${languageUtil.get(locale, "forums")}</a></li>
 				<li class="breadcrumb-item active"><a class="breadcrumb-link" aria-current="page" href="#" id="forumsMessageListCategoryName">${languageUtil.get(locale, "all-discussions")}</a></li>
 			</ol>
 		</nav>
@@ -40,7 +40,7 @@
 				</select>
 				<div class="forums-message-list__search input-group" id="forumsMessageListSearch">
 					<div class="input-group-item">
-						<input type="text" class="form-control input-group-inset input-group-inset-after" id="forumsMessageListSearchInput" placeholder="${languageUtil.get(locale, "search-messages")}" aria-label="${languageUtil.get(locale, "search-messages")}">
+						<input type="text" class="form-control input-group-inset input-group-inset-after" id="forumsMessageListSearchInput" aria-label="${languageUtil.get(locale, "search-messages")}">
 						<div class="input-group-inset-item input-group-inset-item-after">
 							<button class="btn btn-unstyled" type="button" id="forumsMessageListSearchBtn" aria-label="${languageUtil.get(locale, "search-messages")}">
 								<svg class="lexicon-icon lexicon-icon-search" focusable="false" role="presentation">
@@ -50,7 +50,7 @@
 						</div>
 					</div>
 				</div>
-				<button type="button" class="btn btn-primary text-nowrap" id="forumsMessageListAskBtn" data-forums-compose style="display: none;">New Discussion</button>
+				<button type="button" class="btn btn-primary text-nowrap" id="forumsMessageListAskBtn" data-forums-compose style="display: none;">${languageUtil.get(locale, "new-forum-message")}</button>
 			</div>
 		</div>
 
