@@ -20,7 +20,7 @@
 
 .forums-hero__stat-value {
 	display: block;
-	font-size: 2rem;
+	font-size: 2.5rem;
 	font-weight: var(--font-weight-bolder, 700);
 	line-height: 1.2;
 }
@@ -38,6 +38,6 @@
 	}
 
 	.forums-hero__stat-value {
-		font-size: 1.5rem;
+		font-size: 1.75rem;
 	}
 }
