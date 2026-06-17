@@ -1,7 +1,7 @@
 [
 	{
 		"key": "forums-title",
-		"value": "{\"en_US\": \"Forums\"}"
+		"value": "{\"en_US\": \"Liferay Forums\"}"
 	},
 	{
 		"key": "forums-description",
@@ -9,7 +9,7 @@
 	},
 	{
 		"key": "new-forum-message",
-		"value": "{\"en_US\": \"New Forum Message\"}"
+		"value": "{\"en_US\": \"New Discussion\"}"
 	},
 	{
 		"key": "solutions",
@@ -160,8 +160,12 @@
 		"value": "{\"en_US\": \"View the Solution\"}"
 	},
 	{
-		"key": "all-forum-categories",
-		"value": "{\"en_US\": \"All Forum Categories\"}"
+		"key": "go-to-x",
+		"value": "{\"en_US\": \"Go to {0}\"}"
+	},
+	{
+		"key": "comment",
+		"value": "{\"en_US\": \"Comment\"}"
 	},
 	{
 		"key": "no-message-selected",
@@ -280,12 +284,12 @@
 		"value": "{\"en_US\": \"Solved\"}"
 	},
 	{
-		"key": "x-reply-singular",
-		"value": "{\"en_US\": \"{0} reply\"}"
+		"key": "x-reply",
+		"value": "{\"en_US\": \"{0} comment\"}"
 	},
 	{
-		"key": "x-replies-plural",
-		"value": "{\"en_US\": \"{0} replies\"}"
+		"key": "x-replies",
+		"value": "{\"en_US\": \"{0} comments\"}"
 	},
 	{
 		"key": "just-now",
