@@ -4,7 +4,9 @@
 			{
 				"definition": {
 					"indexed": true,
-					"layout": {}
+					"layout": {
+						"widthType": "Fixed"
+					}
 				},
 				"pageElements": [
 					{
