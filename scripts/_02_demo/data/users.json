@@ -46,5 +46,29 @@
 		"emailAddress": "lilly.zhao@example.xyz",
 		"givenName": "Lilly",
 		"familyName": "Zhao"
+	},
+	{
+		"screenName": "miguel.santos",
+		"emailAddress": "miguel.santos@example.xyz",
+		"givenName": "Miguel",
+		"familyName": "Santos"
+	},
+	{
+		"screenName": "nadia.ahmed",
+		"emailAddress": "nadia.ahmed@example.xyz",
+		"givenName": "Nadia",
+		"familyName": "Ahmed"
+	},
+	{
+		"screenName": "oliver.brandt",
+		"emailAddress": "oliver.brandt@example.xyz",
+		"givenName": "Oliver",
+		"familyName": "Brandt"
+	},
+	{
+		"screenName": "priya.kapoor",
+		"emailAddress": "priya.kapoor@example.xyz",
+		"givenName": "Priya",
+		"familyName": "Kapoor"
 	}
 ]

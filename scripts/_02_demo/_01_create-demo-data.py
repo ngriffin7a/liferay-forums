@@ -294,7 +294,19 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
         print(f"  ⚠️  Skipping '{title}' — category {cat_erc} not found")
         return 0, 0
 
-    author_session = user_sessions.get(author_screen, admin_session)
+    author_session = admin_session  # demo users lack Add permission on the Forum Objects (perms not set via site-initializer JSON)
+
+    # Skip if a message with the same title already exists — keeps the script
+    # re-runnable without producing duplicates.
+    escaped_title = title.replace("'", "''")
+    existing = author_session.get(
+        f"{base}/o/c/forummessages/scopes/{site_id}",
+        params={"filter": f"messageTitle eq '{escaped_title}'", "pageSize": 1},
+    )
+    existing_body = _json(existing)
+    if existing.ok and existing_body and existing_body.get("totalCount", 0) > 0:
+        print(f"  ⏭  [{idx+1}/{total}] Skipping '{title}' — already exists")
+        return 0, 0
 
     # Pre-compute reply dates: OP reply + community replies
     replies_def = msg_def.get("replies", [])
@@ -346,7 +358,7 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
     for pos, (reply_def, reply_date) in enumerate(zip(replies_def, community_reply_dates)):
         reply_idx = reply_def.get("replyIndex", 0)
         reply_body = REPLY_POOL[reply_idx] if reply_idx < len(REPLY_POOL) else REPLY_POOL[0]
-        reply_session = user_sessions.get(reply_def.get("author", ""), admin_session)
+        reply_session = admin_session  # see comment above on author_session
         # Each reply needs a unique subject so Liferay generates a distinct urltitle.
         subject = f"Re: {title} ({pos + 1})"[:75]
 
