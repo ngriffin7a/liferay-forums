@@ -1,10 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 
-/* Tabs, cards, list-group, pagination, reason/status labels and toasts are all
-   standard Clay components driven by the Style Book tokens. The only custom
-   rules here are structural layout helpers (Bootstrap 4 / Clay has no `gap`
-   utilities) for the flag rows — they carry no colors. */
-
 .forums-moderation {
 	padding: 1rem;
 }
