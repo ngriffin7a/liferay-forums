@@ -30,12 +30,10 @@ if (messageDetail) {
 	var opAvatar = messageDetail.querySelector('#forumsDetailOPAvatar');
 	var opAuthor = messageDetail.querySelector('#forumsDetailOPAuthor');
 	var opDate = messageDetail.querySelector('#forumsDetailOPDate');
-	var opViews = messageDetail.querySelector('#forumsDetailOPViews');
 	var opTags = messageDetail.querySelector('#forumsDetailOPTags');
 	var solvedBanner = messageDetail.querySelector('#forumsDetailSolvedBanner');
 	var solutionSection = messageDetail.querySelector('#forumsDetailSolutionSection');
 	var solutionCards = messageDetail.querySelector('#forumsDetailSolutionCards');
-	var solutionCount = messageDetail.querySelector('#forumsDetailSolutionCount');
 	var repliesSection = messageDetail.querySelector('#forumsDetailRepliesSection');
 	var replyCards = messageDetail.querySelector('#forumsDetailReplyCards');
 	var replyCountEl = messageDetail.querySelector('#forumsDetailReplyCount');
@@ -44,9 +42,8 @@ if (messageDetail) {
 	/* HATEOAS: hide write-action buttons by default; show after API confirms permission */
 	if (replyBtn) {
 		replyBtn.style.display = 'none';
-		replyBtn.setAttribute('title', messageDetail.dataset.labelReply || 'Reply');
-		replyBtn.setAttribute('aria-label', messageDetail.dataset.labelReply || 'Reply');
-		replyBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg>`;
+		replyBtn.setAttribute('title', messageDetail.dataset.labelComment || 'Comment');
+		replyBtn.setAttribute('aria-label', messageDetail.dataset.labelComment || 'Comment');
 	}
 	if (flagBtn) flagBtn.style.display = 'none';
 	var breadcrumbCategory = messageDetail.querySelector('#forumsDetailBreadcrumbCategory');
@@ -58,8 +55,8 @@ if (messageDetail) {
 		allTopicsLink.href = sitePrefix + ((typeof configuration !== 'undefined' && configuration.communityURL) ? configuration.communityURL : '/forums');
 	}
 
-	// Also fix the hidden community breadcrumb link, which could be the 1st one
-	var communityBreadcrumb = messageDetail.querySelector('.forums-message-detail__breadcrumb li:first-child a');
+	// Point the first breadcrumb crumb ("Forums") at the configured community home
+	var communityBreadcrumb = messageDetail.querySelector('#forumsDetailBreadcrumb li:first-child a');
 	if (communityBreadcrumb) {
 		communityBreadcrumb.href = sitePrefix + ((typeof configuration !== 'undefined' && configuration.communityURL) ? configuration.communityURL : '/forums');
 	}
@@ -170,17 +167,18 @@ if (messageDetail) {
 
 	function renderAvatar(creator, size) {
 		var sizeClass = size === 'sm' ? 'sticker-sm' : 'sticker-lg';
-		var cls = 'sticker sticker-circle ' + sizeClass + ' ' + avatarColorClass(creator);
+		var baseCls = 'sticker sticker-circle ' + sizeClass;
 		if (creator && creator.image) {
-			return '<span class="' + cls + '"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creator.image) + '" alt="' + Liferay.Util.escapeHTML(displayName(creator)) + '"></span></span>';
+			return '<span class="' + baseCls + '"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creator.image) + '" alt="' + Liferay.Util.escapeHTML(displayName(creator)) + '"></span></span>';
 		}
 		var name = displayName(creator);
-		return '<span class="' + cls + '"><span class="sticker-overlay">' + avatarInitial(name) + '</span></span>';
+		return '<span class="' + baseCls + ' ' + avatarColorClass(creator) + '"><span class="sticker-overlay">' + avatarInitial(name) + '</span></span>';
 	}
 
 	/* Vote state: maps messageId -> { voteId, voteValue } for current user */
 	var userVoteMap = {};
 	var opCreatorId = null; /* Track message owner for Mark as Answer */
+	var opAuthorName = ''; /* Display name of the OP, used in the "Answer selected by" annotation on the accepted reply */
 	var currentAnswerId = null; /* Track currently accepted answer message ID */
 	var messageDeleteUrl = null; /* Track HATEOAS URL to delete the whole message */
 	var canUpdateMessage = false; /* HATEOAS: set true when ForumMessages API exposes update action for this message */
@@ -212,9 +210,17 @@ if (messageDetail) {
 
 		var hasEditAction = !!(msg.actions && (msg.actions['update'] || msg.actions['patch'] || msg.actions['PUT']));
 		var hasDeleteAction = !!(msg.actions && msg.actions['delete']);
-		var replyBtnSpacerClass = (hasEditAction || hasDeleteAction) ? ' mr-2' : '';
-		var editBtnSpacerClass = hasDeleteAction ? ' mr-2' : '';
-		var canMarkAnswer = isMessageQuestion && (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId))) && depth === 0;
+		var hasOptions = hasEditAction || hasDeleteAction;
+		var optionsLabel = messageDetail.dataset.labelOptions || 'Options';
+		/* Lock the accepted answer: once one reply is marked, only that reply
+		   keeps the toggle (so it can be unmarked). Hide the button on all
+		   other replies — the user must unmark the current accepted answer
+		   first before they can mark a different one. */
+		var hasAcceptedAnswer = currentAnswerId != null;
+		var canMarkAnswer = isMessageQuestion
+			&& (canUpdateMessage || (opCreatorId && String(opCreatorId) === String(currentUserId)))
+			&& depth === 0
+			&& (!hasAcceptedAnswer || isSolution);
 		var isAuthor = opCreatorId && String(creator.id) === String(opCreatorId);
 
 		return `<div class="forums-message-detail__reply-card${solClass}" data-message-id="${msg.id}"${depthStyle}>
@@ -225,26 +231,36 @@ if (messageDetail) {
 				<div class="autofit-col autofit-col-expand forums-message-detail__reply-content">
 					<div class="forums-message-detail__reply-header">
 						<span class="text-dark font-weight-bold">${Liferay.Util.escapeHTML(name)}</span>
-						${isAuthor ? `<span class="label label-info">${messageDetail.dataset.labelAuthor || 'Author'}</span>` : ''}
+						${isAuthor ? `<span class="label forums-message-detail__author-badge">${messageDetail.dataset.labelAuthor || 'Author'}</span>` : ''}
 						<span class="text-secondary small">${date}</span>
+						${isSolution ? (function() {
+							var tmpl = messageDetail.dataset.labelAnswerSelectedBy || 'Answer selected by {0}';
+							var parts = tmpl.split('{0}');
+							return `<span class="small forums-message-detail__answer-selected-by"><svg class="lexicon-icon lexicon-icon-check-circle-full" role="presentation"><use href="${clayIconsUrl}#check-circle-full"></use></svg>${Liferay.Util.escapeHTML(parts[0] || '')}<span class="forums-message-detail__answer-selected-by-name">${Liferay.Util.escapeHTML(opAuthorName)}</span>${Liferay.Util.escapeHTML(parts[1] || '')}</span>`;
+						})() : ''}
 					</div>
-					${isSolution ? `<span class="label label-success forums-vote__accepted-badge mb-2">&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}</span>` : ''}
 					<div class="forums-message-detail__reply-body">${body}</div>
 					<div class="forums-message-detail__reply-actions">
-						${canReply ? `<button class="btn btn-outline-secondary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_messageReplies_c_forumMessageId}" data-forums-parent-id="${msg.id}"><span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></span>${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
+						${canReply ? `<button class="btn btn-outline-primary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_messageReplies_c_forumMessageId}" data-forums-parent-id="${msg.id}">${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
+						${hasOptions ? `<div class="dropdown forums-message-detail__reply-options">
+							<button class="btn btn-monospaced btn-sm btn-outline-borderless btn-outline-secondary dropdown-toggle" type="button" id="forumsReplyOptions_${msg.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${optionsLabel}" title="${optionsLabel}">
+								<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation"><use href="${clayIconsUrl}#ellipsis-v"></use></svg>
+							</button>
+							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="forumsReplyOptions_${msg.id}">
+								${hasEditAction ? `<a class="dropdown-item forums-edit-reply-btn" href="#" data-message-id="${msg.id}">${messageDetail.dataset.labelEditReply || 'Edit Reply'}</a>` : ''}
+								${hasDeleteAction ? `<a class="dropdown-item text-danger forums-delete-btn" href="#" data-delete-url="${msg.actions['delete'].href}">${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}</a>` : ''}
+							</div>
+						</div>` : ''}
 						<div class="align-items-center d-inline-flex text-secondary forums-vote" data-message-id="${msg.id}">
-							<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelUpvote || 'Upvote'}">
-								<span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg></span>
+							<button class="btn-thumbs-up btn btn-monospaced btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelUpvote || 'Upvote'}">
+								<svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg>
 							</button>
 							<span class="font-weight-bold p-1 forums-vote__score" data-vote-score="${msg.id}">${score}</span>
-							<button class="btn-thumbs-down btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${downActive}" type="button" aria-pressed="${isDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelDownvote || 'Downvote'}">
-								<span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg></span>
+							<button class="btn-thumbs-down btn btn-monospaced btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${downActive}" type="button" aria-pressed="${isDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelDownvote || 'Downvote'}">
+								<svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg>
 							</button>
 						</div>
-						<button class="btn btn-unstyled btn-sm forums-share-btn" type="button" data-message-id="${msg.id}"><span class="inline-item inline-item-before"><svg class="lexicon-icon lexicon-icon-link" role="presentation"><use href="${clayIconsUrl}#link"></use></svg></span>${messageDetail.dataset.labelShareLink || 'Share Link'}</button>
 						${canMarkAnswer ? `<button class="btn btn-sm ${isSolution ? 'btn-success' : 'btn-outline-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
-						${hasEditAction ? `<button class="btn btn-outline-secondary btn-sm forums-edit-reply-btn" data-message-id="${msg.id}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
-						${hasDeleteAction ? `<button class="btn btn-outline-danger btn-sm forums-delete-btn" data-delete-url="${msg.actions['delete'].href}" title="${messageDetail.dataset.labelDelete || 'Delete'}" aria-label="${messageDetail.dataset.labelDelete || 'Delete'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
 					</div>
 				</div>
 			</div>
@@ -503,21 +519,6 @@ if (messageDetail) {
 			})
 			.catch(function(err) { console.error('Mark answer error:', err); });
 		}
-	}
-
-	function attachShareHandlers() {
-		messageDetail.querySelectorAll('.forums-share-btn').forEach(function(btn) {
-			btn.addEventListener('click', function(e) {
-				e.preventDefault();
-				var url = window.location.href;
-				if (navigator.clipboard && navigator.clipboard.writeText) {
-					navigator.clipboard.writeText(url).catch(function() {});
-				}
-				if (Liferay.Util && Liferay.Util.openToast) {
-					Liferay.Util.openToast({ message: messageDetail.dataset.labelLinkCopied || 'Link copied to clipboard.', type: 'success' });
-				}
-			});
-		});
 	}
 
 	function attachAnswerHandlers() {
@@ -867,7 +868,7 @@ if (messageDetail) {
 				/* Also populate the bottom category link */
 				if (categoryLink) {
 					var labelText = (messageDetail.dataset.labelBackToX || 'Back to {0}').replace('{0}', catName);
-					categoryLink.textContent = '\u00ab ' + labelText;
+					categoryLink.textContent = labelText;
 					categoryLink.href = catURL;
 					categoryLink.style.display = '';
 				}
@@ -975,36 +976,41 @@ if (messageDetail) {
 			if (opMsg) {
 				var creator = opMsg.creator || {};
 				opCreatorId = creator.id || null;
+				opAuthorName = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 				if (opBody) {
 					opBody.innerHTML = opMsg.body || '';
 					formatMarkupCodeBlocks(opBody);
 				}
-				if (opAvatar) opAvatar.className = 'sticker sticker-circle sticker-lg ' + avatarColorClass(creator);
-				if (opAvatar && creator.image) {
-					opAvatar.innerHTML = '<span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creator.image) + '" alt="' + Liferay.Util.escapeHTML(displayName(creator)) + '"></span>';
-				} else if (opAvatar) {
-					opAvatar.innerHTML = '<span class="sticker-overlay">' + Liferay.Util.escapeHTML(avatarInitial(displayName(creator))) + '</span>';
+				if (opAvatar) {
+					var opAvatarCls = 'sticker sticker-circle sticker-lg';
+					if (creator.image) {
+						opAvatar.className = opAvatarCls;
+						opAvatar.innerHTML = '<span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(creator.image) + '" alt="' + Liferay.Util.escapeHTML(displayName(creator)) + '"></span>';
+					} else {
+						opAvatar.className = opAvatarCls + ' ' + avatarColorClass(creator);
+						opAvatar.innerHTML = '<span class="sticker-overlay">' + Liferay.Util.escapeHTML(avatarInitial(displayName(creator))) + '</span>';
+					}
 				}
 				if (opAuthor) opAuthor.textContent = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 				if (opDate) {
-					var dateTmpl = messageDetail.dataset.labelPostedOn || 'Posted on: {0}';
+					var dateTmpl = isMessageQuestion
+						? (messageDetail.dataset.labelAskedOn || 'Asked on {0}')
+						: (messageDetail.dataset.labelPostedOn || 'Posted on {0}');
 					opDate.textContent = dateTmpl.replace('{0}', formatDate(opMsg.dateCreated));
 				}
-				if (opViews) {
-					var viewLabel = messageDetail.dataset.labelViews || 'Views';
-					opViews.textContent = newViewCount + ' ' + viewLabel;
-				}
-
 				/* Render OP Tags */
 				if (opTags && messageTagsArray.length > 0) {
 					var tagsHtml = messageTagsArray.map(function(tag) {
-						return `<span class="label label-secondary"><span class="label-item label-item-expand">${Liferay.Util.escapeHTML(tag)}</span></span>`;
+						return `<span class="label label-lg forums-message-detail__tag"><span class="label-item label-item-expand">${Liferay.Util.escapeHTML(tag)}</span></span>`;
 					}).join('');
 					opTags.innerHTML = tagsHtml;
 					opTags.style.display = '';
 				}
 
 				if (opSection) opSection.style.display = '';
+
+				var authorInfoEl = messageDetail.querySelector('#forumsDetailAuthorInfo');
+				if (authorInfoEl) authorInfoEl.style.display = '';
 
 				/* Render OP vote buttons */
 				var opVoteEl = messageDetail.querySelector('#forumsDetailOPVote');
@@ -1018,80 +1024,56 @@ if (messageDetail) {
 					var opUpIcon = opUserVote && opUserVote.voteValue === 1 ? 'thumbs-up-full' : 'thumbs-up';
 					var opDownIcon = opUserVote && opUserVote.voteValue === -1 ? 'thumbs-down-full' : 'thumbs-down';
 					
-					opVoteEl.className = 'align-items-center d-inline-flex justify-content-center text-secondary mr-3 forums-vote';
+					opVoteEl.className = 'align-items-center d-inline-flex justify-content-center text-secondary forums-vote';
 					opVoteEl.setAttribute('data-message-id', opMsg.id);
 					var upvoteTitle = messageDetail.dataset.labelUpvote || 'Upvote';
 					var downvoteTitle = messageDetail.dataset.labelDownvote || 'Downvote';
 					opVoteEl.innerHTML = `
-						<button class="btn-thumbs-up btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${opUpActive}" type="button" aria-pressed="${opIsUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${opMsg.id}"` : ' disabled'} title="${upvoteTitle}">
-							<span class="inline-item inline-item-before">
-								<svg class="lexicon-icon lexicon-icon-${opUpIcon}" role="presentation"><use href="${clayIconsUrl}#${opUpIcon}"></use></svg>
-							</span>
+						<button class="btn-thumbs-up btn btn-monospaced btn-outline-borderless btn-outline-secondary forums-vote__btn forums-vote__btn--up${opUpActive}" type="button" aria-pressed="${opIsUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${opMsg.id}"` : ' disabled'} title="${upvoteTitle}">
+							<svg class="lexicon-icon lexicon-icon-${opUpIcon}" role="presentation"><use href="${clayIconsUrl}#${opUpIcon}"></use></svg>
 						</button>
-						<span class="font-weight-bold p-1 forums-vote__score" data-vote-score="${opMsg.id}">${opScore}</span>
-						<button class="btn-thumbs-down btn btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${opDownActive}" type="button" aria-pressed="${opIsDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${opMsg.id}"` : ' disabled'} title="${downvoteTitle}">
-							<span class="inline-item inline-item-before">
-								<svg class="lexicon-icon lexicon-icon-${opDownIcon}" role="presentation"><use href="${clayIconsUrl}#${opDownIcon}"></use></svg>
-							</span>
+						<span class="font-weight-bold mx-2 forums-vote__score" data-vote-score="${opMsg.id}">${opScore}</span>
+						<button class="btn-thumbs-down btn btn-monospaced btn-outline-borderless btn-outline-secondary forums-vote__btn forums-vote__btn--down${opDownActive}" type="button" aria-pressed="${opIsDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${opMsg.id}"` : ' disabled'} title="${downvoteTitle}">
+							<svg class="lexicon-icon lexicon-icon-${opDownIcon}" role="presentation"><use href="${clayIconsUrl}#${opDownIcon}"></use></svg>
 						</button>`;
 				}
 
-				/* Render OP Delete/Edit buttons if permitted (HATEOAS) */
-				var opActionsEl = messageDetail.querySelector('#forumsDetailOPActions');
-				if (opActionsEl) {
-					var oldDel = opActionsEl.querySelector('.forums-delete-btn');
-					if (oldDel) oldDel.remove();
-					var oldEdit = opActionsEl.querySelector('.forums-edit-btn');
-					if (oldEdit) oldEdit.remove();
-					
-					var rBtn = opActionsEl.querySelector('#forumsDetailReplyBtn');
-					
-					if (rBtn && (canUpdateMessage || messageDeleteUrl)) {
-						rBtn.style.marginRight = '0.5rem';
-					}
-					
-					/* Use the message's update permissions */
-					if (canUpdateMessage) {
-						var editBtn = document.createElement('button');
-						editBtn.className = 'btn btn-secondary btn-sm forums-edit-btn';
-						if (messageDeleteUrl) {
-							editBtn.style.marginRight = '0.5rem';
+				/* Wire up OP Edit / Delete dropdown items if permitted (HATEOAS).
+				   The buttons live in the options dropdown next to the title;
+				   here we just toggle their visibility and (re)attach handlers. */
+				var dropdownEditBtn = messageDetail.querySelector('#forumsDetailEditBtn');
+				if (dropdownEditBtn && canUpdateMessage) {
+					dropdownEditBtn.style.display = '';
+					/* Clone to clear any prior click handler from previous loadMessages. */
+					var newDropdownEditBtn = dropdownEditBtn.cloneNode(true);
+					dropdownEditBtn.parentNode.replaceChild(newDropdownEditBtn, dropdownEditBtn);
+					newDropdownEditBtn.addEventListener('click', function(e) {
+						e.preventDefault();
+						if (window.forumsOpenComposeModal) {
+							window.forumsOpenComposeModal({
+								editMode: true,
+								isOp: true,
+								messageId: opMsg.id,
+								categoryId: messageCategoryFK,
+								subject: messageTitleText,
+								body: opMsg.body,
+								isQuestion: isMessageQuestion,
+								tags: messageTagsArray
+							});
 						}
-						editBtn.setAttribute('title', messageDetail.dataset.labelEditTopic || 'Edit Topic');
-						editBtn.setAttribute('aria-label', messageDetail.dataset.labelEditTopic || 'Edit Topic');
-						editBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg>`;
-						
-						editBtn.addEventListener('click', function(e) {
-							e.preventDefault();
-							if (window.forumsOpenComposeModal) {
-								window.forumsOpenComposeModal({
-									editMode: true,
-									isOp: true,
-									messageId: messageId,
-									messageId: opMsg.id,
-									categoryId: messageCategoryFK,
-									subject: messageTitleText,
-									body: opMsg.body,
-									isQuestion: isMessageQuestion,
-									tags: messageTagsArray
-								});
-							}
-						});
-						
-						opActionsEl.appendChild(editBtn);
-					}
-					
-					/* Use the message's delete URL for the OP so the whole topic is removed */
-					if (messageDeleteUrl) {
-						var delBtn = document.createElement('button');
-						delBtn.className = 'btn btn-danger btn-sm forums-delete-btn';
-						delBtn.setAttribute('data-delete-url', messageDeleteUrl);
-						delBtn.setAttribute('title', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
-						delBtn.setAttribute('aria-label', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
-						delBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg>`;
-						
-						opActionsEl.appendChild(delBtn);
-					}
+					});
+				}
+
+				var dropdownDeleteBtn = messageDetail.querySelector('#forumsDetailDeleteBtn');
+				if (dropdownDeleteBtn && messageDeleteUrl) {
+					/* Clone to clear any prior click handler from previous loadMessages
+					   (attachDeleteHandlers() re-binds on the new node below). */
+					var newDropdownDeleteBtn = dropdownDeleteBtn.cloneNode(true);
+					newDropdownDeleteBtn.setAttribute('data-delete-url', messageDeleteUrl);
+					newDropdownDeleteBtn.style.display = '';
+					dropdownDeleteBtn.parentNode.replaceChild(newDropdownDeleteBtn, dropdownDeleteBtn);
+					/* The click handler is attached by the shared attachDeleteHandlers()
+					   call below because the element carries .forums-delete-btn. */
 				}
 
 				/* Render OP Toggle Question button if permitted (HATEOAS) */
@@ -1108,29 +1090,57 @@ if (messageDetail) {
 					newBtn.addEventListener('click', function(e) {
 						e.preventDefault();
 						var newStatus = !isMessageQuestion;
-						
-						/* Update the backend object */
-						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
-							headers: headers,
-							method: 'PATCH',
-							body: JSON.stringify({ question: newStatus })
-						})
-						.then(function(r) {
-							if (r.ok) {
-								isMessageQuestion = newStatus;
-								
-								/* Refresh to show/hide the answer buttons and solved banner */
-								loadMessages();
-							}
-						})
-						.catch(function(err) { console.error('Error toggling question status', err); });
+
+						/* When demoting a question to a discussion, first fetch every
+						   reply marked as answer (across all pages) and clear the flag
+						   on each. Discussions don't have solutions, so leaving
+						   `answer: true` rows behind would be stale. */
+						var preWork = newStatus
+							? Promise.resolve()
+							: Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId
+									+ '?filter=' + encodeURIComponent('r_messageReplies_c_forumMessageId eq \'' + messageId + '\' and answer eq true')
+									+ '&fields=id&pageSize=100', {
+									headers: headers,
+									method: 'GET'
+								})
+								.then(function(r) { return r.json(); })
+								.then(function(data) {
+									var items = (data && data.items) || [];
+									return Promise.all(items.map(function(reply) {
+										return Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + reply.id, {
+											headers: headers,
+											method: 'PATCH',
+											body: JSON.stringify({ answer: false })
+										});
+									}));
+								});
+
+						preWork
+							.then(function() {
+								return Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+									headers: headers,
+									method: 'PATCH',
+									body: JSON.stringify({ question: newStatus })
+								});
+							})
+							.then(function(r) {
+								if (r.ok) {
+									isMessageQuestion = newStatus;
+									if (!newStatus) currentAnswerId = null;
+									loadMessages();
+								}
+							})
+							.catch(function(err) { console.error('Error toggling question status', err); });
 					});
 				}
 			}
 
-			/* Separate solutions from regular replies */
+			/* Separate solutions from regular replies. Reset the tracked
+			   accepted-answer id first so a stale value from a previous load
+			   doesn't leak into the "Mark as Answer" button visibility. */
 			var solutions = [];
 			var regularReplies = [];
+			currentAnswerId = null;
 			replyMessages.forEach(function(msg) {
 				if (isMessageQuestion && msg.answer === true) {
 					solutions.push(msg);
@@ -1144,12 +1154,6 @@ if (messageDetail) {
 			if (solutions.length > 0) {
 				if (solvedBanner) solvedBanner.style.display = '';
 				if (solutionSection) solutionSection.style.display = '';
-				if (solutionCount) {
-					var tmpl = solutions.length === 1 
-						? (messageDetail.dataset.labelAcceptedSolution || '{0} accepted solution')
-						: (messageDetail.dataset.labelAcceptedSolutions || '{0} accepted solutions');
-					solutionCount.textContent = tmpl.replace('{0}', solutions.length);
-				}
 
 				var solHtml = '';
 				solutions.forEach(function(sol) {
@@ -1169,8 +1173,8 @@ if (messageDetail) {
 				if (repliesSection) repliesSection.style.display = '';
 				if (replyCountEl) {
 					var tmpl = regularReplyCount === 1
-						? (messageDetail.dataset.labelXReply || '{0} reply')
-						: (messageDetail.dataset.labelXReplies || '{0} replies');
+						? (messageDetail.dataset.labelXReply || '{0} comment')
+						: (messageDetail.dataset.labelXReplies || '{0} comments');
 					replyCountEl.textContent = tmpl.replace('{0}', regularReplyCount);
 				}
 
@@ -1187,7 +1191,6 @@ if (messageDetail) {
 			attachAnswerHandlers();
 			attachDeleteHandlers();
 			attachEditReplyHandlers();
-			attachShareHandlers();
 
 			/* Hide skeleton after render, with a minimum display time to prevent flash */
 			if (loadingEl) {
