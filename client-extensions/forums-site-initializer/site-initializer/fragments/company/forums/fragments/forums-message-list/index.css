@@ -1,11 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 
-/* Breadcrumb, tabs, search input-group, pagination, cards, avatars (Clay
-   stickers) and tag labels are all standard Clay components and inherit the
-   Style Book tokens. The rules below are layout helpers only (flex rows, line
-   clamping, inline icon alignment) plus the bespoke loading skeleton — none of
-   them hard-code brand colors. */
-
 .forums-message-list {
 	margin-bottom: var(--spacer-7, 6rem);
 }
@@ -34,8 +28,6 @@
 .forums-message-list__search {
 	max-width: 320px;
 }
-
-/* Message card */
 
 .forums-message-card .card-body {
 	padding: 1.25rem 1.5rem;
@@ -134,10 +126,6 @@
 		width: auto;
 	}
 }
-
-/* Loading skeleton: self-contained SVG content-loaders (the shimmer animation
-   lives in the SVG via SMIL, colors come from the gray Style Book tokens), so
-   no bespoke skeleton CSS is needed beyond layout spacing and the fade-out. */
 
 .forums-skeleton-defs {
 	height: 0;

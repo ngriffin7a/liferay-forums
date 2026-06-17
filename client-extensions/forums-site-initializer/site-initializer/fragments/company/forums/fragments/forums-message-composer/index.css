@@ -1,15 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 
-/* The composer now uses Clay's modal component (.modal / .modal-dialog /
-   .modal-content / .modal-header / .modal-body / .modal-footer) toggled with the
-   standard `show` class + `.modal-backdrop` + `body.modal-open` from index.js, so
-   there is no custom backdrop/dialog/scroll CSS — Clay handles positioning and a
-   single scroll area (modal-dialog-scrollable). The only custom rules are the
-   two-column layout inside the body and a CKEditor sticky-toolbar fix. */
-
-/* Prevent CKEditor 5 sticky toolbar from miscalculating its position inside the
-   modal. The sticky panel computes `top` from the absolute page offset, which is
-   wrong here — override to keep the toolbar in normal document flow. */
 .forums-message-composer .ck-sticky-panel__content_sticky {
 	margin-left: 0 !important;
 	position: static !important;
@@ -17,7 +7,6 @@
 	width: auto !important;
 }
 
-/* Side-by-side layout: form fields on the left, rich-text editor on the right */
 .forums-message-composer__layout {
 	display: flex;
 	gap: 2rem;
