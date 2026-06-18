@@ -7,6 +7,12 @@
 	width: auto !important;
 }
 
+/* The toolbar is forced static above, so the sticky placeholder must not
+   reserve its height — otherwise an empty gap appears above the editor. */
+.forums-message-composer .ck-sticky-panel__placeholder {
+	display: none !important;
+}
+
 .forums-message-composer__layout {
 	display: flex;
 	gap: 2rem;
