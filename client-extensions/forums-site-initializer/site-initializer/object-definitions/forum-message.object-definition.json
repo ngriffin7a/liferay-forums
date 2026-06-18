@@ -14,9 +14,18 @@
 			"DBType": "Long",
 			"businessType": "LongInteger",
 			"label": {
-				"en_US": "Category ID"
+				"en_US": "Class Name ID"
 			},
-			"name": "categoryId",
+			"name": "classNameId",
+			"required": false
+		},
+		{
+			"DBType": "Long",
+			"businessType": "LongInteger",
+			"label": {
+				"en_US": "Class PK"
+			},
+			"name": "classPK",
 			"required": false
 		},
 		{
@@ -32,9 +41,18 @@
 			"DBType": "Long",
 			"businessType": "LongInteger",
 			"label": {
-				"en_US": "Root Message User ID"
+				"en_US": "Parent Message ID"
 			},
-			"name": "rootMessageUserId",
+			"name": "parentMessageId",
+			"required": false
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"label": {
+				"en_US": "Tree Path"
+			},
+			"name": "treePath",
 			"required": false
 		},
 		{
@@ -44,28 +62,49 @@
 			"indexedAsKeyword": false,
 			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Title"
+				"en_US": "Subject"
 			},
 			"localized": true,
-			"name": "messageTitle",
+			"name": "subject",
+			"required": true
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"label": {
+				"en_US": "URL Subject"
+			},
+			"name": "urlSubject",
 			"required": false
 		},
 		{
-			"DBType": "Long",
-			"businessType": "LongInteger",
+			"DBType": "Clob",
+			"businessType": "RichText",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Last Post By User ID"
+				"en_US": "Body"
 			},
-			"name": "lastPostByUserId",
+			"name": "body",
 			"required": false
 		},
 		{
-			"DBType": "Date",
-			"businessType": "Date",
+			"DBType": "String",
+			"businessType": "Text",
 			"label": {
-				"en_US": "Last Post Date"
+				"en_US": "Format"
 			},
-			"name": "lastPostDate",
+			"name": "format",
+			"required": false
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"label": {
+				"en_US": "Anonymous"
+			},
+			"name": "anonymous",
 			"required": false
 		},
 		{
@@ -81,18 +120,27 @@
 			"DBType": "Boolean",
 			"businessType": "Boolean",
 			"label": {
-				"en_US": "Question"
+				"en_US": "Allow Pingbacks"
 			},
-			"name": "question",
+			"name": "allowPingbacks",
+			"required": false
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"label": {
+				"en_US": "Answer"
+			},
+			"name": "answer",
 			"required": false
 		},
 		{
 			"DBType": "Integer",
 			"businessType": "Integer",
 			"label": {
-				"en_US": "View Count"
+				"en_US": "Vote Score"
 			},
-			"name": "viewCount",
+			"name": "voteScore",
 			"required": false
 		}
 	],
@@ -101,7 +149,7 @@
 	"modifiable": true,
 	"parameterRequired": false,
 	"enableObjectEntryHistory": false,
-	"titleObjectFieldName": "messageTitle",
+	"titleObjectFieldName": "subject",
 	"active": true,
 	"defaultLanguageId": "en_US",
 	"enableIndexSearch": true,

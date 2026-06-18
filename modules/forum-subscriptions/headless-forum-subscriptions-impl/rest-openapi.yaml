@@ -49,7 +49,7 @@ paths:
     "/messages/{messageId}/subscribers":
         get:
             description:
-                Returns all users subscribed to the ForumMessage with the
+                Returns all users subscribed to the ForumThread with the
                 given ID.
             operationId: getMessageSubscribersPage
             parameters:

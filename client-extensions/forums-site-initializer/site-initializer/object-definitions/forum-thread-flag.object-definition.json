@@ -8,7 +8,7 @@
 	"accountEntryRestricted": false,
 	"enableFormContainer": true,
 	"enableObjectEntrySubscription": false,
-	"externalReferenceCode": "FORUM-MESSAGE-FLAG",
+	"externalReferenceCode": "FORUM-THREAD-FLAG",
 	"objectFields": [
 		{
 			"DBType": "Long",
@@ -30,15 +30,15 @@
 	"defaultLanguageId": "en_US",
 	"enableIndexSearch": true,
 	"label": {
-		"en_US": "Forum Message Flag"
+		"en_US": "Forum Thread Flag"
 	},
 	"panelCategoryKey": "",
 	"pluralLabel": {
-		"en_US": "Forum Message Flags"
+		"en_US": "Forum Thread Flags"
 	},
 	"enableObjectEntrySchedule": false,
 	"system": false,
 	"enableObjectEntryDraft": false,
-	"name": "ForumMessageFlag",
+	"name": "ForumThreadFlag",
 	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
 }

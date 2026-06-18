@@ -43,12 +43,12 @@ public class SubscriberResourceImpl extends BaseSubscriberResourceImpl {
 			com.liferay.object.model.ObjectDefinition objectDefinition =
 				_objectDefinitionLocalService.
 					getObjectDefinitionByExternalReferenceCode(
-						"FORUM-MESSAGE", companyId);
+						"FORUM-THREAD", companyId);
 
 			className = objectDefinition.getClassName();
 		}
 		catch (Exception exception) {
-			_log.error("Unable to find ForumMessage object definition", exception);
+			_log.error("Unable to find ForumThread object definition", exception);
 
 			return Page.of(subscribers);
 		}

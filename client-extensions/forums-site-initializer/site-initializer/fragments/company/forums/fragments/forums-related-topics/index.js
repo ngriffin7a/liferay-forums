@@ -26,21 +26,21 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 		}
 
 	/* First, get the current message to find its category */
-	Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + currentMessageId, {
+	Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + currentMessageId, {
 		headers: headers,
 		method: 'GET'
 	})
 	.then(function(r) { return r.json(); })
 	.then(function(msg) {
-		var categoryId = msg.r_categoryMessages_c_forumCategoryId;
+		var categoryId = msg.r_categoryThreads_c_forumCategoryId;
 
 		/* Fetch other messages from the same category */
 		var filterParts = [];
 		if (categoryId) {
-			filterParts.push('r_categoryMessages_c_forumCategoryId eq \'' + categoryId + '\'');
+			filterParts.push('r_categoryThreads_c_forumCategoryId eq \'' + categoryId + '\'');
 		}
 
-		var url = portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?pageSize=6&sort=lastPostDate:desc&nestedFields=messageSuspiciousActivities';
+		var url = portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '?pageSize=6&sort=lastPostDate:desc&nestedFields=threadSuspiciousActivities';
 		if (filterParts.length > 0) {
 			url += '&filter=' + encodeURIComponent(filterParts.join(' and '));
 		}
@@ -65,7 +65,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 		items.forEach(function(msg) {
 			var title = msg.messageTitle || relatedTopics.dataset.labelUntitled || 'Untitled';
 			var isFlagged = false;
-			var suspiciousActivities = msg.messageSuspiciousActivities || [];
+			var suspiciousActivities = msg.threadSuspiciousActivities || [];
 			for (var s = 0; s < suspiciousActivities.length; s++) {
 				if (suspiciousActivities[s].validated === true) {
 					isFlagged = true;
@@ -81,7 +81,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 			if (msg.friendlyUrlPath) {
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var messageObjectRoute = configuration.messageObjectRoute || 'c_forummessage';
+				var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
 				var messageHref = Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath;
 				html += '<a href="' + messageHref + '" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">'
 					+ '<span>' + Liferay.Util.escapeHTML(title) + '</span>' + flaggedBadge + '</a>';
@@ -112,13 +112,13 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 	if (currentMessageId) {
 		runRelatedTopics(currentMessageId);
 	} else {
-		/* Reply ERC takes priority — set when this fragment is on a Forum Reply Display Page */
+		/* Reply ERC takes priority — set when this fragment is on a Forum Message Display Page */
 		var replyErcEl = relatedTopics.querySelector('#forumsRelatedTopicsReplyERC');
 		var replyErc = replyErcEl ? replyErcEl.textContent.trim() : null;
 		if (replyErc === 'Mappable Reply ERC') replyErc = null;
 
 		if (replyErc) {
-			Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(replyErc), {
+			Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(replyErc), {
 				headers: headers,
 				method: 'GET'
 			})
@@ -127,7 +127,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 				return r.json();
 			})
 			.then(function(reply) {
-				var parentMessageId = reply.r_messageReplies_c_forumMessageId;
+				var parentMessageId = reply.r_threadMessages_c_forumThreadId;
 				runRelatedTopics(parentMessageId ? String(parentMessageId) : null);
 			})
 			.catch(function() { runRelatedTopics(null); });
@@ -140,7 +140,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 				if (loadingEl) loadingEl.remove();
 				listEl.innerHTML = '<div class="forums-related-topics__empty">' + (relatedTopics.dataset.labelErcNotMapped || 'Message ERC is not mapped.') + '</div>';
 			} else {
-				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
+				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
 					method: 'GET'
 				})

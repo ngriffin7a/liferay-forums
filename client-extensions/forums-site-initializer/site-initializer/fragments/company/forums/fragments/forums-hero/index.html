@@ -12,8 +12,8 @@
 [#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
 [#assign scopeGroup = themeDisplay.getScopeGroup() /]
 [#assign sitePrefix = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
-[#assign messagesData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
-[#assign solutionsData = restClient.get("/c/forumreplies/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true")!"" /]
+[#assign messagesData = restClient.get("/c/forumthreads/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+[#assign solutionsData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true")!"" /]
 [#assign membersData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
 
 <div class="forums-hero">

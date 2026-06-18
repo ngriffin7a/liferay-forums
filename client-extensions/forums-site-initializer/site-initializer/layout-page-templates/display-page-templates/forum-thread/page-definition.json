@@ -81,13 +81,13 @@
 													},
 													"fragmentFields": [
 														{
-															"id": "forumsDetailERC",
+															"id": "forumsDetailReplyERC",
 															"value": {
 																"fragmentLink": {}
 															}
 														},
 														{
-															"id": "forumsDetailReplyERC",
+															"id": "forumsDetailERC",
 															"value": {
 																"fragmentLink": {},
 																"text": {
@@ -150,13 +150,13 @@
 													},
 													"fragmentFields": [
 														{
-															"id": "forumsRelatedTopicsERC",
+															"id": "forumsRelatedTopicsReplyERC",
 															"value": {
 																"fragmentLink": {}
 															}
 														},
 														{
-															"id": "forumsRelatedTopicsReplyERC",
+															"id": "forumsRelatedTopicsERC",
 															"value": {
 																"fragmentLink": {},
 																"text": {

@@ -46,7 +46,7 @@ public class Query {
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {messageSubscribers(messageId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(
-		description = "Returns all users subscribed to the ForumMessage with the given ID."
+		description = "Returns all users subscribed to the ForumThread with the given ID."
 	)
 	public SubscriberPage messageSubscribers(
 			@GraphQLName("messageId") Long messageId)

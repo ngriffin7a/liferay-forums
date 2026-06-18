@@ -8,8 +8,8 @@ Steps:
   1. Ensure the four default Forum Categories exist (by ERC).
   2. Create demo user accounts and assign "Site Member" role.
   3. Register each demo user as a ForumStatsUser (drives the hero member count).
-  4. Create Forum Messages (with keywords) across categories.
-  5. Create Forum Replies on each message by *different* users.
+  4. Create Forum Threads (with keywords) across categories.
+  5. Create Forum Messages on each message by *different* users.
 
 Data files are read from the data/ subdirectory:
   - data/categories.json
@@ -303,11 +303,11 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
     community_reply_dates = reply_dates[1:]
 
     resp = author_session.post(
-        f"{base}/o/c/forummessages/scopes/{site_id}",
+        f"{base}/o/c/forumthreads/scopes/{site_id}",
         json={
             "messageTitle": title,
             "messageTitle_i18n": {"en_US": title},
-            "r_categoryMessages_c_forumCategoryId": cat_id,
+            "r_categoryThreads_c_forumCategoryId": cat_id,
             "question": is_question,
             "keywords": keywords,
             "viewCount": random.randint(5, 320),
@@ -324,10 +324,10 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
 
     # OP reply (message body posted as the first reply)
     author_session.post(
-        f"{base}/o/c/forumreplies/scopes/{site_id}",
+        f"{base}/o/c/forummessages/scopes/{site_id}",
         json={
-            "r_messageReplies_c_forumMessageId": msg_id,
-            "r_categoryReplies_c_forumCategoryId": cat_id,
+            "r_threadMessages_c_forumThreadId": msg_id,
+            "r_categoryMessages_c_forumCategoryId": cat_id,
             "subject": title,
             "subject_i18n": {"en_US": title},
             "body": body_html,
@@ -351,10 +351,10 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
         subject = f"Re: {title} ({pos + 1})"[:75]
 
         resp = reply_session.post(
-            f"{base}/o/c/forumreplies/scopes/{site_id}",
+            f"{base}/o/c/forummessages/scopes/{site_id}",
             json={
-                "r_messageReplies_c_forumMessageId": msg_id,
-                "r_categoryReplies_c_forumCategoryId": cat_id,
+                "r_threadMessages_c_forumThreadId": msg_id,
+                "r_categoryMessages_c_forumCategoryId": cat_id,
                 "subject": subject,
                 "subject_i18n": {"en_US": subject},
                 "body": reply_body,
@@ -368,10 +368,10 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
             print(f"    ⚠️  Reply failed on '{title}': {resp.status_code}")
             # Retry once
             resp = reply_session.post(
-                f"{base}/o/c/forumreplies/scopes/{site_id}",
+                f"{base}/o/c/forummessages/scopes/{site_id}",
                 json={
-                    "r_messageReplies_c_forumMessageId": msg_id,
-                    "r_categoryReplies_c_forumCategoryId": cat_id,
+                    "r_threadMessages_c_forumThreadId": msg_id,
+                    "r_categoryMessages_c_forumCategoryId": cat_id,
                     "subject": subject,
                     "subject_i18n": {"en_US": subject},
                     "body": reply_body,
@@ -394,20 +394,20 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
             for _ in range(count):
                 vr = admin_session.post(
                     f"{base}/o/c/forumvotes/scopes/{site_id}",
-                    json={"r_replyVotes_c_forumReplyId": reply_id, "voteValue": vote_value},
+                    json={"r_messageVotes_c_forumMessageId": reply_id, "voteValue": vote_value},
                 )
                 if vr.ok:
                     total_votes += 1
 
         net = upvotes - downvotes
         if net != 0:
-            admin_session.patch(f"{base}/o/c/forumreplies/{reply_id}", json={"voteScore": net})
+            admin_session.patch(f"{base}/o/c/forummessages/{reply_id}", json={"voteScore": net})
 
     return total_replies, total_votes
 
 
 def create_messages_and_replies(admin_session, user_sessions, base, site_id, cat_map):
-    print("\n═══ Step 4: Creating Forum Messages ═══")
+    print("\n═══ Step 4: Creating Forum Threads ═══")
     total = len(DEMO_MESSAGES)
 
     # Generate chronologically sorted dates for all messages

@@ -65,7 +65,7 @@ public abstract class BaseSubscriberResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/forum-subscriptions/v1.0/messages/{messageId}/subscribers'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Returns all users subscribed to the ForumMessage with the given ID."
+		description = "Returns all users subscribed to the ForumThread with the given ID."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {

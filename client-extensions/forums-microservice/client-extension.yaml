@@ -8,8 +8,8 @@ liferay-forumsmicroservice-oauth-application-user-agent:
     scopes:
         -   Liferay.Headless.Admin.User.everything
         -   Liferay.Headless.Object.everything
+        -   c_forumthread.everything
         -   c_forummessage.everything
-        -   c_forumreply.everything
         -   Liferay.Forum.Subscriptions.everything
         -   Liferay.Headless.User.Notification.everything
         -   Liferay.Headless.Admin.Site.everything

@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Two endpoints are registered in {@code client-extension.yaml}:</p>
  * <ul>
  *   <li>{@code /object-action/new-reply} — triggered when a
- *       {@code ForumReply} Object entry is created.  Notifies all users who
- *       subscribed to the parent {@code ForumMessage}.</li>
+ *       {@code ForumMessage} Object entry is created.  Notifies all users who
+ *       subscribed to the parent {@code ForumThread}.</li>
  *   <li>{@code /object-action/new-message} — triggered when a new root
- *       {@code ForumMessage} Object entry is created (i.e. a new topic).
+ *       {@code ForumThread} Object entry is created (i.e. a new topic).
  *       Notifies all users who subscribed to the parent
  *       {@code ForumCategory}.</li>
  * </ul>
@@ -47,14 +47,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class ForumNotificationController extends BaseRestController {
 
 	/**
-	 * Handles a new ForumReply being created.
+	 * Handles a new ForumMessage being created.
 	 *
 	 * <p>Expected payload fields (in addition to standard Object entry
 	 * metadata):</p>
 	 * <ul>
 	 *   <li>{@code body} — HTML body of the reply</li>
-	 *   <li>{@code r_messageReplies_c_forumMessageId} — FK to the parent
-	 *       ForumMessage</li>
+	 *   <li>{@code r_threadMessages_c_forumThreadId} — FK to the parent
+	 *       ForumThread</li>
 	 *   <li>{@code creator.name} / {@code creator.givenName} — reply author</li>
 	 * </ul>
 	 */
@@ -76,22 +76,22 @@ public class ForumNotificationController extends BaseRestController {
 		String replyBody = "";
 
 		if (values != null) {
-			parentMessageId = values.optLong("r_messageReplies_c_forumMessageId", 0L);
+			parentMessageId = values.optLong("r_threadMessages_c_forumThreadId", 0L);
 			replyBody = _stripHtml(values.optString("body", ""));
 		}
 
 		if (parentMessageId == 0L) {
-			_log.warn("onNewReply: missing r_messageReplies_c_forumMessageId in payload");
+			_log.warn("onNewReply: missing r_threadMessages_c_forumThreadId in payload");
 
 			return new ResponseEntity<>(json, HttpStatus.OK);
 		}
 
-		JSONObject dto = payload.optJSONObject("objectEntryDTOForumReply");
+		JSONObject dto = payload.optJSONObject("objectEntryDTOForumMessage");
 		JSONObject creator = (dto != null) ? dto.optJSONObject("creator") : null;
 
 		String replyAuthor = _resolveAuthorName(creator);
 
-		// Fetch the parent ForumMessage to get the topic title
+		// Fetch the parent ForumThread to get the topic title
 
 		String messageTitle = _fetchMessageTitle(parentMessageId, jwt.getTokenValue());
 
@@ -132,13 +132,13 @@ public class ForumNotificationController extends BaseRestController {
 	}
 
 	/**
-	 * Handles a new root ForumMessage (topic) being created.
+	 * Handles a new root ForumThread (topic) being created.
 	 *
 	 * <p>Expected payload fields:</p>
 	 * <ul>
 	 *   <li>{@code messageTitle} — topic title</li>
-	 *   <li>{@code id} — ForumMessage ID</li>
-	 *   <li>{@code r_categoryMessages_c_forumCategoryId} — FK to the parent
+	 *   <li>{@code id} — ForumThread ID</li>
+	 *   <li>{@code r_categoryThreads_c_forumCategoryId} — FK to the parent
 	 *       ForumCategory</li>
 	 *   <li>{@code creator.name} / {@code creator.givenName} — topic author</li>
 	 * </ul>
@@ -161,10 +161,10 @@ public class ForumNotificationController extends BaseRestController {
 
 		if (values != null) {
 			messageTitle = values.optString("messageTitle", "Forum Discussion");
-			categoryId = values.optLong("r_categoryMessages_c_forumCategoryId", 0L);
+			categoryId = values.optLong("r_categoryThreads_c_forumCategoryId", 0L);
 		}
 
-		JSONObject dto = payload.optJSONObject("objectEntryDTOForumMessage");
+		JSONObject dto = payload.optJSONObject("objectEntryDTOForumThread");
 		JSONObject creator = (dto != null) ? dto.optJSONObject("creator") : null;
 
 		String author = _resolveAuthorName(creator);
@@ -208,13 +208,13 @@ public class ForumNotificationController extends BaseRestController {
 	private String _fetchMessageTitle(long messageId, String authToken) {
 		try {
 			String response = _liferayApiClient.get(
-				"/o/c/forummessages/" + messageId + "?fields=messageTitle",
+				"/o/c/forumthreads/" + messageId + "?fields=messageTitle",
 				authToken);
 
 			return new JSONObject(response).optString("messageTitle", null);
 		}
 		catch (Exception e) {
-			_log.error("Failed to fetch ForumMessage title for id=" + messageId + ": " + e.getMessage());
+			_log.error("Failed to fetch ForumThread title for id=" + messageId + ": " + e.getMessage());
 
 			return null;
 		}

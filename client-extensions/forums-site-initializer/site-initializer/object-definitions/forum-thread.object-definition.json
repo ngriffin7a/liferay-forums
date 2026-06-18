@@ -8,24 +8,15 @@
 	"accountEntryRestricted": false,
 	"enableFormContainer": true,
 	"enableObjectEntrySubscription": true,
-	"externalReferenceCode": "FORUM-REPLY",
+	"externalReferenceCode": "FORUM-THREAD",
 	"objectFields": [
 		{
 			"DBType": "Long",
 			"businessType": "LongInteger",
 			"label": {
-				"en_US": "Class Name ID"
+				"en_US": "Category ID"
 			},
-			"name": "classNameId",
-			"required": false
-		},
-		{
-			"DBType": "Long",
-			"businessType": "LongInteger",
-			"label": {
-				"en_US": "Class PK"
-			},
-			"name": "classPK",
+			"name": "categoryId",
 			"required": false
 		},
 		{
@@ -41,18 +32,9 @@
 			"DBType": "Long",
 			"businessType": "LongInteger",
 			"label": {
-				"en_US": "Parent Message ID"
+				"en_US": "Root Message User ID"
 			},
-			"name": "parentMessageId",
-			"required": false
-		},
-		{
-			"DBType": "String",
-			"businessType": "Text",
-			"label": {
-				"en_US": "Tree Path"
-			},
-			"name": "treePath",
+			"name": "rootMessageUserId",
 			"required": false
 		},
 		{
@@ -62,49 +44,28 @@
 			"indexedAsKeyword": false,
 			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Subject"
+				"en_US": "Title"
 			},
 			"localized": true,
-			"name": "subject",
-			"required": true
-		},
-		{
-			"DBType": "String",
-			"businessType": "Text",
-			"label": {
-				"en_US": "URL Subject"
-			},
-			"name": "urlSubject",
+			"name": "messageTitle",
 			"required": false
 		},
 		{
-			"DBType": "Clob",
-			"businessType": "RichText",
-			"indexed": true,
-			"indexedAsKeyword": false,
-			"indexedLanguageId": "en_US",
+			"DBType": "Long",
+			"businessType": "LongInteger",
 			"label": {
-				"en_US": "Body"
+				"en_US": "Last Post By User ID"
 			},
-			"name": "body",
+			"name": "lastPostByUserId",
 			"required": false
 		},
 		{
-			"DBType": "String",
-			"businessType": "Text",
+			"DBType": "Date",
+			"businessType": "Date",
 			"label": {
-				"en_US": "Format"
+				"en_US": "Last Post Date"
 			},
-			"name": "format",
-			"required": false
-		},
-		{
-			"DBType": "Boolean",
-			"businessType": "Boolean",
-			"label": {
-				"en_US": "Anonymous"
-			},
-			"name": "anonymous",
+			"name": "lastPostDate",
 			"required": false
 		},
 		{
@@ -120,27 +81,18 @@
 			"DBType": "Boolean",
 			"businessType": "Boolean",
 			"label": {
-				"en_US": "Allow Pingbacks"
+				"en_US": "Question"
 			},
-			"name": "allowPingbacks",
-			"required": false
-		},
-		{
-			"DBType": "Boolean",
-			"businessType": "Boolean",
-			"label": {
-				"en_US": "Answer"
-			},
-			"name": "answer",
+			"name": "question",
 			"required": false
 		},
 		{
 			"DBType": "Integer",
 			"businessType": "Integer",
 			"label": {
-				"en_US": "Vote Score"
+				"en_US": "View Count"
 			},
-			"name": "voteScore",
+			"name": "viewCount",
 			"required": false
 		}
 	],
@@ -149,20 +101,20 @@
 	"modifiable": true,
 	"parameterRequired": false,
 	"enableObjectEntryHistory": false,
-	"titleObjectFieldName": "subject",
+	"titleObjectFieldName": "messageTitle",
 	"active": true,
 	"defaultLanguageId": "en_US",
 	"enableIndexSearch": true,
 	"label": {
-		"en_US": "Forum Reply"
+		"en_US": "Forum Thread"
 	},
 	"panelCategoryKey": "",
 	"pluralLabel": {
-		"en_US": "Forum Replies"
+		"en_US": "Forum Threads"
 	},
 	"enableObjectEntrySchedule": false,
 	"system": false,
 	"enableObjectEntryDraft": false,
-	"name": "ForumReply",
+	"name": "ForumThread",
 	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
 }

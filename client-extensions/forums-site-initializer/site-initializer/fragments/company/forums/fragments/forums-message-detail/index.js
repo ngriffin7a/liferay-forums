@@ -174,7 +174,7 @@ if (messageDetail) {
 	var opCreatorId = null; /* Track message owner for Mark as Answer */
 	var currentAnswerId = null; /* Track currently accepted answer message ID */
 	var messageDeleteUrl = null; /* Track HATEOAS URL to delete the whole message */
-	var canUpdateMessage = false; /* HATEOAS: set true when ForumMessages API exposes update action for this message */
+	var canUpdateMessage = false; /* HATEOAS: set true when ForumThreads API exposes update action for this message */
 	var canVote = false; /* HATEOAS: set true when ForumVotes API exposes create action */
 	var canReply = false; /* HATEOAS: set true when ForumReplies API exposes create action */
 	var isMessageQuestion = false; /* Track if the message was marked as a question */
@@ -332,7 +332,7 @@ if (messageDetail) {
 			var messageIdSet = {};
 			messageIds.forEach(function(id) { messageIdSet[id] = true; });
 			items.forEach(function(vote) {
-				var msgId = vote.r_replyVotes_c_forumReplyId;
+				var msgId = vote.r_messageVotes_c_forumMessageId;
 				if (msgId && messageIdSet[msgId]) {
 					userVoteMap[msgId] = { voteId: vote.id, voteValue: vote.voteValue };
 				}
@@ -391,7 +391,7 @@ if (messageDetail) {
 			method: 'POST',
 			body: JSON.stringify({
 				voteValue: voteValue,
-				r_replyVotes_c_forumReplyId: messageId
+				r_messageVotes_c_forumMessageId: messageId
 			})
 		})
 		.then(function(r) { return r.json(); })
@@ -432,10 +432,10 @@ if (messageDetail) {
 			}
 		}
 
-		/* Also PATCH the ForumReply to persist the denormalized score */
+		/* Also PATCH the ForumMessage to persist the denormalized score */
 		if (scoreEl) {
 			var persistedScore = parseInt(scoreEl.textContent) || 0;
-			Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + messageId, {
+			Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 				headers: headers,
 				method: 'PATCH',
 				body: JSON.stringify({ voteScore: persistedScore })
@@ -459,7 +459,7 @@ if (messageDetail) {
 	function handleMarkAnswer(messageId, isCurrentlyAnswer) {
 		if (isCurrentlyAnswer) {
 			/* Unmark this answer */
-			Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + messageId, {
+			Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 				headers: headers,
 				method: 'PATCH',
 				body: JSON.stringify({ answer: false })
@@ -475,14 +475,14 @@ if (messageDetail) {
 			/* If another answer exists, unmark it first */
 			var chain = Promise.resolve();
 			if (currentAnswerId && currentAnswerId !== messageId) {
-				chain = Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + currentAnswerId, {
+				chain = Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + currentAnswerId, {
 					headers: headers,
 					method: 'PATCH',
 					body: JSON.stringify({ answer: false })
 				});
 			}
 			chain.then(function() {
-				return Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + messageId, {
+				return Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
 					headers: headers,
 					method: 'PATCH',
 					body: JSON.stringify({ answer: true })
@@ -675,7 +675,7 @@ if (messageDetail) {
 			}
 		}
 
-		Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId + '?nestedFields=messageSuspiciousActivities', {
+		Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId + '?nestedFields=threadSuspiciousActivities', {
 			headers: headers,
 			method: 'GET'
 		})
@@ -770,7 +770,7 @@ if (messageDetail) {
 
 		if (!alreadyViewed && Liferay.ThemeDisplay.isSignedIn()) {
 			newViewCount = currentViewCount + 1;
-			Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+			Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
 				method: 'PATCH',
 				headers: headers,
 				body: JSON.stringify({ viewCount: newViewCount })
@@ -790,7 +790,7 @@ if (messageDetail) {
 		isMessageQuestion = msg.question === true;
 
 		var isFlagged = false;
-		var suspiciousActivities = msg.messageSuspiciousActivities || [];
+		var suspiciousActivities = msg.threadSuspiciousActivities || [];
 		for (var s = 0; s < suspiciousActivities.length; s++) {
 			if (suspiciousActivities[s].validated === true) {
 				isFlagged = true;
@@ -817,7 +817,7 @@ if (messageDetail) {
 		}
 
 		messageTitleText = msg.messageTitle || messageDetail.dataset.labelUntitledMessage || 'Untitled Message';
-		messageCategoryFK = msg.r_categoryMessages_c_forumCategoryId;
+		messageCategoryFK = msg.r_categoryThreads_c_forumCategoryId;
 		messageTagsArray = msg.keywords || [];
 		var title = messageTitleText;
 		var categoryFK = messageCategoryFK;
@@ -893,8 +893,8 @@ if (messageDetail) {
 			skeletonShownAt = Date.now();
 		}
 
-		Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId + '?filter='
-			+ encodeURIComponent('r_messageReplies_c_forumMessageId eq \'' + messageId + '\'')
+		Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?filter='
+			+ encodeURIComponent('r_threadMessages_c_forumThreadId eq \'' + messageId + '\'')
 			+ '&sort=dateCreated:asc&page=' + currentReplyPage
 			+ '&pageSize=' + replyPageSize, {
 			headers: headers,
@@ -1087,7 +1087,7 @@ if (messageDetail) {
 						var newStatus = !isMessageQuestion;
 						
 						/* Update the backend object */
-						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({ question: newStatus })
@@ -1180,7 +1180,7 @@ if (messageDetail) {
 				}, remainingMs);
 			}
 
-			/* Scroll to a specific reply when the fragment is on a Forum Reply Display Page */
+			/* Scroll to a specific reply when the fragment is on a Forum Message Display Page */
 			if (targetReplyId) {
 				var targetCard = messageDetail.querySelector('.forums-message-detail__reply-card[data-message-id="' + targetReplyId + '"]');
 				if (targetCard) {
@@ -1348,7 +1348,7 @@ if (messageDetail) {
 					flagBody = JSON.stringify({
 						reason: reason,
 						suspiciousMessageId: parseInt(messageId),
-						r_messageSuspiciousActivities_c_forumMessageId: parseInt(messageId)
+						r_threadSuspiciousActivities_c_forumThreadId: parseInt(messageId)
 					});
 				}
 
@@ -1426,13 +1426,13 @@ if (messageDetail) {
 	if (messageId) {
 		runMessageDetail(messageId, null);
 	} else {
-		/* Reply ERC takes priority — set when this fragment is on a Forum Reply Display Page */
+		/* Reply ERC takes priority — set when this fragment is on a Forum Message Display Page */
 		var replyErcEl = messageDetail.querySelector('#forumsDetailReplyERC');
 		var replyErc = replyErcEl ? replyErcEl.textContent.trim() : null;
 		if (replyErc === 'Mappable Reply ERC') replyErc = null;
 
 		if (replyErc) {
-			Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(replyErc), {
+			Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(replyErc), {
 				headers: headers,
 				method: 'GET'
 			})
@@ -1441,7 +1441,7 @@ if (messageDetail) {
 				return r.json();
 			})
 			.then(function(reply) {
-				var parentMessageId = reply.r_messageReplies_c_forumMessageId;
+				var parentMessageId = reply.r_threadMessages_c_forumThreadId;
 				runMessageDetail(parentMessageId ? String(parentMessageId) : null, reply.id ? String(reply.id) : null);
 			})
 			.catch(function() { runMessageDetail(null, null); });
@@ -1453,7 +1453,7 @@ if (messageDetail) {
 			if (!erc) {
 				if (loadingEl) loadingEl.innerHTML = '<div class="forums-message-list__empty">' + (messageDetail.dataset.labelErcNotMapped || 'Message ERC is not mapped.') + '</div>';
 			} else {
-				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
+				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(erc), {
 					headers: headers,
 					method: 'GET'
 				})

@@ -12,7 +12,7 @@
 				},
 				{
 					"dataType": "string",
-					"defaultValue": "c_forummessage",
+					"defaultValue": "c_forumthread",
 					"label": "Message Object URL Route",
 					"name": "messageObjectRoute",
 					"type": "text"

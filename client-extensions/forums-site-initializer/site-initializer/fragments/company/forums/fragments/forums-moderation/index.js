@@ -12,7 +12,7 @@ if (forumsMod) {
 	function buildMessageHref(messageData) {
 		if (messageData && messageData.friendlyUrlPath) {
 			var siteSlug = (messageData.scopeKey || '').toLowerCase().replace(/ /g, '-');
-			var messageObjectRoute = configuration.messageObjectRoute || 'c_forummessage';
+			var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
 			return Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + messageData.friendlyUrlPath;
 		}
 		return null;
@@ -253,7 +253,7 @@ if (forumsMod) {
 		if (paginationNav) paginationNav.style.display = 'none';
 
 		var url = portalURL + '/o/c/forumsuspiciousactivities/scopes/' + scopeGroupId
-			+ '?nestedFields=messageSuspiciousActivities'
+			+ '?nestedFields=threadSuspiciousActivities'
 			+ '&sort=dateCreated:desc'
 			+ '&page=' + currentPage
 			+ '&pageSize=' + pageSize
@@ -294,9 +294,9 @@ if (forumsMod) {
 
 			var missingDisplayPage = false;
 			items.forEach(function(flag) {
-				var messageData = flag.messageSuspiciousActivities || {};
-				var messageTitle = messageData.messageTitle || messageData.title || 'Message #' + (flag.suspiciousMessageId || flag.r_messageSuspiciousActivities_c_forumMessageId || '?');
-				var messageId = flag.suspiciousMessageId || flag.r_messageSuspiciousActivities_c_forumMessageId;
+				var messageData = flag.threadSuspiciousActivities || {};
+				var messageTitle = messageData.messageTitle || messageData.title || 'Message #' + (flag.suspiciousMessageId || flag.r_threadSuspiciousActivities_c_forumThreadId || '?');
+				var messageId = flag.suspiciousMessageId || flag.r_threadSuspiciousActivities_c_forumThreadId;
 				var authorId = messageData.creator ? messageData.creator.id : null;
 				var creator = flag.creator || {};
 				var creatorName = displayName(creator) || 'Unknown';

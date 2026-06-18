@@ -9,8 +9,8 @@
 # Environment variables can be supplied via a .env file in this directory.
 # See .env.example for the expected keys.
 #
-# The microservice receives Liferay Object Action webhooks (new ForumReply /
-# new ForumMessage) and notifies forum subscribers by email and in-portal
+# The microservice receives Liferay Object Action webhooks (new ForumMessage /
+# new ForumThread) and notifies forum subscribers by email and in-portal
 # notification. It must point at the Liferay instance that ISSUES the
 # object-action JWTs — the same instance whose JWKS validates them and whose
 # headless APIs it calls back into. Set LIFERAY_BASE_URL / LIFERAY_DXP_HOST

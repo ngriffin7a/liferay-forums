@@ -21,11 +21,11 @@ import com.liferay.portal.kernel.util.LocaleUtil
 def companyId = com.liferay.portal.kernel.util.PortalUtil.getDefaultCompanyId()
 
 def statsUserDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-STATS-USER", companyId)
-def messageDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-MESSAGE", companyId)
-def replyDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-REPLY", companyId)
+def messageDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-THREAD", companyId)
+def replyDef = ObjectDefinitionLocalServiceUtil.getObjectDefinitionByExternalReferenceCode("FORUM-MESSAGE", companyId)
 
 if (!statsUserDef || !messageDef || !replyDef) {
-    out.println("❌ Could not find Forum Object Definitions. Ensure FORUM-STATS-USER, FORUM-MESSAGE, and FORUM-REPLY exist.")
+    out.println("❌ Could not find Forum Object Definitions. Ensure FORUM-STATS-USER, FORUM-THREAD, and FORUM-MESSAGE exist.")
     return
 }
 

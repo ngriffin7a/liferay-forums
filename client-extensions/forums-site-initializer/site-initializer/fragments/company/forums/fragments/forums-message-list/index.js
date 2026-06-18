@@ -155,10 +155,10 @@ if (messageList) {
 
 		var filterParts = [];
 		if (categoryId) {
-			filterParts.push('r_categoryMessages_c_forumCategoryId eq \'' + categoryId + '\'');
+			filterParts.push('r_categoryThreads_c_forumCategoryId eq \'' + categoryId + '\'');
 		}
 
-		var url = portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?page=' + currentPage
+		var url = portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '?page=' + currentPage
 			+ '&pageSize=' + pageSize
 			+ '&sort=' + currentSort;
 
@@ -195,15 +195,15 @@ if (messageList) {
 			/* Fetch replies and activities separately to avoid JOIN-based pagination overlap */
 			var messageIds = items.map(function(t) { return t.id; });
 			var repliesFilter = messageIds.map(function(id) {
-				return 'r_messageReplies_c_forumMessageId eq \'' + id + '\'';
+				return 'r_threadMessages_c_forumThreadId eq \'' + id + '\'';
 			}).join(' or ');
 			var activitiesFilter = messageIds.map(function(id) {
-				return 'r_messageSuspiciousActivities_c_forumMessageId eq \'' + id + '\'';
+				return 'r_threadSuspiciousActivities_c_forumThreadId eq \'' + id + '\'';
 			}).join(' or ');
 
 			return Promise.all([
 				Liferay.Util.fetch(
-					portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId
+					portalURL + '/o/c/forummessages/scopes/' + scopeGroupId
 						+ '?filter=' + encodeURIComponent(repliesFilter)
 						+ '&pageSize=500&sort=dateCreated:asc',
 					{ headers: headers, method: 'GET' }
@@ -217,19 +217,19 @@ if (messageList) {
 			]).then(function(results) {
 				var repliesByMessage = {};
 				(results[0].items || []).forEach(function(reply) {
-					var tid = reply.r_messageReplies_c_forumMessageId;
+					var tid = reply.r_threadMessages_c_forumThreadId;
 					if (!repliesByMessage[tid]) repliesByMessage[tid] = [];
 					repliesByMessage[tid].push(reply);
 				});
 				var activitiesByMessage = {};
 				(results[1].items || []).forEach(function(activity) {
-					var tid = activity.r_messageSuspiciousActivities_c_forumMessageId;
+					var tid = activity.r_threadSuspiciousActivities_c_forumThreadId;
 					if (!activitiesByMessage[tid]) activitiesByMessage[tid] = [];
 					activitiesByMessage[tid].push(activity);
 				});
 				items.forEach(function(msg) {
-					msg.messageReplies = repliesByMessage[msg.id] || [];
-					msg.messageSuspiciousActivities = activitiesByMessage[msg.id] || [];
+					msg.threadMessages = repliesByMessage[msg.id] || [];
+					msg.threadSuspiciousActivities = activitiesByMessage[msg.id] || [];
 				});
 
 			var html = '';
@@ -243,7 +243,7 @@ if (messageList) {
 				var creatorName = displayName(msg.creator) || messageList.dataset.labelUnknown || 'Unknown';
 				var creatorImage = (msg.creator && msg.creator.image) || '';
 				var dateStr = msg.dateCreated || '';
-				var messages = msg.messageReplies || [];
+				var messages = msg.threadMessages || [];
 				var replyCount = messages.length > 0 ? messages.length - 1 : 0;
 				var hasSolution = false;
 
@@ -255,7 +255,7 @@ if (messageList) {
 				}
 
 				var isFlagged = false;
-				var suspiciousActivities = msg.messageSuspiciousActivities || [];
+				var suspiciousActivities = msg.threadSuspiciousActivities || [];
 				for (var s = 0; s < suspiciousActivities.length; s++) {
 					if (suspiciousActivities[s].validated === true) {
 						isFlagged = true;
@@ -288,7 +288,7 @@ if (messageList) {
 				}
 
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var messageObjectRoute = configuration.messageObjectRoute || 'c_forummessage';
+				var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
 				var topicHref = msg.friendlyUrlPath
 					? Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath
 					: null;

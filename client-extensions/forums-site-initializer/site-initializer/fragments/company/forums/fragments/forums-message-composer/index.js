@@ -279,7 +279,7 @@ if (messageComposer) {
 			if (bodyLabel) bodyLabel.textContent = messageComposer.dataset.labelYourReply || 'Your Reply';
 			if (submitBtn) submitBtn.textContent = messageComposer.dataset.labelPost || 'Post';
 		} else {
-			if (titleEl) titleEl.textContent = messageComposer.dataset.labelNewForumMessage || 'New Forum Message';
+			if (titleEl) titleEl.textContent = messageComposer.dataset.labelNewForumThread || 'New Forum Thread';
 			if (leftCol) leftCol.style.display = '';
 			if (categoryGroup) categoryGroup.style.display = '';
 			if (subjectGroup) subjectGroup.style.display = '';
@@ -466,33 +466,33 @@ if (messageComposer) {
 				var promises = [];
 				if (editIsOp) {
 					promises.push(
-						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({
 								messageTitle: subject,
 								messageTitle_i18n: { en_US: subject },
-								r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
+								r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
 								question: isQuestion,
 								keywords: tagsArray
 							})
 						}).then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
 					);
 					promises.push(
-						Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + editMessageId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + editMessageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({
 								subject: subject,
 								subject_i18n: { en_US: subject },
 								body: body,
-								r_categoryReplies_c_forumCategoryId: parseInt(selectedCategory)
+								r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory)
 							})
 						}).then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
 					);
 				} else {
 					promises.push(
-						Liferay.Util.fetch(portalURL + '/o/c/forumreplies/' + editMessageId, {
+						Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + editMessageId, {
 							headers: headers,
 							method: 'PATCH',
 							body: JSON.stringify({
@@ -520,7 +520,7 @@ if (messageComposer) {
 				submitBtn.textContent = messageComposer.dataset.labelPosting || 'Posting...';
 
 				var replyPayload = {
-					r_messageReplies_c_forumMessageId: parseInt(messageId),
+					r_threadMessages_c_forumThreadId: parseInt(messageId),
 					parentMessageId: parentMessageId ? parseInt(parentMessageId) : 0,
 					body: body,
 					format: 'html',
@@ -528,7 +528,7 @@ if (messageComposer) {
 					subject_i18n: { en_US: 'Re: reply' }
 				};
 
-				Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId, {
+				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId, {
 					headers: headers,
 					method: 'POST',
 					body: JSON.stringify(replyPayload)
@@ -578,12 +578,12 @@ if (messageComposer) {
 				var messagePayload = {
 					messageTitle: subject,
 					messageTitle_i18n: { en_US: subject },
-					r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
+					r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
 					question: isQuestion,
 					keywords: tagsArray
 				};
 
-				Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId, {
+				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId, {
 					headers: headers,
 					method: 'POST',
 					body: JSON.stringify(messagePayload)
@@ -595,8 +595,8 @@ if (messageComposer) {
 				})
 				.then(function(msg) {
 					var msgPayload = {
-						r_messageReplies_c_forumMessageId: msg.id,
-						r_categoryReplies_c_forumCategoryId: parseInt(selectedCategory),
+						r_threadMessages_c_forumThreadId: msg.id,
+						r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
 						subject: subject,
 						subject_i18n: { en_US: subject },
 						body: body,
@@ -604,7 +604,7 @@ if (messageComposer) {
 					};
 
 					var promises = [];
-					promises.push(Liferay.Util.fetch(portalURL + '/o/c/forumreplies/scopes/' + scopeGroupId, {
+					promises.push(Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId, {
 						headers: headers,
 						method: 'POST',
 						body: JSON.stringify(msgPayload)
@@ -614,7 +614,7 @@ if (messageComposer) {
 					}));
 
 					if (subscribeCheck && subscribeCheck.checked && msg.externalReferenceCode) {
-						promises.push(Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(msg.externalReferenceCode) + '/subscribe', {
+						promises.push(Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '/by-external-reference-code/' + encodeURIComponent(msg.externalReferenceCode) + '/subscribe', {
 							headers: headers,
 							method: 'POST'
 						}).then(function(r) {
@@ -636,7 +636,7 @@ if (messageComposer) {
 						hideModal();
 						sessionStorage.setItem('forumsSuccessToast', messageComposer.dataset.labelQuestionPosted || 'Your question has been posted!');
 						var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-						var messageObjectRoute = configuration.messageObjectRoute || 'c_forummessage';
+						var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
 						spaNavigate(Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath);
 					});
 				})

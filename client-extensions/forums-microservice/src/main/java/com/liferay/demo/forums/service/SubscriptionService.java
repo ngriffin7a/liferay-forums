@@ -18,11 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
- * Retrieves the list of subscribers for a given ForumMessage entry.
+ * Retrieves the list of subscribers for a given ForumThread entry.
  *
  * <h3>How subscriptions are stored</h3>
  * <p>The forum fragments call Liferay's built-in Object subscription HATEOAS
- * actions ({@code /o/c/forummessages/{id}/subscribe} and
+ * actions ({@code /o/c/forumthreads/{id}/subscribe} and
  * {@code .../unsubscribe}). Liferay stores these in its internal
  * {@code Subscription} table.</p>
  *
@@ -41,9 +41,9 @@ public class SubscriptionService {
 
 	/**
 	 * Returns the email addresses of all users subscribed to the given
-	 * ForumMessage entry.
+	 * ForumThread entry.
 	 *
-	 * @param messageId  the ID of the ForumMessage whose subscribers to fetch
+	 * @param messageId  the ID of the ForumThread whose subscribers to fetch
 	 * @param authToken  OAuth2 bearer token (JWT) for the API call;
 	 *                   falls back to configured Basic Auth credentials
 	 * @return list of subscriber email addresses; never {@code null}

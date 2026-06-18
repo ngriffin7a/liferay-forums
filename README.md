@@ -124,11 +124,11 @@ The forums application is assembled using a combination of standard pages and Di
 
 ## Display Page Templates
 
-The site initializer creates two Display Page Templates automatically — one mapped to `ForumMessage`, one mapped to `ForumReply`. Both use the identical fragment arrangement described below and are defined in `site-initializer/layout-page-templates/display-page-templates/`.
+The site initializer creates two Display Page Templates automatically — one mapped to `ForumThread`, one mapped to `ForumMessage`. Both use the identical fragment arrangement described below and are defined in `site-initializer/layout-page-templates/display-page-templates/`.
 
-> **How Object Definition resolution works:** Liferay's raw Display Page Template export bakes in a volatile internal ID suffix (e.g. `com.liferay.object.model.ObjectDefinition#A0Z2`) as the `contentType.className`, which breaks on re-import whenever Object Definitions are recreated. The site initializer avoids this by using `BundleSiteInitializer`'s token replacement system. When Object Definitions are created during initialization, the method `_replaceObjectDefinitionValues` registers tokens like `OBJECT_DEFINITION_CLASS_NAME:ForumMessage` → `com.liferay.object.model.ObjectDefinition#xxxx`. The `display-page-template.json` uses these tokens:
+> **How Object Definition resolution works:** Liferay's raw Display Page Template export bakes in a volatile internal ID suffix (e.g. `com.liferay.object.model.ObjectDefinition#A0Z2`) as the `contentType.className`, which breaks on re-import whenever Object Definitions are recreated. The site initializer avoids this by using `BundleSiteInitializer`'s token replacement system. When Object Definitions are created during initialization, the method `_replaceObjectDefinitionValues` registers tokens like `OBJECT_DEFINITION_CLASS_NAME:ForumThread` → `com.liferay.object.model.ObjectDefinition#xxxx`. The `display-page-template.json` uses these tokens:
 > ```json
-> {"contentType": {"className": "[$OBJECT_DEFINITION_CLASS_NAME:ForumMessage$]"}, "name": "Forum Message"}
+> {"contentType": {"className": "[$OBJECT_DEFINITION_CLASS_NAME:ForumThread$]"}, "name": "Forum Thread"}
 > ```
 > The `[$...$]` tokens are resolved at runtime before the layout importer processes the file, so the correct `className` (including its instance-specific `#suffix`) is always injected.
 
@@ -170,10 +170,10 @@ The `forums-message-detail` and `forums-related-topics` fragments each contain h
 
 Each field is mapped to `ObjectEntry_externalReferenceCode` from the `DisplayPageItem` context, but only in the DPT that corresponds to its object type:
 
-| Field | Forum Message DPT | Forum Reply DPT |
+| Field | Forum Thread DPT | Forum Message DPT |
 | :--- | :--- | :--- |
-| **Mappable Message ERC** | Map to `ForumMessage → externalReferenceCode` | Leave unmapped |
-| **Mappable Reply ERC** | Leave unmapped | Map to `ForumReply → externalReferenceCode` |
+| **Mappable Message ERC** | Map to `ForumThread → externalReferenceCode` | Leave unmapped |
+| **Mappable Reply ERC** | Leave unmapped | Map to `ForumMessage → externalReferenceCode` |
 
 ---
 
@@ -187,7 +187,7 @@ The `scripts/_02_demo/` directory contains scripts for populating a development 
 python3 scripts/_02_demo/_01_create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
 ```
 
-Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Messages with keywords distributed across those categories, and replies to each message authored by different users.
+Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Threads with keywords distributed across those categories, and replies to each message authored by different users.
 
 | Argument | Default | Description |
 | :--- | :--- | :--- |
@@ -206,7 +206,7 @@ Backfills `ForumStatsUser` records for every user who has posted a message or re
 
 Run [_03_backfill-create-dates.sql](scripts/_02_demo/_03_backfill-create-dates.sql) against the portal database.
 
-Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `objectentry` table for `ForumMessage` and `ForumReply` entries. This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. After running, flush caches and rebuild indexes:
+Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `objectentry` table for `ForumThread` and `ForumMessage` entries. This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. After running, flush caches and rebuild indexes:
 
 1. **Control Panel → Server Administration → Resources**
    - Clear content cached by this VM.
@@ -223,7 +223,7 @@ The `scripts/_03_util/` directory contains cleanup and teardown scripts.
 
 | File | Description |
 | :--- | :--- |
-| [delete-demo-data.py](scripts/_03_util/delete-demo-data.py) | Deletes all Forum Stats User, Forum Reply, Forum Message, and Forum Category entries for a given site. Forum Votes are removed automatically via cascade. Demo user accounts are left in place. Usage: `python3 scripts/_03_util/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
+| [delete-demo-data.py](scripts/_03_util/delete-demo-data.py) | Deletes all Forum Stats User, Forum Message, Forum Thread, and Forum Category entries for a given site. Forum Votes are removed automatically via cascade. Demo user accounts are left in place. Usage: `python3 scripts/_03_util/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
 | [delete-forum-stats-users.py](scripts/_03_util/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before re-executing Step 2 to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 scripts/_03_util/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
 | [delete-forum-object-definitions.py](scripts/_03_util/delete-forum-object-definitions.py) | Deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for fully resetting a dev environment. |
 
@@ -237,8 +237,8 @@ Liferay invokes it through two **Object Action** webhooks, each secured by a sig
 
 | Object Action | Endpoint | Trigger | Notifies |
 | :--- | :--- | :--- | :--- |
-| New Reply | `POST /object-action/new-reply` | A `ForumReply` is created | Subscribers of the parent `ForumMessage` (excluding the reply author) |
-| New Message | `POST /object-action/new-message` | A root `ForumMessage` (topic) is created | Subscribers of the parent `ForumCategory` (excluding the topic author) |
+| New Reply | `POST /object-action/new-reply` | A `ForumMessage` is created | Subscribers of the parent `ForumThread` (excluding the reply author) |
+| New Message | `POST /object-action/new-message` | A root `ForumThread` (topic) is created | Subscribers of the parent `ForumCategory` (excluding the topic author) |
 
 A `GET /ready` endpoint serves as the unauthenticated readiness/liveness probe. The service listens on port **58082**.
 
@@ -306,10 +306,10 @@ All endpoints live under the base URI **`/o/forum-subscriptions/v1.0`** and are 
 
 | Method & path | Backing platform service | Purpose |
 | :--- | :--- | :--- |
-| `GET /messages/{messageId}/subscribers` | `SubscriptionLocalService` | Returns `{userId, emailAddress}` for every user subscribed to the `ForumMessage` with the given ID. |
+| `GET /messages/{messageId}/subscribers` | `SubscriptionLocalService` | Returns `{userId, emailAddress}` for every user subscribed to the `ForumThread` with the given ID. |
 | `POST /web-notifications` | `UserNotificationEventLocalService` | Creates an in-portal notification (`subject` / `body` / `url`) for a batch of `userIds`. |
 
-`SubscriberResourceImpl` resolves the `ForumMessage` object definition by ERC (`FORUM-MESSAGE`) to obtain its internal class name, then calls `SubscriptionLocalService.getSubscriptions(companyId, className, messageId)` — the exact server-side call the missing headless endpoint would have made — and maps each `Subscription`'s user to an email address.
+`SubscriberResourceImpl` resolves the `ForumThread` object definition by ERC (`FORUM-THREAD`) to obtain its internal class name, then calls `SubscriptionLocalService.getSubscriptions(companyId, className, messageId)` — the exact server-side call the missing headless endpoint would have made — and maps each `Subscription`'s user to an email address.
 
 `WebNotificationResourceImpl` fans the request out to `UserNotificationEventLocalService.sendUserNotificationEvents(...)` once per user ID under the portlet name `LiferayForums`. A companion `ForumUserNotificationHandler` (registered for that same portlet name) interprets those events into the clickable entries that appear in the user's notification (bell) panel.
 
@@ -327,13 +327,13 @@ Access is gated by the **`Liferay.Forum.Subscriptions.everything` OAuth2 scope**
 
 ### View Count Not Incremented for Guest Users
 
-The `forums-message-detail` fragment PATCHes the `viewCount` field on `ForumMessage` objects only for authenticated users. Guest views are silently skipped because the Liferay Object REST API returns `403 Forbidden` for unauthenticated PATCH requests.
+The `forums-message-detail` fragment PATCHes the `viewCount` field on `ForumThread` objects only for authenticated users. Guest views are silently skipped because the Liferay Object REST API returns `403 Forbidden` for unauthenticated PATCH requests.
 
-**Option:** Grant the Guest role `update` permission on ForumMessage objects via the Object's permissions configuration. However, the preferred solution is a dedicated endpoint in a Spring Boot Client Extension that accepts a `messageId` and increments `viewCount` with its own service credentials — keeping the Object's permissions locked down.
+**Option:** Grant the Guest role `update` permission on ForumThread objects via the Object's permissions configuration. However, the preferred solution is a dedicated endpoint in a Spring Boot Client Extension that accepts a `messageId` and increments `viewCount` with its own service credentials — keeping the Object's permissions locked down.
 
 ### Ban Enforcement Is UI-Only
 
-When a user is banned (a `ForumBan` Object entry exists for their user ID in the site scope), the fragments detect this at page load by querying `GET /o/c/forumbans/scopes/{groupId}?filter=banUserId eq {userId}`. If a ban is found, the UI is locked down: the submit button is disabled, compose buttons are hidden, and an inline warning is shown. This is purely client-side — the REST endpoints that create and update content (`POST /o/c/forummessages/`, `POST /o/c/forumreplies/`, `PATCH /o/c/forummessages/{id}`, `PATCH /o/c/forumreplies/{id}`) have no knowledge of the `ForumBan` collection and will accept requests from a banned user if called directly.
+When a user is banned (a `ForumBan` Object entry exists for their user ID in the site scope), the fragments detect this at page load by querying `GET /o/c/forumbans/scopes/{groupId}?filter=banUserId eq {userId}`. If a ban is found, the UI is locked down: the submit button is disabled, compose buttons are hidden, and an inline warning is shown. This is purely client-side — the REST endpoints that create and update content (`POST /o/c/forumthreads/`, `POST /o/c/forummessages/`, `PATCH /o/c/forumthreads/{id}`, `PATCH /o/c/forummessages/{id}`) have no knowledge of the `ForumBan` collection and will accept requests from a banned user if called directly.
 
 **Why the legacy portlets don't have this gap:** The legacy Message Boards portlets enforce bans at the Liferay permission framework layer (`MBPortletResourcePermissionLogic`), which calls `MBBanLocalService.hasBan()` on every permission check regardless of the calling path (web UI, REST API, or direct service invocation). Custom Liferay Objects have no equivalent hook into that permission logic.
 
@@ -341,11 +341,11 @@ When a user is banned (a `ForumBan` Object entry exists for their user ID in the
 
 **The only realistic server-side option: Microservice Client Extension**
 
-A Spring Boot Microservice Client Extension can be registered as an Object Action webhook on both `ForumMessage` and `ForumReply`, triggered on the `On After Add` event. It would:
+A Spring Boot Microservice Client Extension can be registered as an Object Action webhook on both `ForumThread` and `ForumMessage`, triggered on the `On After Add` event. It would:
 
 1. Receive the Object Action payload, which includes the `creatorId` (the user ID of the entry author) and the `groupId` (site scope).
 2. Call `GET /o/c/forumbans/scopes/{groupId}?filter=banUserId eq {creatorId}&pageSize=1` using service credentials to check for a ban record.
-3. If a ban record exists, immediately call `DELETE /o/c/forummessages/{entryId}` or `DELETE /o/c/forumreplies/{entryId}` to remove the entry.
+3. If a ban record exists, immediately call `DELETE /o/c/forumthreads/{entryId}` or `DELETE /o/c/forummessages/{entryId}` to remove the entry.
 
 There is an unavoidable brief window (milliseconds to low seconds depending on load) between the entry being created and the microservice deleting it. In practice this is acceptable given that banning is rare and the moderation fragment provides a backstop for any content that appears during that window.
 
@@ -359,11 +359,11 @@ The only subscription endpoints in the `headless-admin-user` API are scoped to t
 
 **Workaround 1 — "Forum Subscription" Object**
 
-Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumReply → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
+Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumMessage → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
 
 **Workaround 2 — REST Builder Endpoints**
 
-Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumMessage.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
+Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumThread.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
 
 ### "Top Replies" Implemented as "Recent Activity"
 
