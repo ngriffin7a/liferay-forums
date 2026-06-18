@@ -3,7 +3,7 @@ var forumsCategoriesAdmin = fragmentElement.querySelector('#forumsCategoriesAdmi
 
 if (forumsCategoriesAdmin) {
 	var portalURL = Liferay.ThemeDisplay.getPortalURL();
-	var scopeGroupId = Liferay.ThemeDisplay.getScopeGroupId();
+	var scopeGroupId = (typeof configuration !== 'undefined' && configuration.forumDataGroupId) ? configuration.forumDataGroupId : Liferay.ThemeDisplay.getScopeGroupId();
 	var clayIconsUrl = Liferay.ThemeDisplay.getPathThemeImages() + '/clay/icons.svg';
 	var headers = {
 		'Accept': 'application/json',

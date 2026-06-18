@@ -3,7 +3,7 @@ var forumsMod = fragmentElement.querySelector('#forumsModeration');
 
 if (forumsMod) {
 	var portalURL = Liferay.ThemeDisplay.getPortalURL();
-	var scopeGroupId = Liferay.ThemeDisplay.getScopeGroupId();
+	var scopeGroupId = (typeof configuration !== 'undefined' && configuration.forumDataGroupId) ? configuration.forumDataGroupId : Liferay.ThemeDisplay.getScopeGroupId();
 	var headers = {
 		'Accept': 'application/json',
 		'Content-Type': 'application/json'

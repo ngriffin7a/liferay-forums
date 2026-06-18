@@ -103,6 +103,18 @@
 					"type": "text"
 				}
 			]
+		},
+		{
+			"label": "Forum Data",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "",
+					"label": "Forum data site group ID (empty = current site)",
+					"name": "forumDataGroupId",
+					"type": "text"
+				}
+			]
 		}
 	]
 }
