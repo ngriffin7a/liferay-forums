@@ -1,0 +1,19 @@
+assemble:
+    - from: site-initializer
+      into: site-initializer
+
+forums-admin-site-initializer:
+    description: Liferay Forums Admin — CMS-style administration site for forum categories and moderation.
+    name: Liferay Forums Admin
+    oAuthApplicationHeadlessServer: forums-admin-site-initializer-oauth-application-headless-server
+    siteExternalReferenceCode: FORUMSADMIN
+    siteName: Forums Admin
+    type: siteInitializer
+
+forums-admin-site-initializer-oauth-application-headless-server:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: Forums Admin Site Initializer OAuth Application Headless Server
+    scopes:
+        - Liferay.Headless.Site.everything
+    type: oAuthApplicationHeadlessServer

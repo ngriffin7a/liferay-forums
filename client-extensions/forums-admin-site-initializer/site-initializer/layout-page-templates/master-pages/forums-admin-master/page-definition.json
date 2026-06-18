@@ -1,0 +1,115 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"fragment": {
+						"key": "sidebar"
+					},
+					"fragmentConfig": {
+						"sidebarAriaLabel": "Forums Admin Product Menu"
+					},
+					"fragmentFields": [
+					],
+					"indexed": true
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"fragmentDropZoneId": "topBar"
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "page-bar"
+									},
+									"fragmentConfig": {
+										"alt": "Forums Admin",
+										"pagebarAriaLabel": "Forums Admin"
+									},
+									"fragmentFields": [
+									],
+									"indexed": true
+								},
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentDropZoneId": "sidebarTrigger"
+										},
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "sidebar-trigger"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+													],
+													"indexed": true
+												},
+												"type": "Fragment"
+											}
+										],
+										"type": "FragmentDropZone"
+									}
+								],
+								"type": "Fragment"
+							}
+						],
+						"type": "FragmentDropZone"
+					},
+					{
+						"definition": {
+							"fragmentDropZoneId": "sidebarBody"
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "vertical-navigation"
+									},
+									"fragmentConfig": {
+										"ariaLabel": "Forums Admin Navigation",
+										"displayStyle": "stacked",
+										"source": "{\"parentSiteNavigationMenuItemId\": \"0\", \"privateLayout\": \"false\", \"siteNavigationMenuExternalReferenceCode\": \"FORUMSADMINNAV\", \"title\": \"Forums Admin Navigation\", \"type\": \"class com.liferay.site.navigation.item.selector.SiteNavigationMenuItemSelectorReturnType\"}",
+										"sublevels": "-1"
+									},
+									"fragmentFields": [
+									],
+									"indexed": true
+								},
+								"type": "Fragment"
+							}
+						],
+						"type": "FragmentDropZone"
+					},
+					{
+						"definition": {
+							"fragmentDropZoneId": "content"
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentSettings": {
+										"unallowedFragments": [
+										]
+									}
+								},
+								"type": "DropZone"
+							}
+						],
+						"type": "FragmentDropZone"
+					}
+				],
+				"type": "Fragment"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"themeName": "CMS"
+	},
+	"version": 1.1
+}

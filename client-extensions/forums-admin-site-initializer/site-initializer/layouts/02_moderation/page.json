@@ -1,10 +1,9 @@
 {
 	"friendlyURL_i18n": {
-		"en_US": "/forums-moderation"
+		"en_US": "/moderation"
 	},
-	"hidden": true,
 	"name_i18n": {
-		"en_US": "Forums Moderation"
+		"en_US": "Moderation"
 	},
 	"private": false,
 	"type": "content"

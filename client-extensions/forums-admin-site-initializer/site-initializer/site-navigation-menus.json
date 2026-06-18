@@ -1,0 +1,22 @@
+[
+	{
+		"externalReferenceCode": "FORUMSADMINNAV",
+		"menuItems": [
+			{
+				"displayIcon": "categories",
+				"externalReferenceCode": "FORUMSADMINNAV1",
+				"friendlyURL": "/categories",
+				"privateLayout": false,
+				"type": "layout"
+			},
+			{
+				"displayIcon": "flag-full",
+				"externalReferenceCode": "FORUMSADMINNAV2",
+				"friendlyURL": "/moderation",
+				"privateLayout": false,
+				"type": "layout"
+			}
+		],
+		"name": "Forums Admin Navigation"
+	}
+]
