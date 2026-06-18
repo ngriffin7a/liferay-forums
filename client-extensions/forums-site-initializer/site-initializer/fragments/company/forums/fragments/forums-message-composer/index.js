@@ -541,7 +541,7 @@ if (messageComposer) {
 								subject: subject,
 								subject_i18n: { en_US: subject },
 								body: body,
-								r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory)
+								r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory)
 							})
 						}).then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
 					);
@@ -651,7 +651,7 @@ if (messageComposer) {
 				.then(function(msg) {
 					var msgPayload = {
 						r_threadMessages_c_forumThreadId: msg.id,
-						r_categoryMessages_c_forumCategoryId: parseInt(selectedCategory),
+						r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
 						subject: subject,
 						subject_i18n: { en_US: subject },
 						body: body,

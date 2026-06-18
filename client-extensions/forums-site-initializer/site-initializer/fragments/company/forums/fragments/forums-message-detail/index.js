@@ -286,7 +286,7 @@ if (messageDetail) {
 					</div>
 					<div class="forums-message-detail__reply-body">${body}</div>
 					<div class="forums-message-detail__reply-actions">
-						${canReply ? `<button class="btn btn-outline-primary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_messageReplies_c_forumMessageId}" data-forums-parent-id="${msg.id}">${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
+						${canReply ? `<button class="btn btn-outline-primary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_threadMessages_c_forumThreadId}" data-forums-parent-id="${msg.id}">${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
 						${hasOptions ? `<div class="dropdown forums-message-detail__reply-options">
 							<button class="btn btn-monospaced btn-sm btn-outline-borderless btn-outline-secondary dropdown-toggle" type="button" id="forumsReplyOptions_${msg.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${optionsLabel}" title="${optionsLabel}">
 								<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation"><use href="${clayIconsUrl}#ellipsis-v"></use></svg>
@@ -1106,41 +1106,19 @@ if (messageDetail) {
 								tags: messageTagsArray
 							});
 						}
-						editBtn.setAttribute('title', messageDetail.dataset.labelEditTopic || 'Edit Topic');
-						editBtn.setAttribute('aria-label', messageDetail.dataset.labelEditTopic || 'Edit Topic');
-						editBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg>`;
-						
-						editBtn.addEventListener('click', function(e) {
-							e.preventDefault();
-							if (window.forumsOpenComposeModal) {
-								window.forumsOpenComposeModal({
-									editMode: true,
-									isOp: true,
-									threadId: messageId,
-									messageId: opMsg.id,
-									categoryId: messageCategoryFK,
-									subject: messageTitleText,
-									body: opMsg.body,
-									isQuestion: isMessageQuestion,
-									tags: messageTagsArray
-								});
-							}
-						});
-						
-						opActionsEl.appendChild(editBtn);
-					}
-					
-					/* Use the message's delete URL for the OP so the whole topic is removed */
-					if (messageDeleteUrl) {
-						var delBtn = document.createElement('button');
-						delBtn.className = 'btn btn-danger btn-sm forums-delete-btn';
-						delBtn.setAttribute('data-delete-url', messageDeleteUrl);
-						delBtn.setAttribute('title', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
-						delBtn.setAttribute('aria-label', messageDetail.dataset.labelDeleteTopic || 'Delete Topic');
-						delBtn.innerHTML = `<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg>`;
-						
-						opActionsEl.appendChild(delBtn);
-					}
+					});
+				}
+
+				var dropdownDeleteBtn = messageDetail.querySelector('#forumsDetailDeleteBtn');
+				if (dropdownDeleteBtn && messageDeleteUrl) {
+					/* Clone to clear any prior click handler from previous loadMessages
+					   (attachDeleteHandlers() re-binds on the new node below). */
+					var newDropdownDeleteBtn = dropdownDeleteBtn.cloneNode(true);
+					newDropdownDeleteBtn.setAttribute('data-delete-url', messageDeleteUrl);
+					newDropdownDeleteBtn.style.display = '';
+					dropdownDeleteBtn.parentNode.replaceChild(newDropdownDeleteBtn, dropdownDeleteBtn);
+					/* The click handler is attached by the shared attachDeleteHandlers()
+					   call below because the element carries .forums-delete-btn. */
 				}
 
 				/* Render OP Toggle Question button if permitted (HATEOAS) */
@@ -1157,22 +1135,47 @@ if (messageDetail) {
 					newBtn.addEventListener('click', function(e) {
 						e.preventDefault();
 						var newStatus = !isMessageQuestion;
-						
-						/* Update the backend object */
-						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
-							headers: headers,
-							method: 'PATCH',
-							body: JSON.stringify({ question: newStatus })
-						})
-						.then(function(r) {
-							if (r.ok) {
-								isMessageQuestion = newStatus;
-								
-								/* Refresh to show/hide the answer buttons and solved banner */
-								loadMessages();
-							}
-						})
-						.catch(function(err) { console.error('Error toggling question status', err); });
+
+						/* When demoting a question to a discussion, first fetch every
+						   reply marked as answer (across all pages) and clear the flag
+						   on each. Discussions don't have solutions, so leaving
+						   `answer: true` rows behind would be stale. */
+						var preWork = newStatus
+							? Promise.resolve()
+							: Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId
+									+ '?filter=' + encodeURIComponent('r_threadMessages_c_forumThreadId eq \'' + messageId + '\' and answer eq true')
+									+ '&fields=id&pageSize=100', {
+									headers: headers,
+									method: 'GET'
+								})
+								.then(function(r) { return r.json(); })
+								.then(function(data) {
+									var items = (data && data.items) || [];
+									return Promise.all(items.map(function(reply) {
+										return Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + reply.id, {
+											headers: headers,
+											method: 'PATCH',
+											body: JSON.stringify({ answer: false })
+										});
+									}));
+								});
+
+						preWork
+							.then(function() {
+								return Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+									headers: headers,
+									method: 'PATCH',
+									body: JSON.stringify({ question: newStatus })
+								});
+							})
+							.then(function(r) {
+								if (r.ok) {
+									isMessageQuestion = newStatus;
+									if (!newStatus) currentAnswerId = null;
+									loadMessages();
+								}
+							})
+							.catch(function(err) { console.error('Error toggling question status', err); });
 					});
 				}
 			}
