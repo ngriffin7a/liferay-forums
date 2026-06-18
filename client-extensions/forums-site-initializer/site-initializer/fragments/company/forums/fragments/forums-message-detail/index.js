@@ -1044,7 +1044,7 @@ if (messageDetail) {
 								window.forumsOpenComposeModal({
 									editMode: true,
 									isOp: true,
-									messageId: messageId,
+									threadId: messageId,
 									messageId: opMsg.id,
 									categoryId: messageCategoryFK,
 									subject: messageTitleText,

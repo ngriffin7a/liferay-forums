@@ -327,8 +327,9 @@ if (messageComposer) {
 		isEditMode = !!options.editMode;
 		editIsOp = !!options.isOp;
 		editMessageId = options.messageId || null;
-		
-		if (options.messageId) messageId = options.messageId;
+
+		if (options.threadId) messageId = options.threadId;
+		else if (options.messageId) messageId = options.messageId;
 		if (options.categoryId) categoryIdParam = String(options.categoryId);
 		parentMessageId = options.parentMessageId || null;
 		isReplyMode = replyMode;
