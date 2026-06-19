@@ -7,8 +7,8 @@
 .forums-hero__backdrop {
 	background-image: linear-gradient(
 		135deg,
-		var(--dark, #272833) 0%,
-		var(--primary-d2, #002b66) 100%
+		var(--color-neutral-9, var(--dark, #272833)) 0%,
+		var(--color-brand-primary-darken-3, var(--primary-d2, #002b66)) 100%
 	);
 	padding: 4rem 0 3rem;
 }
