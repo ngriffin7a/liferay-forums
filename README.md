@@ -279,15 +279,15 @@ When building the microservice to deliver email/in-portal notifications to forum
 
 Two workarounds were considered for the subscriber-discovery problem:
 
-**Workaround 1 — "Forum Subscription" Object**
+**Workaround 1 -- "Forum Subscription" Object (Not implemented -- see Workaround 2 instead)**
 
 Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumMessage → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
 
-**Workaround 2 — REST Builder Endpoints**
+**Workaround 2 -- REST Builder Endpoints (Implemented)**
 
 Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumThread.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
 
-**This project ships Workaround 2.** The [`forum-subscriptions` module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) delegates to `SubscriptionLocalService`, so subscription state stays in Liferay's native store with no drift; the same module also adds the batch web-notification endpoint that solves limitation 2. The only cost is the SaaS restriction noted above — which is precisely why this whole capability is framed as filling a gap rather than as a first-class feature.
+**This project includes Workaround 2.** The [`forum-subscriptions` module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) delegates to `SubscriptionLocalService`, so subscription state stays in Liferay's native store with no drift; the same module also adds the batch web-notification endpoint that solves limitation 2. The only cost is the SaaS restriction noted above — which is precisely why this whole capability is framed as filling a gap rather than as a first-class feature.
 
 ### Forums Microservice (Client Extension)
 
