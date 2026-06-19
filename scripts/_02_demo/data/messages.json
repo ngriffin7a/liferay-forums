@@ -160,7 +160,7 @@
 		]
 	},
 	{
-		"author": "nadia.ahmed",
+		"author": "ravi.patel",
 		"category": "FORUM-CAT-TECHNICAL-HELP",
 		"title": "OAuth2 token expiration handling with custom providers",
 		"body": "<p>I'm integrating Liferay with a custom OAuth2 provider (not Google/Azure — an internal IdP based on Keycloak). The initial login flow works fine: tokens come back, the user gets authenticated, and we can call protected REST endpoints. The problem starts about an hour later, when the access token expires.</p><p>From what I can tell, Liferay's OAuth2 client module receives the 401 response but doesn't automatically exchange the refresh_token for a new access_token. Users just get bumped to the login page mid-session, which is obviously not great for an SPA experience. I've looked through <code>com.liferay.oauth2.provider.*</code> but I'm not sure if the refresh logic lives there or in a separate filter.</p><p>Has anyone wired up automatic refresh against a custom IdP successfully? Is there a hook/extension point I should be overriding, or do I need to write a custom <strong>AutoLogin</strong> implementation that handles the refresh handshake?</p>",
@@ -195,7 +195,7 @@
 		"replies": [
 			{"author": "alice.morgan", "replyIndex": 48, "answer": false, "upvotes": 18, "downvotes": 0},
 			{"author": "grace.obi", "replyIndex": 49, "answer": false, "upvotes": 12, "downvotes": 0},
-			{"author": "nadia.ahmed", "replyIndex": 50, "answer": false, "upvotes": 6, "downvotes": 0}
+			{"author": "ravi.patel", "replyIndex": 50, "answer": false, "upvotes": 6, "downvotes": 0}
 		]
 	},
 	{
@@ -247,7 +247,7 @@
 		"replies": [
 			{"author": "frank.tanaka", "replyIndex": 60, "answer": false, "upvotes": 7, "downvotes": 0},
 			{"author": "dan.novak", "replyIndex": 61, "answer": true, "upvotes": 16, "downvotes": 0},
-			{"author": "nadia.ahmed", "replyIndex": 62, "answer": false, "upvotes": 4, "downvotes": 0},
+			{"author": "ravi.patel", "replyIndex": 62, "answer": false, "upvotes": 4, "downvotes": 0},
 			{"author": "priya.kapoor", "replyIndex": 63, "answer": false, "upvotes": 6, "downvotes": 0}
 		]
 	},
