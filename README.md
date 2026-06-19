@@ -223,12 +223,6 @@ Run [_04_backfill-forum-stats-users.groovy](scripts/_02_demo/_04_backfill-forum-
 
 Backfills `ForumStatsUser` records for every user who has posted a thread or message. Without these records, the `forums-hero` fragment displays 0 Members. **Run this after Step 2** (author reassignment), otherwise it records only the admin user. If re-running, first clear existing records with `scripts/_03_util/delete-forum-stats-users.py` to avoid duplicates.
 
-### Step 5 — Update OP bodies (optional)
-
-Run [_05_update-op-bodies.groovy](scripts/_02_demo/_05_update-op-bodies.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
-
-Overwrites each opening post's body with the content in `messages.json`. Useful after editing bodies or adding images in the JSON without re-running Step 1 (which skips existing entries). Idempotent.
-
 ---
 
 ## Utilities
