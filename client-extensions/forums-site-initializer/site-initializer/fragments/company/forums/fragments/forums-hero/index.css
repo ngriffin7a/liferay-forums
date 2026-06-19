@@ -20,6 +20,11 @@
 	line-height: 1.2;
 }
 
+.forums-hero .text-white-50 {
+	color: var(--color-neutral-0) !important;
+	opacity: 0.5;
+}
+
 .forums-hero__drop-zone {
 	margin: 0 auto 2.5rem;
 	max-width: 560px;
