@@ -3,11 +3,11 @@ assemble:
       into: site-initializer
 
 forums-site-initializer:
-    description: Liferay Forums — Forums home, message detail, admin, and moderation pages backed by custom Liferay Objects.
-    name: Liferay Forums
+    description: Forums — Home, message detail, admin, and moderation pages backed by custom Liferay Objects.
+    name: Forums
     oAuthApplicationHeadlessServer: forums-site-initializer-oauth-application-headless-server
-    siteExternalReferenceCode: FORUMS
-    siteName: Liferay Forums
+    siteExternalReferenceCode: L_FORUMS
+    siteName: Forums
     type: siteInitializer
 
 forums-site-initializer-oauth-application-headless-server:
