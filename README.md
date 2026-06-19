@@ -4,6 +4,27 @@ This Liferay Workspace project is a Fragments and Liferay Objects based replacem
 
 ---
 
+## Table of Contents
+
+- [Screenshots](#screenshots)
+- [Setup](#setup)
+- [Required Feature Flags](#required-feature-flags)
+- [Fragments](#fragments)
+- [Page Layout and Fragment Placement](#page-layout-and-fragment-placement)
+- [Display Page Templates](#display-page-templates)
+- [Demo Data](#demo-data)
+- [Utilities](#utilities)
+- [Forum Subscription Notifications: Filling a DXP Feature Gap](#forum-subscription-notifications-filling-a-dxp-feature-gap)
+  - [The Feature Gap](#the-feature-gap)
+  - [Forums Microservice (Client Extension)](#forums-microservice-client-extension)
+  - [Forum Subscriptions RESTBuilder OSGi Module (`forum-subscriptions`)](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions)
+- [Known Limitations](#known-limitations)
+  - [View Count Not Incremented for Guest Users](#view-count-not-incremented-for-guest-users)
+  - [Ban Enforcement Is UI-Only](#ban-enforcement-is-ui-only)
+  - ["Top Replies" Implemented as "Recent Activity"](#top-replies-implemented-as-recent-activity)
+
+---
+
 ## Screenshots
 
 <table>
@@ -237,9 +258,40 @@ The `scripts/_03_util/` directory contains cleanup and teardown scripts.
 
 ---
 
-## Forums Microservice (Client Extension)
+## Forum Subscription Notifications: Filling a DXP Feature Gap
 
-The [`forums-microservice`](client-extensions/forums-microservice) is a Spring Boot Client Extension that delivers **email and in-portal notifications** to forum subscribers when new content is posted. It is the server-side realization of *Workaround 2* described under [No Endpoints for Discovering Subscribed Users](#no-endpoints-for-discovering-subscribed-users): it queries a custom `forum-subscriptions` REST Builder module to discover a topic's (or category's) subscribers, then fans out notifications.
+Email and in-portal notifications for forum subscriptions look like a basic feature, but they **cannot be built on Liferay DXP's published APIs alone**. The platform records that a user has subscribed to a topic, yet it gives an off-portal integration no supported way to act on those subscriptions. This is a genuine gap in DXP — not a shortcoming of this project — and it is the reason two of the artifacts here exist purely as a workaround.
+
+The two components below are a cooperating pair that together close the gap:
+
+- the [Forums Microservice](#forums-microservice-client-extension) — a Spring Boot Client Extension that orchestrates and delivers the notifications; and
+- the [`forum-subscriptions` REST Builder module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) — a portal-side module that supplies the headless endpoints the microservice needs but DXP does not publish.
+
+Read [The Feature Gap](#the-feature-gap) first for *why* this workaround is necessary; the two component sections that follow describe *how* it is implemented.
+
+### The Feature Gap
+
+When building the microservice to deliver email/in-portal notifications to forum subscribers — specifically, notifying everyone subscribed to a topic when a new reply or topic is posted — research surfaced two hard limitations in Liferay's *published* headless APIs:
+
+**1. No endpoint returns who is subscribed to a resource.** Liferay's headless REST APIs have no endpoint that returns which users are subscribed to a given Object entry (or the Message Boards thread equivalent). The only subscription endpoints in `headless-admin-user` are scoped to the *calling* user: `GET /o/headless-admin-user/v1.0/my-user-account/subscriptions` returns only the authenticated caller's own subscriptions. There is no admin-facing endpoint that lists *all* subscribers for a resource. The underlying data lives in `SubscriptionLocalService` but is not exposed through any published REST API — so the microservice has no platform way to learn *whom* to notify.
+
+**2. No off-portal way to create in-portal notifications.** Creating an in-portal (bell-panel) notification requires the internal `UserNotificationEventLocalService`, which a microservice running outside the portal JVM cannot invoke directly.
+
+Two workarounds were considered for the subscriber-discovery problem:
+
+**Workaround 1 — "Forum Subscription" Object**
+
+Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumMessage → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
+
+**Workaround 2 — REST Builder Endpoints**
+
+Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumThread.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
+
+**This project ships Workaround 2.** The [`forum-subscriptions` module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) delegates to `SubscriptionLocalService`, so subscription state stays in Liferay's native store with no drift; the same module also adds the batch web-notification endpoint that solves limitation 2. The only cost is the SaaS restriction noted above — which is precisely why this whole capability is framed as filling a gap rather than as a first-class feature.
+
+### Forums Microservice (Client Extension)
+
+The [`forums-microservice`](client-extensions/forums-microservice) is a Spring Boot Client Extension that delivers **email and in-portal notifications** to forum subscribers when new content is posted. It is the server-side realization of *Workaround 2* described under [The Feature Gap](#the-feature-gap): it queries the custom `forum-subscriptions` REST Builder module to discover a topic's (or category's) subscribers, then fans out notifications.
 
 Liferay invokes it through two **Object Action** webhooks, each secured by a signed OAuth2 JWT that the Spring Boot OAuth2 resource server validates against the DXP's JWKS endpoint:
 
@@ -254,7 +306,7 @@ Email is delivered through Liferay's notification-queue REST API (`/o/notificati
 
 > **Dependency:** the microservice cannot work on its own. It relies on the custom [`forum-subscriptions` REST Builder module](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) for two capabilities missing from Liferay's published headless APIs: **subscriber discovery** (`GET /messages/{messageId}/subscribers`) and **batch in-portal notifications** (`POST /web-notifications`). See that section for what each endpoint does, why the platform forces a custom module, and the SaaS caveat.
 
-### Building & deploying
+#### Building & deploying
 
 The microservice builds and deploys independently from the `liferay-forums` workspace:
 
@@ -263,7 +315,7 @@ cd client-extensions/forums-microservice
 blade gw clean build && lcp deploy --extension dist/*.zip
 ```
 
-### Running locally
+#### Running locally
 
 A convenience script builds the bootJar and runs the service against a local (or remote) Liferay, loading environment variables from a `.env` file:
 
@@ -275,7 +327,7 @@ cp .env.example .env   # then edit values
 
 `run-local.sh` also synthesizes the LXC "configtree" metadata locally (from `LIFERAY_DXP_HOST` / `LIFERAY_DXP_PROTOCOL`) that Liferay PaaS would otherwise mount, so JWT validation points at the right DXP instance. The `.env` file holds secrets and is gitignored; [`.env.example`](client-extensions/forums-microservice/.env.example) is the committed template.
 
-### Environment variables
+#### Environment variables
 
 | Variable | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -290,11 +342,9 @@ cp .env.example .env   # then edit values
 
 The OAuth user-agent application (ERC `liferay-forumsmicroservice-oauth-application-user-agent`) and the two object actions are declared in [`client-extension.yaml`](client-extensions/forums-microservice/client-extension.yaml); the remaining settings live in [`application-default.properties`](client-extensions/forums-microservice/src/main/resources/application-default.properties).
 
----
+### Forum Subscriptions RESTBuilder OSGi Module (`forum-subscriptions`)
 
-## Forum Subscriptions RESTBuilder OSGi Module (`forum-subscriptions`)
-
-[`modules/forum-subscriptions`](modules/forum-subscriptions) is a custom **REST Builder** OSGi module that publishes the small headless API the [Forums Microservice](#forums-microservice-client-extension) depends on. It exists to fill two gaps in Liferay's *published* headless APIs:
+[`modules/forum-subscriptions`](modules/forum-subscriptions) is a custom **REST Builder** OSGi module that publishes the small headless API the [Forums Microservice](#forums-microservice-client-extension) depends on. It exists to fill the two gaps in Liferay's *published* headless APIs detailed under [The Feature Gap](#the-feature-gap):
 
 1. **Subscriber discovery.** When users subscribe to a topic, Liferay records it in its internal `Subscription` table via the built-in Object subscribe/unsubscribe HATEOAS actions — but **no published REST endpoint returns the list of users subscribed to a given Object entry**. The only headless subscription endpoint, `my-user-account/subscriptions`, is scoped to the *calling* user. So the microservice has no platform way to learn *whom* to notify.
 2. **Web (in-portal) notifications.** Creating an in-portal (bell-panel) notification requires the internal `UserNotificationEventLocalService`, which an off-portal microservice cannot invoke directly.
@@ -310,7 +360,7 @@ The module is generated and structured like Liferay's own headless modules, as f
 
 All endpoints live under the base URI **`/o/forum-subscriptions/v1.0`** and are guarded by the OAuth2 scope **`Liferay.Forum.Subscriptions.everything`** — the same scope the microservice's user-agent application requests.
 
-### Endpoints
+#### Endpoints
 
 | Method & path | Backing platform service | Purpose |
 | :--- | :--- | :--- |
@@ -321,13 +371,13 @@ All endpoints live under the base URI **`/o/forum-subscriptions/v1.0`** and are 
 
 `WebNotificationResourceImpl` fans the request out to `UserNotificationEventLocalService.sendUserNotificationEvents(...)` once per user ID under the portlet name `LiferayForums`. A companion `ForumUserNotificationHandler` (registered for that same portlet name) interprets those events into the clickable entries that appear in the user's notification (bell) panel.
 
-### Permissions & access
+#### Permissions & access
 
 Access is gated by the **`Liferay.Forum.Subscriptions.everything` OAuth2 scope** — only a token carrying that scope (i.e. the microservice's user-agent application) can reach the endpoints. The resource implementations then call Liferay *LocalServices* (`SubscriptionLocalService`, `UserLocalService`, `UserNotificationEventLocalService`), which run below the permission layer, so within that scope the microservice can read any topic's subscriber list and notify any user — exactly the back-end-service behavior it needs. Treat the scope as sensitive: anything holding a token with it can enumerate subscriber email addresses and push notifications to arbitrary users, so grant it only to the microservice's user-agent app — never to end-user-facing roles.
 
 > The `LiberalPermissionChecker` in the generated `*ResourceFactoryImpl` is standard Liferay REST Builder boilerplate for the framework's optional permission-bypass path. It is **not** engaged here: the builder defaults to `checkPermissions = true` and nothing in this module opts out, so requests run with the caller's real permission checker.
 
-> **SaaS caveat:** because this is a traditional OSGi artifact rather than a Client Extension, it requires a self-hosted or PaaS environment and **cannot be deployed on Liferay SaaS** — the underlying reason this whole approach is framed as a workaround. See [No Endpoints for Discovering Subscribed Users](#no-endpoints-for-discovering-subscribed-users).
+> **SaaS caveat:** because this is a traditional OSGi artifact rather than a Client Extension, it requires a self-hosted or PaaS environment and **cannot be deployed on Liferay SaaS** — the underlying reason this whole approach is framed as a workaround. See [The Feature Gap](#the-feature-gap).
 
 ---
 
@@ -356,22 +406,6 @@ A Spring Boot Microservice Client Extension can be registered as an Object Actio
 3. If a ban record exists, immediately call `DELETE /o/c/forumthreads/{entryId}` or `DELETE /o/c/forummessages/{entryId}` to remove the entry.
 
 There is an unavoidable brief window (milliseconds to low seconds depending on load) between the entry being created and the microservice deleting it. In practice this is acceptable given that banning is rare and the moderation fragment provides a backstop for any content that appears during that window.
-
-### No Endpoints for Discovering Subscribed Users
-
-> **Now addressed:** this project ships the [Forums Microservice](#forums-microservice-client-extension), which implements **Workaround 2** below (REST Builder endpoints) to discover subscribers and send notifications.
-
-Research discovered a hard feature gap when building a Spring Boot Microservice Client Extension to power email/notification delivery for forum subscriptions — specifically, sending a notification to all users subscribed to a topic when a new reply is posted: **Liferay's headless REST APIs have no endpoint that returns which users are subscribed to a given Object entry (or Message Boards thread equivalent).**
-
-The only subscription endpoints in the `headless-admin-user` API are scoped to the calling user: `GET /o/headless-admin-user/v1.0/my-user-account/subscriptions` returns the subscriptions belonging to the authenticated user making the request. There is no admin-facing endpoint that lists *all* subscribers for a resource. The underlying data lives in `SubscriptionLocalService` but is not exposed through any published REST API.
-
-**Workaround 1 — "Forum Subscription" Object**
-
-Introduce a new `ForumSubscription` Liferay Object with fields for `subscriberUserId`, `messageERC` (the subscribed topic), and `siteId`. When a user subscribes or unsubscribes, the fragment calls `POST` / `DELETE` on `/o/c/forumsubscriptions/` to maintain the record. The Spring Boot microservice (triggered by an Object Action on `ForumMessage → On After Add`) then queries `GET /o/c/forumsubscriptions/?filter=messageERC eq '{erc}'` to obtain the full subscriber list and fans out the notifications. This is entirely within the Objects + headless stack and requires no portal-side code changes, but it means subscription state is owned by a custom Object rather than Liferay's native subscription infrastructure, and the two can drift if users subscribe through any other surface (e.g., via the legacy Message Boards portlet).
-
-**Workaround 2 — REST Builder Endpoints**
-
-Use Liferay's **REST Builder** code-generation tool (an OSGi module deployed to the portal) to generate a custom headless API that delegates to `SubscriptionLocalService`. A thin `GET /o/forum-subscriptions/v1.0/threads/{threadId}/subscribers` endpoint can call `SubscriptionLocalServiceUtil.getSubscriptions(companyId, ForumThread.class.getName(), threadId)` server-side and return the subscriber user IDs or email addresses. The Spring Boot microservice then calls this custom endpoint instead of the missing platform one, keeping subscription state in Liferay's native store with no sync concerns. The trade-off is that REST Builder modules are traditional OSGi artifacts — not Client Extensions — so they cannot be deployed on Liferay SaaS and require a self-hosted or PaaS environment.
 
 ### "Top Replies" Implemented as "Recent Activity"
 
