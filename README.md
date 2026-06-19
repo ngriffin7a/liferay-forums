@@ -48,6 +48,8 @@ The following **Release** feature flags must be enabled before deploying.
 | LPD-34594 | Root Object Definitions |
 | LPD-11235 | Enhanced Rich Text Editor |
 
+> **`LPD-17564` is required for the demo data, not just deployment.** It gates ObjectEntry `displayDate`/`expirationDate` persistence (with `LPD-34594` as its dependency). If it is disabled, the `displayDate` posted in Step 1 is silently dropped — so the Step 3 date backfill has nothing to copy and every entry keeps its import timestamp.
+
 ---
 
 ## Fragments
@@ -179,7 +181,7 @@ Each field is mapped to `ObjectEntry_externalReferenceCode` from the `DisplayPag
 
 ## Demo Data
 
-The `scripts/_02_demo/` directory contains scripts for populating a development environment with forum content. The three scripts are numbered and should be run in order.
+The `scripts/_02_demo/` directory contains scripts for populating a development environment with forum content. The scripts are numbered and **must be run in numeric order** — later steps depend on earlier ones (notably, the Step 4 stats backfill depends on authorship already being reassigned in Step 2).
 
 ### Step 1 — Create demo data
 
@@ -187,7 +189,7 @@ The `scripts/_02_demo/` directory contains scripts for populating a development 
 python3 scripts/_02_demo/_01_create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
 ```
 
-Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Threads with keywords distributed across those categories, and replies to each message authored by different users.
+Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Threads with keywords distributed across those categories, and replies to each message. All content is created as the admin user; authorship is corrected in Step 2.
 
 | Argument | Default | Description |
 | :--- | :--- | :--- |
@@ -196,17 +198,17 @@ Creates the four default Forum Categories (by ERC if they do not already exist),
 | `--email` | `test@liferay.com` | Admin account email |
 | `--password` | `test` | Admin account password |
 
-### Step 2 — Backfill Forum Stats Users
+### Step 2 — Reassign authors
 
-Run [_02_backfill-forum-stats-users.groovy](scripts/_02_demo/_02_backfill-forum-stats-users.groovy) via **Control Panel → Server Administration → Script**.
+Run [_02_reassign-authors.groovy](scripts/_02_demo/_02_reassign-authors.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
 
-Backfills `ForumStatsUser` records for every user who has posted a message or reply. Without these records, the `forums-hero` fragment displays 0 Members. If re-running, first clear existing records with `scripts/_03_util/delete-forum-stats-users.py` to avoid duplicates.
+Step 1 creates every entry as the admin user. This step reassigns each `ForumThread` and `ForumMessage` to the author declared in `messages.json` (threads matched by `messageTitle`; messages ordered by `createDate`). **It must run before Step 4** — the stats backfill counts distinct entry owners, so if authorship has not been reassigned it finds only the admin user.
 
 ### Step 3 — Backfill create dates
 
-Run [_03_backfill-create-dates.sql](scripts/_02_demo/_03_backfill-create-dates.sql) against the portal database.
+Run [_03_backfill-create-dates.groovy](scripts/_02_demo/_03_backfill-create-dates.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
 
-Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `objectentry` table for `ForumThread` and `ForumMessage` entries. This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. After running, flush caches and rebuild indexes:
+Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `ObjectEntry` table for `ForumThread` and `ForumMessage` entries (definitions resolved by external reference code). This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. This depends on the `LPD-17564` feature flag (see [Required Feature Flags](#required-feature-flags)) — with it disabled, Step 1's `displayDate` was never stored and this step updates 0 rows. After running, flush caches and rebuild indexes:
 
 1. **Control Panel → Server Administration → Resources**
    - Clear content cached by this VM.
@@ -214,6 +216,18 @@ Copies the `displayDate` values (set by Step 1) into the `createDate` and `modif
    - Clear the database cache.
 2. **Control Panel → Search → Index Actions**
    - Reindex all search indexes.
+
+### Step 4 — Backfill Forum Stats Users
+
+Run [_04_backfill-forum-stats-users.groovy](scripts/_02_demo/_04_backfill-forum-stats-users.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
+
+Backfills `ForumStatsUser` records for every user who has posted a thread or message. Without these records, the `forums-hero` fragment displays 0 Members. **Run this after Step 2** (author reassignment), otherwise it records only the admin user. If re-running, first clear existing records with `scripts/_03_util/delete-forum-stats-users.py` to avoid duplicates.
+
+### Step 5 — Update OP bodies (optional)
+
+Run [_05_update-op-bodies.groovy](scripts/_02_demo/_05_update-op-bodies.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
+
+Overwrites each opening post's body with the content in `messages.json`. Useful after editing bodies or adding images in the JSON without re-running Step 1 (which skips existing entries). Idempotent.
 
 ---
 
@@ -224,7 +238,7 @@ The `scripts/_03_util/` directory contains cleanup and teardown scripts.
 | File | Description |
 | :--- | :--- |
 | [delete-demo-data.py](scripts/_03_util/delete-demo-data.py) | Deletes all Forum Stats User, Forum Message, Forum Thread, and Forum Category entries for a given site. Forum Votes are removed automatically via cascade. Demo user accounts are left in place. Usage: `python3 scripts/_03_util/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
-| [delete-forum-stats-users.py](scripts/_03_util/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before re-executing Step 2 to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 scripts/_03_util/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
+| [delete-forum-stats-users.py](scripts/_03_util/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before re-executing Step 4 to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 scripts/_03_util/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
 | [delete-forum-object-definitions.py](scripts/_03_util/delete-forum-object-definitions.py) | Deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for fully resetting a dev environment. |
 
 ---
