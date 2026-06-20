@@ -10,6 +10,7 @@ This Liferay Workspace project is a Fragments and Liferay Objects based replacem
 - [Setup](#setup)
 - [Required Feature Flags](#required-feature-flags)
 - [Fragments](#fragments)
+  - [UI Style: Standard and Flat](#ui-style-standard-and-flat)
 - [Page Layout and Fragment Placement](#page-layout-and-fragment-placement)
 - [Display Page Templates](#display-page-templates)
 - [Demo Data](#demo-data)
@@ -85,6 +86,49 @@ The following **Release** feature flags must be enabled before deploying.
 | **Forums Related Topics** | [forums-related-topics](fragments/forums-related-topics) | Displays a list of topics related to the currently viewed message. |
 | **Forums Message Detail** | [forums-message-detail](fragments/forums-message-detail) | Detailed view of a single forum message, including its replies and engagement metrics. |
 | **Forums Message List** | [forums-message-list](fragments/forums-message-list) | Lists forum messages, typically used for main category views or recent activity. |
+
+### UI Style: Standard and Flat
+
+The forums fragments offer two visual treatments that live side by side in a single code base, selected per fragment instance through configuration. **Standard** is the default, lowest-maintenance look; **Flat** is an opt-in look with bordered cards and inline icon actions.
+
+#### Switching between looks
+
+Each fragment that has two looks exposes a **UI Style** select under its **Appearance** configuration:
+
+| Label | Value (CSS class) | Result |
+| :--- | :--- | :--- |
+| Standard | `forums-ui-standard` | The default look: Clay drop-shadow cards and standard controls. |
+| Flat | `forums-ui-flat` | Bordered/flat cards and the restructured message detail. |
+
+The default is always Standard. Set every forums fragment on a page to Flat to present the look consistently. Only **forums-category-grid**, **forums-message-list**, and **forums-message-detail** carry the switch -- **forums-hero** and **forums-related-topics** look the same in both modes.
+
+The dropdown value is itself the CSS class applied to the fragment root, so the markup just interpolates it -- no conditional is needed to build the class. `forums-ui-standard` matches no rules (an inert flag); `forums-ui-flat` matches the Flat CSS block.
+
+#### How it works (the maintenance model)
+
+Two independent mechanisms produce the Flat look, kept separate so each can be maintained on its own:
+
+**1. Color tokens -- applied unconditionally, no toggle.** Color values use a nested fallback, e.g. `var(--color-brand-primary, var(--primary, #0b5fff))`. The Dialect token wins when the active theme defines it; otherwise the Classic token (then the literal hex) is used. This renders identically under Classic and adds Dialect support automatically, so no configuration is needed and Classic remains the safe fallback.
+
+**2. Layout/structure -- gated by the UI Style switch.** The `uiStyle` configuration value is a namespaced CSS class, so the fragment root just interpolates it directly:
+
+```ftl
+[#assign uiStyle = configuration.uiStyle! /]
+<div class="forums-category-grid ${uiStyle}">
+```
+
+(The `defaultValue` in `configuration.json` already supplies `forums-ui-standard`, so the `!` just guards against a missing value.) Everything Flat-specific keys off that flag:
+
+- **index.css** -- Flat-only rules are grouped in a fenced block at the bottom of the file, every selector scoped under `.forums-ui-flat`. They are inert unless the flag class is present.
+- **index.html** (message-detail only) -- structural differences use `[#if uiStyle == "forums-ui-flat"] ... [#else] ... [/#if]`, where the `[#else]` branch holds the Standard markup.
+- **index.js** (message-detail only) -- `renderReplyCard()` returns an Flat template behind a `forumsUiFlat` guard; the Standard template and its helpers are left intact and simply unused in Flat.
+
+#### Rules for maintainers
+
+- **Standard is the contract.** Selecting Standard must render exactly the default markup and styling. Never change a Standard `[#else]` branch, the Standard JS template, or an unscoped CSS rule to achieve an Flat effect -- put it behind the flag instead.
+- **Scope every Flat rule.** New Flat CSS goes inside the fenced `.forums-ui-flat` block; new Flat markup goes inside an `[#if uiStyle == "forums-ui-flat"]` branch.
+- **Keep IDs shared.** Where an element exists in both looks (e.g. the OP Edit/Delete buttons), reuse the same `id` so the shared JS wiring needs no per-style branching.
+- A change touching only the fenced/branched Flat regions cannot affect Standard, and vice versa -- review them as separate surfaces.
 
 ---
 
