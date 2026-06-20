@@ -152,29 +152,29 @@
 
 		<!-- Original Post -->
 		<div class="forums-message-detail__op" id="forumsDetailOP" style="display:none;">
-			<!-- Author info -->
-			<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
-				<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
-				<div>
-					<span class="d-block text-dark font-weight-bold" id="forumsDetailOPAuthor"></span>
-					<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
-				</div>
-			</div>
 			<div class="forums-message-detail__post-body" id="forumsDetailOPBody"></div>
-			<div class="forums-message-detail__tags-bar">
-				<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
-				<div class="forums-vote" id="forumsDetailOPVote"></div>
-			</div>
-			<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
-				<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}" title="${languageUtil.get(locale, "comment")}">
-					<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#reply"></use></svg>
-				</button>
-				<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailEditBtn" style="display:none;" aria-label="${languageUtil.get(locale, "edit-topic")}" title="${languageUtil.get(locale, "edit-topic")}">
-					<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#pencil"></use></svg>
-				</button>
-				<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" id="forumsDetailDeleteBtn" style="display:none;" aria-label="${languageUtil.get(locale, "delete-topic")}" title="${languageUtil.get(locale, "delete-topic")}">
-					<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#trash"></use></svg>
-				</button>
+			<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
+			<!-- Footer: author info on the left, vote + actions right-justified -->
+			<div class="forums-message-detail__post-footer">
+				<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
+					<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
+					<div>
+						<span class="d-block text-dark font-weight-bold" id="forumsDetailOPAuthor"></span>
+						<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
+					</div>
+				</div>
+				<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
+					<div class="forums-vote" id="forumsDetailOPVote"></div>
+					<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}" title="${languageUtil.get(locale, "comment")}">
+						<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#reply"></use></svg>
+					</button>
+					<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailEditBtn" style="display:none;" aria-label="${languageUtil.get(locale, "edit-topic")}" title="${languageUtil.get(locale, "edit-topic")}">
+						<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#pencil"></use></svg>
+					</button>
+					<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" id="forumsDetailDeleteBtn" style="display:none;" aria-label="${languageUtil.get(locale, "delete-topic")}" title="${languageUtil.get(locale, "delete-topic")}">
+						<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#trash"></use></svg>
+					</button>
+				</div>
 			</div>
 		</div>
 
