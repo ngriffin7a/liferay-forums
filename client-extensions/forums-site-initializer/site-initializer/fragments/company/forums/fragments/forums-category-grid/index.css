@@ -9,6 +9,22 @@
 	font-size: var(--h1-font-size, 2rem);
 }
 
+/* Flat card: a rounded rectangle with the same border line color as the
+   message-detail cards, instead of Clay's default drop shadow. */
+.forums-category-grid__card {
+	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border-radius: var(--border-radius-lg, 0.5rem);
+	box-shadow: none;
+	transition: border-color 0.15s ease;
+}
+
+/* Highlight the border on hover/focus instead of Clay's shadow lift. */
+.forums-category-grid__card:hover,
+.forums-category-grid__card:focus {
+	border-color: var(--color-brand-primary, var(--primary, #0b5fff));
+	box-shadow: none;
+}
+
 .forums-category-grid__card-icon {
 	background-color: var(--color-brand-primary-lighten-6, var(--blue-l5, #e5f1ff));
 	color: var(--color-brand-primary-darken-2, var(--blue-d4, #001a3d));

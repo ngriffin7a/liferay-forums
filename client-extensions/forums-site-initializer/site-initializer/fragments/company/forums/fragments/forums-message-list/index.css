@@ -29,6 +29,14 @@
 	max-width: 320px;
 }
 
+/* Flat card: a rounded rectangle with the same border line color as the
+   message-detail cards, instead of Clay's default drop shadow. */
+.forums-message-card {
+	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border-radius: var(--border-radius-lg, 0.5rem);
+	box-shadow: none;
+}
+
 .forums-message-card .card-body {
 	padding: 1.25rem 1.5rem;
 }
@@ -135,8 +143,8 @@
 
 .forums-skeleton-card {
 	align-items: flex-start;
-	border: 1px solid var(--color-neutral-2, var(--gray-200, #e7e7ed));
-	border-radius: var(--border-radius, 0.25rem);
+	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border-radius: var(--border-radius-lg, 0.5rem);
 	display: flex;
 	gap: 1rem;
 	margin-bottom: 0.75rem;
