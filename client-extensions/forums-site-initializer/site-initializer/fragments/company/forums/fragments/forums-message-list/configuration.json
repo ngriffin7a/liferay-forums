@@ -24,6 +24,30 @@
 					"type": "checkbox"
 				}
 			]
+		},
+		{
+			"label": "Appearance",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "forums-ui-standard",
+					"label": "UI Style",
+					"name": "uiStyle",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "Standard",
+								"value": "forums-ui-standard"
+							},
+							{
+								"label": "Flat",
+								"value": "forums-ui-flat"
+							}
+						]
+					}
+				}
+			]
 		}
 	]
 }

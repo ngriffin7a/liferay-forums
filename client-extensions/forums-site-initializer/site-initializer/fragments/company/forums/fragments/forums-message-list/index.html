@@ -1,6 +1,7 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
 [#assign forumsNewDiscussionURL = (themeDisplay.getPathFriendlyURLPublic()!"") + (themeDisplay.getScopeGroup().getFriendlyURL()!"") + "/new-discussion" /]
-<div class="forums-message-list" id="forumsMessageList"
+[#assign uiStyle = configuration.uiStyle! /]
+<div class="forums-message-list ${uiStyle}" id="forumsMessageList"
 	data-label-all-messages="${languageUtil.get(locale, "all-discussions")}"
 	data-label-category="${languageUtil.get(locale, "category")}"
 	data-label-no-messages="${languageUtil.get(locale, "no-messages-found")}"
