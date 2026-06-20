@@ -1163,7 +1163,7 @@ if (messageDetail) {
 
 						preWork
 							.then(function() {
-								return Liferay.Util.fetch(portalURL + '/o/c/forummessages/' + messageId, {
+								return Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
 									headers: headers,
 									method: 'PATCH',
 									body: JSON.stringify({ question: newStatus })
