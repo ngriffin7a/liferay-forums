@@ -1,7 +1,8 @@
 <!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
 [#assign scopeGroup = themeDisplay.getScopeGroup() /]
 [#assign forumsHome = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
-<div class="forums-message-detail" id="forumsMessageDetail"
+[#assign uiStyle = configuration.uiStyle! /]
+<div class="forums-message-detail ${uiStyle}" id="forumsMessageDetail"
 	data-label-unknown="${languageUtil.get(locale, "unknown")}"
 	data-label-no-message="${languageUtil.get(locale, "no-message-selected")}"
 	data-label-untitled-message="${languageUtil.get(locale, "untitled-message")}"
@@ -72,21 +73,30 @@
 		<div class="forums-message-detail__title-row">
 			<h1 class="forums-message-detail__title text-dark" id="forumsDetailTitle">${languageUtil.get(locale, "loading")}</h1>
 			<div class="dropdown" id="forumsDetailOptionsDropdown" style="display:none;">
-				<button class="component-action dropdown-toggle" type="button" id="forumsDetailOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${languageUtil.get(locale, "options")}" title="${languageUtil.get(locale, "options")}">
-					<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation">
-						<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#ellipsis-v"></use>
-					</svg>
-				</button>
+				[#if uiStyle == "forums-ui-flat"]
+					<button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="forumsDetailOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${languageUtil.get(locale, "options")}" title="${languageUtil.get(locale, "options")}">${languageUtil.get(locale, "options")}</button>
+				[#else]
+					<button class="component-action dropdown-toggle" type="button" id="forumsDetailOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${languageUtil.get(locale, "options")}" title="${languageUtil.get(locale, "options")}">
+						<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation">
+							<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#ellipsis-v"></use>
+						</svg>
+					</button>
+				[/#if]
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="forumsDetailOptions">
-					<a class="dropdown-item" href="#" id="forumsDetailEditBtn" style="display:none;">${languageUtil.get(locale, "edit-topic")}</a>
+					[#if uiStyle == "forums-ui-standard"]
+						<a class="dropdown-item" href="#" id="forumsDetailEditBtn" style="display:none;">${languageUtil.get(locale, "edit-topic")}</a>
+					[/#if]
 					<a class="dropdown-item" href="#" id="forumsDetailToggleQuestionBtn" style="display:none;"></a>
 					<a class="dropdown-item" href="#" id="forumsDetailFlagBtn">${languageUtil.get(locale, "flag-message")}</a>
 					<a class="dropdown-item" href="#" id="forumsDetailSubscribeBtn" style="display:none;"></a>
-					<a class="dropdown-item text-danger forums-delete-btn" href="#" id="forumsDetailDeleteBtn" style="display:none;">${languageUtil.get(locale, "delete-topic")}</a>
+					[#if uiStyle == "forums-ui-standard"]
+						<a class="dropdown-item text-danger forums-delete-btn" href="#" id="forumsDetailDeleteBtn" style="display:none;">${languageUtil.get(locale, "delete-topic")}</a>
+					[/#if]
 				</div>
 			</div>
 		</div>
 
+		[#if uiStyle == "forums-ui-standard"]
 		<!-- Author info (moved above the post body) -->
 		<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
 			<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
@@ -95,6 +105,7 @@
 				<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
 			</div>
 		</div>
+		[/#if]
 
 		<!-- Solved indicator -->
 		<div class="alert alert-success align-items-center forums-message-detail__solved-banner" id="forumsDetailSolvedBanner" style="display:none;" role="alert">
@@ -113,9 +124,9 @@
 			<svg class="forums-skeleton-defs" width="0" height="0" aria-hidden="true" focusable="false">
 				<defs>
 					<linearGradient id="forumsSkeletonGradientDetail" x1="0" y1="0" x2="1" y2="0">
-						<stop offset="0%" style="stop-color:var(--gray-200, #e7e7ed)"/>
-						<stop offset="50%" style="stop-color:var(--gray-100, #f1f2f5)"/>
-						<stop offset="100%" style="stop-color:var(--gray-200, #e7e7ed)"/>
+						<stop offset="0%" style="stop-color:var(--color-neutral-2, var(--gray-200, #e7e7ed))"/>
+						<stop offset="50%" style="stop-color:var(--color-neutral-1, var(--gray-100, #f1f2f5))"/>
+						<stop offset="100%" style="stop-color:var(--color-neutral-2, var(--gray-200, #e7e7ed))"/>
 						<animate attributeName="x1" values="-1;1" dur="1.4s" repeatCount="indefinite"/>
 						<animate attributeName="x2" values="0;2" dur="1.4s" repeatCount="indefinite"/>
 					</linearGradient>
@@ -170,13 +181,39 @@
 		<!-- Original Post -->
 		<div class="forums-message-detail__op" id="forumsDetailOP" style="display:none;">
 			<div class="forums-message-detail__post-body" id="forumsDetailOPBody"></div>
-			<div class="forums-message-detail__tags-bar">
+			[#if uiStyle == "forums-ui-flat"]
 				<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
-				<div class="forums-vote" id="forumsDetailOPVote"></div>
-			</div>
-			<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
-				<button class="btn btn-primary" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}">${languageUtil.get(locale, "comment")}</button>
-			</div>
+				<!-- Footer: author info on the left, vote + actions right-justified -->
+				<div class="forums-message-detail__post-footer">
+					<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
+						<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
+						<div>
+							<span class="d-block text-dark font-weight-bold" id="forumsDetailOPAuthor"></span>
+							<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
+						</div>
+					</div>
+					<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
+						<div class="forums-vote" id="forumsDetailOPVote"></div>
+						<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}" title="${languageUtil.get(locale, "comment")}">
+							<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#reply"></use></svg>
+						</button>
+						<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailEditBtn" style="display:none;" aria-label="${languageUtil.get(locale, "edit-topic")}" title="${languageUtil.get(locale, "edit-topic")}">
+							<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#pencil"></use></svg>
+						</button>
+						<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" id="forumsDetailDeleteBtn" style="display:none;" aria-label="${languageUtil.get(locale, "delete-topic")}" title="${languageUtil.get(locale, "delete-topic")}">
+							<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#trash"></use></svg>
+						</button>
+					</div>
+				</div>
+			[#else]
+				<div class="forums-message-detail__tags-bar">
+					<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
+					<div class="forums-vote" id="forumsDetailOPVote"></div>
+				</div>
+				<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
+					<button class="btn btn-primary" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}">${languageUtil.get(locale, "comment")}</button>
+				</div>
+			[/#if]
 		</div>
 
 		<!-- Accepted Solution Section -->
