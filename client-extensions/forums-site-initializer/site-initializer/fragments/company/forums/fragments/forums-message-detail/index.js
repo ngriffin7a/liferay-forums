@@ -1219,8 +1219,8 @@ if (messageDetail) {
 				if (repliesSection) repliesSection.style.display = '';
 				if (replyCountEl) {
 					var tmpl = regularReplyCount === 1
-						? (messageDetail.dataset.labelXReply || '{0} comment')
-						: (messageDetail.dataset.labelXReplies || '{0} comments');
+						? (messageDetail.dataset.labelXReply || '{0} reply')
+						: (messageDetail.dataset.labelXReplies || '{0} replies');
 					replyCountEl.textContent = tmpl.replace('{0}', regularReplyCount);
 				}
 

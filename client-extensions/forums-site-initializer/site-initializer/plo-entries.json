@@ -285,11 +285,11 @@
 	},
 	{
 		"key": "x-reply",
-		"value": "{\"en_US\": \"{0} comment\"}"
+		"value": "{\"en_US\": \"{0} reply\"}"
 	},
 	{
 		"key": "x-replies",
-		"value": "{\"en_US\": \"{0} comments\"}"
+		"value": "{\"en_US\": \"{0} replies\"}"
 	},
 	{
 		"key": "just-now",
