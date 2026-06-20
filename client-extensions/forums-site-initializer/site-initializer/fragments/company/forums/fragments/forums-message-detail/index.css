@@ -25,7 +25,7 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 
 .forums-message-detail__post-body,
 .forums-message-detail__reply-body {
-	color: var(--body-color, #272833);
+	color: var(--color-neutral-9, var(--body-color, #272833));
 	line-height: 1.7;
 }
 
@@ -44,7 +44,7 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 
 .forums-message-detail__post-body pre,
 .forums-message-detail__reply-body pre {
-	background-color: var(--gray-100, #f1f2f5);
+	background-color: var(--color-neutral-1, var(--gray-100, #f1f2f5));
 	border-radius: var(--border-radius, 0.25rem);
 	overflow-x: auto;
 	padding: 1rem;
@@ -81,9 +81,9 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-message-detail__author-badge {
-	background-color: var(--blue-l5, #e5f1ff);
-	border-color: var(--blue-l5, #e5f1ff);
-	color: var(--blue-d2, #005fcc);
+	background-color: var(--color-brand-primary-lighten-6, var(--blue-l5, #e5f1ff));
+	border-color: var(--color-brand-primary-lighten-6, var(--blue-l5, #e5f1ff));
+	color: var(--color-brand-primary-darken-1, var(--blue-d2, #005fcc));
 }
 
 .forums-message-detail__solved-banner {
@@ -91,9 +91,9 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-message-detail__tag {
-	background-color: var(--secondary-l3, #e7e7ed);
-	border-color: var(--secondary-l3, #e7e7ed);
-	color: var(--dark-d2, #111116);
+	background-color: var(--color-neutral-2, var(--secondary-l3, #e7e7ed));
+	border-color: var(--color-neutral-2, var(--secondary-l3, #e7e7ed));
+	color: var(--color-neutral-9, var(--dark-d2, #111116));
 }
 
 .forums-message-detail__author-info,
@@ -151,12 +151,12 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 
 .forums-message-detail__reply-card--targeted {
 	animation: forums-reply-target-flash 2s ease forwards;
-	outline: 2px solid var(--primary, #0b5fff);
+	outline: 2px solid var(--color-brand-primary, var(--primary, #0b5fff));
 	outline-offset: 2px;
 }
 
 @keyframes forums-reply-target-flash {
-	0%, 30% { outline-color: var(--primary, #0b5fff); }
+	0%, 30% { outline-color: var(--color-brand-primary, var(--primary, #0b5fff)); }
 	100%    { outline-color: transparent; }
 }
 

@@ -19,14 +19,14 @@
 }
 
 .forums-related-topics .list-group-item-action {
-	color: var(--primary, #0b5fff);
+	color: var(--color-brand-primary, var(--primary, #0b5fff));
 }
 
 .forums-related-topics .list-group-item-action:hover,
 .forums-related-topics .list-group-item-action:focus,
 .forums-related-topics .list-group-item-action.hover {
 	background-color: transparent;
-	color: var(--primary-d2, #004ad7);
+	color: var(--color-brand-primary-darken-2, var(--primary-d2, #004ad7));
 	text-decoration: underline;
 }
 
