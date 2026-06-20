@@ -46,6 +46,31 @@ if (messageDetail) {
 		replyBtn.setAttribute('aria-label', messageDetail.dataset.labelComment || 'Comment');
 	}
 	if (flagBtn) flagBtn.style.display = 'none';
+
+	/* "View the Solution" targets the accepted-solution card itself (scroll it
+	   into view and flash the highlight), rather than jumping to the top of the
+	   solution section. */
+	var viewSolutionLink = messageDetail.querySelector('#forumsDetailViewSolution');
+	if (viewSolutionLink) {
+		viewSolutionLink.addEventListener('click', function(e) {
+			e.preventDefault();
+			var solutionCard = messageDetail.querySelector('.forums-message-detail__reply-card--solution');
+			if (!solutionCard) return;
+			/* Scroll the card near the top of the viewport. When an admin is
+			   signed in, the fixed Control Menu (.control-menu-container) sits
+			   at the top z-order, so offset the scroll by its height to keep the
+			   card from being hidden behind it. */
+			var controlMenu = document.querySelector('.control-menu-container');
+			var offset = (controlMenu ? controlMenu.offsetHeight : 0) + 12;
+			var top = solutionCard.getBoundingClientRect().top + window.pageYOffset - offset;
+			window.scrollTo({ top: top, behavior: 'smooth' });
+			/* Remove + reflow + re-add so the flash replays on every click. */
+			solutionCard.classList.remove('forums-message-detail__reply-card--targeted');
+			void solutionCard.offsetWidth;
+			solutionCard.classList.add('forums-message-detail__reply-card--targeted');
+		});
+	}
+
 	var breadcrumbCategory = messageDetail.querySelector('#forumsDetailBreadcrumbCategory');
 	var breadcrumbMessage = messageDetail.querySelector('#forumsDetailBreadcrumbMessage');
 	var allTopicsLink = messageDetail.querySelector('#forumsDetailAllTopics');
