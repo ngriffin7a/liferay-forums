@@ -146,9 +146,7 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 .forums-message-detail__reply-card--solution {
-	background-color: var(--color-state-success-lighten-2, var(--success-l2, #edf9f0));
-	border-radius: var(--border-radius-lg, 0.5rem);
-	padding: 1.25rem;
+	border-left: 3px solid var(--color-brand-primary, var(--primary, #0b5fff));
 }
 
 .forums-message-detail__reply-card--targeted {
