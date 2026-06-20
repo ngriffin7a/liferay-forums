@@ -95,51 +95,6 @@ if (messageDetail) {
 		});
 	}
 
-	/* Reply options dropdown vanilla JS fallback (delegated: reply cards are
-	   re-rendered on pagination, so we bind once on the fragment root). The menu
-	   is positioned `fixed` while open so an ancestor's overflow:hidden (the page
-	   / section wrapper) cannot clip it. */
-	function closeReplyOptionMenus(except) {
-		messageDetail.querySelectorAll('.forums-message-detail__reply-options .dropdown-menu.show').forEach(function (menu) {
-			if (menu === except) return;
-			menu.classList.remove('show');
-			menu.style.position = '';
-			menu.style.top = '';
-			menu.style.left = '';
-			menu.style.right = '';
-			menu.style.zIndex = '';
-			var toggle = menu.previousElementSibling;
-			if (toggle) toggle.setAttribute('aria-expanded', 'false');
-		});
-	}
-	messageDetail.addEventListener('click', function (e) {
-		var toggle = e.target.closest('[id^="forumsReplyOptions_"]');
-		if (!toggle) return;
-		e.preventDefault();
-		var menu = toggle.nextElementSibling;
-		if (!menu || !menu.classList.contains('dropdown-menu')) return;
-		var willOpen = !menu.classList.contains('show');
-		closeReplyOptionMenus(menu);
-		if (willOpen) {
-			var rect = toggle.getBoundingClientRect();
-			menu.style.position = 'fixed';
-			menu.style.top = Math.round(rect.bottom + 2) + 'px';
-			menu.style.left = 'auto';
-			menu.style.right = Math.round(window.innerWidth - rect.right) + 'px';
-			menu.style.zIndex = '1050';
-		}
-		menu.classList.toggle('show', willOpen);
-		toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-	});
-	document.addEventListener('click', function (e) {
-		if (!e.target.closest('.forums-message-detail__reply-options')) closeReplyOptionMenus(null);
-	});
-	document.addEventListener('keydown', function (e) {
-		if (e.key === 'Escape') closeReplyOptionMenus(null);
-	});
-	window.addEventListener('scroll', function () { closeReplyOptionMenus(null); }, true);
-	window.addEventListener('resize', function () { closeReplyOptionMenus(null); });
-
 	function runMessageDetail(resolvedMessageId, replyId) {
 	messageId = resolvedMessageId;
 	var targetReplyId = replyId || null;
@@ -255,8 +210,6 @@ if (messageDetail) {
 
 		var hasEditAction = !!(msg.actions && (msg.actions['update'] || msg.actions['patch'] || msg.actions['PUT']));
 		var hasDeleteAction = !!(msg.actions && msg.actions['delete']);
-		var hasOptions = hasEditAction || hasDeleteAction;
-		var optionsLabel = messageDetail.dataset.labelOptions || 'Options';
 		/* Lock the accepted answer: once one reply is marked, only that reply
 		   keeps the toggle (so it can be unmarked). Hide the button on all
 		   other replies — the user must unmark the current accepted answer
@@ -286,16 +239,6 @@ if (messageDetail) {
 					</div>
 					<div class="forums-message-detail__reply-body">${body}</div>
 					<div class="forums-message-detail__reply-actions">
-						${canReply ? `<button class="btn btn-outline-primary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_threadMessages_c_forumThreadId}" data-forums-parent-id="${msg.id}">${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
-						${hasOptions ? `<div class="dropdown forums-message-detail__reply-options">
-							<button class="btn btn-monospaced btn-sm btn-outline-borderless btn-outline-secondary dropdown-toggle" type="button" id="forumsReplyOptions_${msg.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${optionsLabel}" title="${optionsLabel}">
-								<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation"><use href="${clayIconsUrl}#ellipsis-v"></use></svg>
-							</button>
-							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="forumsReplyOptions_${msg.id}">
-								${hasEditAction ? `<a class="dropdown-item forums-edit-reply-btn" href="#" data-message-id="${msg.id}">${messageDetail.dataset.labelEditReply || 'Edit Reply'}</a>` : ''}
-								${hasDeleteAction ? `<a class="dropdown-item text-danger forums-delete-btn" href="#" data-delete-url="${msg.actions['delete'].href}">${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}</a>` : ''}
-							</div>
-						</div>` : ''}
 						<div class="align-items-center d-inline-flex text-secondary forums-vote" data-message-id="${msg.id}">
 							<button class="btn-thumbs-up btn btn-monospaced btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelUpvote || 'Upvote'}">
 								<svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg>
@@ -305,6 +248,9 @@ if (messageDetail) {
 								<svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg>
 							</button>
 						</div>
+						${canReply ? `<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_threadMessages_c_forumThreadId}" data-forums-parent-id="${msg.id}" aria-label="${messageDetail.dataset.labelReply || 'Reply'}" title="${messageDetail.dataset.labelReply || 'Reply'}"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></button>` : ''}
+						${hasEditAction ? `<button class="btn btn-monospaced btn-sm btn-outline-secondary forums-edit-reply-btn" type="button" data-message-id="${msg.id}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
+						${hasDeleteAction ? `<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" data-delete-url="${msg.actions['delete'].href}" aria-label="${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}" title="${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
 						${canMarkAnswer ? `<button class="btn btn-sm ${isSolution ? 'btn-success' : 'btn-outline-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
 					</div>
 				</div>
@@ -1083,8 +1029,8 @@ if (messageDetail) {
 						</button>`;
 				}
 
-				/* Wire up OP Edit / Delete dropdown items if permitted (HATEOAS).
-				   The buttons live in the options dropdown next to the title;
+				/* Wire up OP Edit / Delete actions if permitted (HATEOAS).
+				   The buttons are inline icon buttons in the OP actions row;
 				   here we just toggle their visibility and (re)attach handlers. */
 				var dropdownEditBtn = messageDetail.querySelector('#forumsDetailEditBtn');
 				if (dropdownEditBtn && canUpdateMessage) {

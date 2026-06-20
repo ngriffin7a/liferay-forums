@@ -70,17 +70,11 @@
 		<div class="forums-message-detail__title-row">
 			<h1 class="forums-message-detail__title text-dark" id="forumsDetailTitle">${languageUtil.get(locale, "loading")}</h1>
 			<div class="dropdown" id="forumsDetailOptionsDropdown" style="display:none;">
-				<button class="component-action dropdown-toggle" type="button" id="forumsDetailOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${languageUtil.get(locale, "options")}" title="${languageUtil.get(locale, "options")}">
-					<svg class="lexicon-icon lexicon-icon-ellipsis-v" role="presentation">
-						<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#ellipsis-v"></use>
-					</svg>
-				</button>
+				<button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="forumsDetailOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="${languageUtil.get(locale, "options")}" title="${languageUtil.get(locale, "options")}">${languageUtil.get(locale, "options")}</button>
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="forumsDetailOptions">
-					<a class="dropdown-item" href="#" id="forumsDetailEditBtn" style="display:none;">${languageUtil.get(locale, "edit-topic")}</a>
 					<a class="dropdown-item" href="#" id="forumsDetailToggleQuestionBtn" style="display:none;"></a>
 					<a class="dropdown-item" href="#" id="forumsDetailFlagBtn">${languageUtil.get(locale, "flag-message")}</a>
 					<a class="dropdown-item" href="#" id="forumsDetailSubscribeBtn" style="display:none;"></a>
-					<a class="dropdown-item text-danger forums-delete-btn" href="#" id="forumsDetailDeleteBtn" style="display:none;">${languageUtil.get(locale, "delete-topic")}</a>
 				</div>
 			</div>
 		</div>
@@ -173,7 +167,15 @@
 				<div class="forums-vote" id="forumsDetailOPVote"></div>
 			</div>
 			<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
-				<button class="btn btn-primary" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}">${languageUtil.get(locale, "comment")}</button>
+				<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}" title="${languageUtil.get(locale, "comment")}">
+					<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#reply"></use></svg>
+				</button>
+				<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailEditBtn" style="display:none;" aria-label="${languageUtil.get(locale, "edit-topic")}" title="${languageUtil.get(locale, "edit-topic")}">
+					<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#pencil"></use></svg>
+				</button>
+				<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" id="forumsDetailDeleteBtn" style="display:none;" aria-label="${languageUtil.get(locale, "delete-topic")}" title="${languageUtil.get(locale, "delete-topic")}">
+					<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#trash"></use></svg>
+				</button>
 			</div>
 		</div>
 
