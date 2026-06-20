@@ -25,3 +25,23 @@
 	margin-bottom: 0;
 	overflow: hidden;
 }
+
+/* =========================================================================
+   Flat UI
+   ========================================================================= */
+
+/* Flat card: a rounded rectangle with the same border line color as the
+   message-detail cards, instead of Clay's default drop shadow. */
+.forums-ui-flat .forums-category-grid__card {
+	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border-radius: var(--border-radius-lg, 0.5rem);
+	box-shadow: none;
+	transition: border-color 0.15s ease;
+}
+
+/* Highlight the border on hover/focus instead of Clay's shadow lift. */
+.forums-ui-flat .forums-category-grid__card:hover,
+.forums-ui-flat .forums-category-grid__card:focus {
+	border-color: var(--color-brand-primary, var(--primary, #0b5fff));
+	box-shadow: none;
+}
