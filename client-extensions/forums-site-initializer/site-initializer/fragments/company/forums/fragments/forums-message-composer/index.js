@@ -691,8 +691,7 @@ if (messageComposer) {
 						hideModal();
 						sessionStorage.setItem('forumsSuccessToast', messageComposer.dataset.labelQuestionPosted || 'Your question has been posted!');
 						var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-						var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
-						spaNavigate(Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath);
+						spaNavigate(Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/c_forumthread/' + msg.friendlyUrlPath);
 					});
 				})
 				.catch(function(err) {

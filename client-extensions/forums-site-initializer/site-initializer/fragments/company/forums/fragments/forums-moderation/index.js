@@ -12,8 +12,7 @@ if (forumsMod) {
 	function buildMessageHref(messageData) {
 		if (messageData && messageData.friendlyUrlPath) {
 			var siteSlug = (messageData.scopeKey || '').toLowerCase().replace(/ /g, '-');
-			var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
-			return Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + messageData.friendlyUrlPath;
+			return Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/c_forumthread/' + messageData.friendlyUrlPath;
 		}
 		return null;
 	}

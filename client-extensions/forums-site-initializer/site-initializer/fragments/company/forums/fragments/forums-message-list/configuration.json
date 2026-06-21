@@ -18,13 +18,6 @@
 					"type": "text"
 				},
 				{
-					"dataType": "string",
-					"defaultValue": "c_forumthread",
-					"label": "Message Object URL Route",
-					"name": "messageObjectRoute",
-					"type": "text"
-				},
-				{
 					"defaultValue": true,
 					"label": "Show Search Bar",
 					"name": "showSearchBar",

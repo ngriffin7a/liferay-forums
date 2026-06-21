@@ -326,9 +326,8 @@ if (messageList) {
 				}
 
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
 				var topicHref = msg.friendlyUrlPath
-					? sitePrefix + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath
+					? sitePrefix + '/c_forumthread/' + msg.friendlyUrlPath
 					: null;
 				if (!topicHref) missingDisplayPage = true;
 

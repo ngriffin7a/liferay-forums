@@ -81,8 +81,7 @@ if (relatedTopics && !document.body.classList.contains('has-edit-mode-menu')) {
 
 			if (msg.friendlyUrlPath) {
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
-				var messageObjectRoute = configuration.messageObjectRoute || 'c_forumthread';
-				var messageHref = Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/' + messageObjectRoute + '/' + msg.friendlyUrlPath;
+				var messageHref = Liferay.ThemeDisplay.getPathFriendlyURLPublic() + '/' + siteSlug + '/c_forumthread/' + msg.friendlyUrlPath;
 				html += '<a href="' + messageHref + '" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">'
 					+ '<span>' + Liferay.Util.escapeHTML(title) + '</span>' + flaggedBadge + '</a>';
 			} else {
