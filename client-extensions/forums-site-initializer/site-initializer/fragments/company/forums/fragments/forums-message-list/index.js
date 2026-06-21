@@ -78,6 +78,17 @@ if (messageList) {
 		return new Date(dateStr).toLocaleDateString();
 	}
 
+	/* Full localized date + time (browser locale), e.g. "05/30/2026, 02:34:56 PM"
+	   for en-US. Shown as the title tooltip and the screen-reader label on a
+	   relative date. */
+	function fullDateTime(dateStr) {
+		if (!dateStr) return '';
+		return new Date(dateStr).toLocaleString(undefined, {
+			year: 'numeric', month: '2-digit', day: '2-digit',
+			hour: '2-digit', minute: '2-digit', second: '2-digit'
+		});
+	}
+
 	/* Utility: avatar initial */
 	function avatarInitial(name) {
 		if (!name) return '?';
@@ -351,7 +362,7 @@ if (messageList) {
 						return tHtml;
 					})()
 					+ '<div class="forums-message-card__meta text-secondary small">'
-					+ '<span class="forums-message-card__meta-item">' + clockIcon + ' ' + timeAgo(dateStr) + '</span>'
+					+ '<span class="forums-message-card__meta-item">' + clockIcon + ' <time datetime="' + dateStr + '" title="' + fullDateTime(dateStr) + '" aria-label="' + fullDateTime(dateStr) + '">' + timeAgo(dateStr) + '</time></span>'
 					+ '<span class="forums-message-card__meta-item">' + replyIcon + ' ' + (replyCount === 1 ? (messageList.dataset.labelXReply || '{0} comment').replace('{0}', replyCount) : (messageList.dataset.labelXReplies || '{0} comments').replace('{0}', replyCount)) + '</span>'
 					+ '<span class="forums-message-card__meta-item">' + eyeIcon + ' ' + (msg.viewCount || 0) + '</span>'
 					+ (msg.actions && msg.actions['delete']

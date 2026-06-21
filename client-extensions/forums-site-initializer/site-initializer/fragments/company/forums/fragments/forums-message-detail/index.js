@@ -184,10 +184,27 @@ if (messageDetail) {
 		});
 	}
 
-	function formatDate(dateStr) {
+	function timeAgo(dateStr) {
 		if (!dateStr) return '';
-		var d = new Date(dateStr);
-		return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+		var now = Date.now();
+		var then = new Date(dateStr).getTime();
+		var diff = Math.floor((now - then) / 1000);
+		if (diff < 60) return messageDetail.dataset.labelJustNow || 'just now';
+		if (diff < 3600) return (messageDetail.dataset.labelXMinutesAgo || '{0}m ago').replace('{0}', Math.floor(diff / 60));
+		if (diff < 86400) return (messageDetail.dataset.labelXHoursAgo || '{0}h ago').replace('{0}', Math.floor(diff / 3600));
+		if (diff < 2592000) return (messageDetail.dataset.labelXDaysAgo || '{0}d ago').replace('{0}', Math.floor(diff / 86400));
+		return new Date(dateStr).toLocaleDateString();
+	}
+
+	/* Full localized date + time (browser locale), e.g. "05/30/2026, 02:34:56 PM"
+	   for en-US. Shown as the title tooltip and the screen-reader label on a
+	   relative date. */
+	function fullDateTime(dateStr) {
+		if (!dateStr) return '';
+		return new Date(dateStr).toLocaleString(undefined, {
+			year: 'numeric', month: '2-digit', day: '2-digit',
+			hour: '2-digit', minute: '2-digit', second: '2-digit'
+		});
 	}
 
 	function avatarInitial(name) {
@@ -241,7 +258,8 @@ if (messageDetail) {
 		var creator = msg.creator || {};
 		var name = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 		var body = msg.body || '';
-		var date = formatDate(msg.dateCreated);
+		var dateFull = fullDateTime(msg.dateCreated);
+		var date = '<time datetime="' + msg.dateCreated + '" title="' + dateFull + '" aria-label="' + dateFull + '">' + timeAgo(msg.dateCreated) + '</time>';
 		var score = msg.voteScore || 0;
 		var solClass = isSolution ? ' forums-message-detail__reply-card--solution' : '';
 		var depthStyle = depth > 0 ? ' style="margin-left:' + (depth * 2.5) + 'rem"' : '';
@@ -1038,10 +1056,10 @@ if (messageDetail) {
 				}
 				if (opAuthor) opAuthor.textContent = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
 				if (opDate) {
-					var dateTmpl = isMessageQuestion
-						? (messageDetail.dataset.labelAskedOn || 'Asked on {0}')
-						: (messageDetail.dataset.labelPostedOn || 'Posted on {0}');
-					opDate.textContent = dateTmpl.replace('{0}', formatDate(opMsg.dateCreated));
+					opDate.textContent = timeAgo(opMsg.dateCreated);
+					var opDateFull = fullDateTime(opMsg.dateCreated);
+					opDate.title = opDateFull;
+					opDate.setAttribute('aria-label', opDateFull);
 				}
 				/* Render OP Tags */
 				if (opTags && messageTagsArray.length > 0) {
