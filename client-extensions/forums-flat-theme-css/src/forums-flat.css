@@ -25,8 +25,10 @@
 	box-shadow: none;
 }
 
-/* Match the skeleton placeholder to the flat card outline above. */
-.forums-skeleton-card {
+/* Match the message-list skeleton placeholder to the flat card outline above.
+   Scoped to message-list: its skeleton already has its own padding, and the
+   class is shared with message-detail (handled separately, below). */
+.forums-message-list .forums-skeleton-card {
 	border: 1px solid var(--gray-300, #cdced9);
 	border-radius: var(--border-radius-lg, 0.5rem);
 }
@@ -53,4 +55,13 @@
 .forums-message-detail__reply-card--solution {
 	background-color: transparent;
 	border-left: 3px solid var(--primary, #0b5fff);
+}
+
+/* Frame the loading skeleton cards (OP + replies) too. The Standard skeleton
+   uses `padding: 1.5rem 0` (no horizontal padding, fine when borderless), so
+   restore the horizontal padding here to match the bordered flat cards. */
+.forums-message-detail .forums-skeleton-card {
+	border: 1px solid var(--gray-300, #cdced9);
+	border-radius: var(--border-radius-lg, 0.5rem);
+	padding: 1.5rem;
 }
