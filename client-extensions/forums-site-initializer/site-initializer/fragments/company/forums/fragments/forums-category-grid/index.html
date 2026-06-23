@@ -2,7 +2,6 @@
 [#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
 [#assign scopeGroup = themeDisplay.getScopeGroup() /]
 [#assign pageSize = configuration.pageSize!"12" /]
-[#assign uiStyle = configuration.uiStyle! /]
 [#assign categoriesData = restClient.get("/c/forumcategories/scopes/" + scopeGroupId + "?pageSize=" + pageSize + "&sort=categoryName:asc")!"" /]
 [#assign baseHref = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") + (configuration.messagesURL!"/forums-messages") /]
 [#assign categoryIcons = {
@@ -12,7 +11,7 @@
 	"Technical Help": "question-circle-full"
 } /]
 
-<div class="forums-category-grid ${uiStyle}">
+<div class="forums-category-grid">
 	<div class="container">
 		<h2 class="text-center text-dark mb-5">
 			${languageUtil.get(locale, "browse-categories")}
