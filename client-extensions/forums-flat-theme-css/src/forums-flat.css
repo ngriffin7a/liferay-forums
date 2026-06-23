@@ -5,7 +5,7 @@
 
 /* ===== Category Grid (Flat) ===== */
 .forums-category-grid__card {
-	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border: 1px solid var(--gray-300, #cdced9);
 	border-radius: var(--border-radius-lg, 0.5rem);
 	box-shadow: none;
 	transition: border-color 0.15s ease;
@@ -14,19 +14,19 @@
 /* Highlight the border on hover/focus instead of Clay's shadow lift. */
 .forums-category-grid__card:hover,
 .forums-category-grid__card:focus {
-	border-color: var(--color-brand-primary, var(--primary, #0b5fff));
+	border-color: var(--primary, #0b5fff);
 	box-shadow: none;
 }
 
 /* ===== Message List (Flat) ===== */
 .forums-message-card {
-	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border: 1px solid var(--gray-300, #cdced9);
 	border-radius: var(--border-radius-lg, 0.5rem);
 	box-shadow: none;
 }
 
 /* Match the skeleton placeholder to the flat card outline above. */
 .forums-skeleton-card {
-	border: 1px solid var(--color-neutral-3, var(--gray-300, #cdced9));
+	border: 1px solid var(--gray-300, #cdced9);
 	border-radius: var(--border-radius-lg, 0.5rem);
 }

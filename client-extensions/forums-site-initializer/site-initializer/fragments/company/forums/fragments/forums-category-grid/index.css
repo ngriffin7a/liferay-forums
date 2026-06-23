@@ -10,8 +10,8 @@
 }
 
 .forums-category-grid__card-icon {
-	background-color: var(--color-brand-primary-lighten-6, var(--blue-l5, #e5f1ff));
-	color: var(--color-brand-primary-darken-2, var(--blue-d4, #001a3d));
+	background-color: var(--blue-l5, #e5f1ff);
+	color: var(--blue-d4, #001a3d);
 }
 
 .forums-category-grid__card .card-title {

@@ -43,11 +43,11 @@
 }
 
 .forums-message-card__title a {
-	color: var(--color-neutral-9, var(--body-color, #272833));
+	color: var(--body-color, #272833);
 }
 
 .forums-message-card__title a:hover {
-	color: var(--color-brand-primary, var(--primary, #0b5fff));
+	color: var(--primary, #0b5fff);
 }
 
 .forums-message-card__solved {
@@ -77,9 +77,9 @@
 }
 
 .forums-message-card__tag {
-	background-color: var(--color-neutral-2, var(--secondary-l3, #e7e7ed));
-	border-color: var(--color-neutral-2, var(--secondary-l3, #e7e7ed));
-	color: var(--color-neutral-9, var(--dark-d2, #111116));
+	background-color: var(--secondary-l3, #e7e7ed);
+	border-color: var(--secondary-l3, #e7e7ed);
+	color: var(--dark-d2, #111116);
 }
 
 .forums-message-card__meta {
