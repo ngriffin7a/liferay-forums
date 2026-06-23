@@ -96,8 +96,7 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	color: var(--dark-d2, #111116);
 }
 
-.forums-message-detail__author-info,
-.forums-message-detail__reply-author-info {
+.forums-message-detail__author-info {
 	align-items: center;
 	display: flex;
 	gap: 0.75rem;
@@ -244,88 +243,4 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 
 #forumsDetailLoading.forums-skeleton--fade-out {
 	opacity: 0;
-}
-
-/* =========================================================================
-   Flat UI
-   ========================================================================= */
-
-/* Frame the original post as a bordered card. */
-.forums-ui-flat .forums-message-detail__op {
-	border: 1px solid var(--gray-300, #cdced9);
-	border-radius: var(--border-radius-lg, 0.5rem);
-	padding: 1.5rem;
-}
-
-/* OP footer: a separator divides the post body/tags from the author info
-   (left) and the vote + action buttons (right-justified). */
-.forums-ui-flat .forums-message-detail__post-footer {
-	align-items: center;
-	border-top: 1px solid var(--gray-300, #cdced9);
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-	justify-content: space-between;
-	padding-top: 1rem;
-}
-
-.forums-ui-flat .forums-message-detail__tags {
-	margin-bottom: 1.5rem;
-}
-
-/* Author info sits inline in the footer, so drop the Standard bottom margin. */
-.forums-ui-flat .forums-message-detail__author-info {
-	margin-bottom: 0;
-}
-
-/* Vote column: horizontal thumbs-up / score / thumbs-down group on the left,
-   vertically centered against the full reply card (mirrors the OP vote
-   treatment). */
-.forums-ui-flat .forums-message-detail__reply-layout {
-	align-items: center;
-}
-
-.forums-ui-flat .forums-message-detail__reply-vote-col {
-	margin-right: 1rem;
-}
-
-/* Footer separator: a rule divides the reply body from the author/actions
-   row. Author info sits left, action buttons are pushed to the right. */
-.forums-ui-flat .forums-message-detail__reply-footer {
-	align-items: center;
-	border-top: 1px solid var(--gray-300, #cdced9);
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-	justify-content: space-between;
-	margin-top: 0.75rem;
-	padding-top: 0.75rem;
-}
-
-/* "Accepted" badge above the body on the chosen solution. */
-.forums-ui-flat .forums-message-detail__reply-accepted {
-	align-items: center;
-	color: var(--success, #287d3c);
-	display: inline-flex;
-	font-weight: 600;
-	gap: 0.25rem;
-	margin-bottom: 0.5rem;
-}
-
-.forums-ui-flat .forums-message-detail__reply-actions {
-	gap: 0.5rem;
-}
-
-/* Frame each reply as a bordered card. */
-.forums-ui-flat .forums-message-detail__reply-card {
-	border: 1px solid var(--gray-300, #cdced9);
-	border-radius: var(--border-radius-lg, 0.5rem);
-	margin-bottom: 1rem;
-	padding: 1.25rem;
-}
-
-/* Mark the accepted solution with a left accent rule rather than a fill. */
-.forums-ui-flat .forums-message-detail__reply-card--solution {
-	background-color: transparent;
-	border-left: 3px solid var(--primary, #0b5fff);
 }

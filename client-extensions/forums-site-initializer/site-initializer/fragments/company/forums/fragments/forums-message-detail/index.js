@@ -22,11 +22,6 @@ if (messageDetail) {
 	};
 	var clayIconsUrl = Liferay.ThemeDisplay.getPathThemeImages() + '/clay/icons.svg';
 
-	/* Flat UI flag (see the "UI Style" configuration field). Drives the
-	   Flat branches in renderReply() and the "View the Solution" scroll
-	   behavior below. Standard keeps the original rendering and behavior. */
-	var forumsUiFlat = (typeof configuration !== 'undefined' && configuration.uiStyle === 'forums-ui-flat');
-
 	/* DOM refs */
 	var titleEl = messageDetail.querySelector('#forumsDetailTitle');
 	var loadingEl = messageDetail.querySelector('#forumsDetailLoading');
@@ -316,51 +311,6 @@ if (messageDetail) {
 			&& (!hasAcceptedAnswer || isSolution);
 		var isAuthor = opCreatorId && String(creator.id) === String(opCreatorId);
 
-		/* ---------------------------------------------------------------------
-		   Flat UI reply card (maintained separately from the Standard
-		   template below). Layout: a left vote column, an "Accepted" badge above
-		   the body on the solution, and a footer (separator rule) with author
-		   info left and inline icon action buttons right. Edit/Delete are icon
-		   buttons here rather than items in a per-reply options dropdown, so the
-		   Standard-only dropdown JS (closeReplyOptionMenus, etc.) is inert.
-		   --------------------------------------------------------------------- */
-		if (forumsUiFlat) {
-			return `<div class="forums-message-detail__reply-card${solClass}" data-message-id="${msg.id}"${depthStyle}>
-			<div class="autofit-row forums-message-detail__reply-layout">
-				<div class="autofit-col forums-message-detail__reply-vote-col">
-					<div class="align-items-center d-inline-flex text-secondary forums-vote" data-message-id="${msg.id}">
-						<button class="btn-thumbs-up btn btn-monospaced btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--up${upActive}" type="button" aria-pressed="${isUpPressed}"${canVote ? ` data-vote-dir="up" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelUpvote || 'Upvote'}">
-							<svg class="lexicon-icon lexicon-icon-${upIcon}" role="presentation"><use href="${clayIconsUrl}#${upIcon}"></use></svg>
-						</button>
-						<span class="font-weight-bold p-1 forums-vote__score" data-vote-score="${msg.id}">${score}</span>
-						<button class="btn-thumbs-down btn btn-monospaced btn-outline-borderless btn-sm btn-outline-secondary forums-vote__btn forums-vote__btn--down${downActive}" type="button" aria-pressed="${isDownPressed}"${canVote ? ` data-vote-dir="down" data-message-id="${msg.id}"` : ' disabled'} title="${messageDetail.dataset.labelDownvote || 'Downvote'}">
-							<svg class="lexicon-icon lexicon-icon-${downIcon}" role="presentation"><use href="${clayIconsUrl}#${downIcon}"></use></svg>
-						</button>
-					</div>
-				</div>
-				<div class="autofit-col autofit-col-expand forums-message-detail__reply-content">
-					${isSolution ? `<div class="forums-message-detail__reply-accepted"><svg class="lexicon-icon lexicon-icon-check-circle-full" role="presentation"><use href="${clayIconsUrl}#check-circle-full"></use></svg>${Liferay.Util.escapeHTML(messageDetail.dataset.labelAccepted || 'Accepted')}</div>` : ''}
-					<div class="forums-message-detail__reply-body">${body}</div>
-					<div class="forums-message-detail__reply-footer">
-						<div class="forums-message-detail__reply-author-info">
-							${renderAvatar(creator, 'sm')}
-							<span class="text-dark font-weight-bold">${Liferay.Util.escapeHTML(name)}</span>
-							${isAuthor ? `<span class="label forums-message-detail__author-badge">${messageDetail.dataset.labelAuthor || 'Author'}</span>` : ''}
-							<span class="text-secondary small">${date}</span>
-						</div>
-						<div class="forums-message-detail__reply-actions">
-							${canMarkAnswer ? `<button class="btn btn-sm ${isSolution ? 'btn-success' : 'btn-outline-secondary'} forums-answer-btn" data-answer-message-id="${msg.id}" data-is-answer="${isSolution ? 'true' : 'false'}">${isSolution ? `&#10003; ${messageDetail.dataset.labelAccepted || 'Accepted'}` : (messageDetail.dataset.labelMarkAsAnswer || 'Mark as Answer')}</button>` : ''}
-							${canReply ? `<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_threadMessages_c_forumThreadId}" data-forums-parent-id="${msg.id}" aria-label="${messageDetail.dataset.labelReply || 'Reply'}" title="${messageDetail.dataset.labelReply || 'Reply'}"><svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${clayIconsUrl}#reply"></use></svg></button>` : ''}
-							${hasEditAction ? `<button class="btn btn-monospaced btn-sm btn-outline-secondary forums-edit-reply-btn" type="button" data-message-id="${msg.id}" aria-label="${messageDetail.dataset.labelEditReply || 'Edit Reply'}" title="${messageDetail.dataset.labelEditReply || 'Edit Reply'}"><svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="${clayIconsUrl}#pencil"></use></svg></button>` : ''}
-							${hasDeleteAction ? `<button class="btn btn-monospaced btn-sm btn-danger forums-delete-btn" type="button" data-delete-url="${msg.actions['delete'].href}" aria-label="${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}" title="${messageDetail.dataset.labelDeleteReply || 'Delete Reply'}"><svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="${clayIconsUrl}#trash"></use></svg></button>` : ''}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>`;
-		}
-
-		/* Standard UI reply card */
 		return `<div class="forums-message-detail__reply-card${solClass}" data-message-id="${msg.id}"${depthStyle}>
 			<div class="autofit-row forums-message-detail__reply-layout">
 				<div class="autofit-col mr-2">

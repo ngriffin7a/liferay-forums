@@ -89,46 +89,30 @@ The following **Release** feature flags must be enabled before deploying.
 
 ### UI Style: Standard and Flat
 
-The forums fragments offer two visual treatments that live side by side in a single code base, selected per fragment instance through configuration. **Standard** is the default, lowest-maintenance look; **Flat** is an opt-in look with bordered cards and inline icon actions.
+The forums fragments ship a single, **style-neutral Standard** look. The opt-in **Flat** treatment (bordered cards, accent rules instead of fills) is delivered separately by the **`forums-flat-theme-css`** client extension, so the fragments never hard-code a second UI -- the markup carries no style flag and therefore cannot drive appearance.
 
 #### Switching between looks
 
-Each fragment that has two looks exposes a **UI Style** select under its **Appearance** configuration:
+The Flat look is applied at the **site** level, not per fragment instance:
 
-| Label | Value (CSS class) | Result |
-| :--- | :--- | :--- |
-| Standard | `forums-ui-standard` | The default look: Clay drop-shadow cards and standard controls. |
-| Flat | `forums-ui-flat` | Bordered/flat cards and the restructured message detail. |
+- **Standard** (default): `forums-flat-theme-css` is not active; fragments render with Clay's default treatment (drop-shadow cards, fill highlights).
+- **Flat**: activate the `forums-flat-theme-css` client extension on the site. Its `globalCSS` restyles the Standard markup portal-wide -- no fragment configuration, and the look stays consistent across every page automatically.
 
-The default is always Standard. Set every forums fragment on a page to Flat to present the look consistently. Only **forums-category-grid**, **forums-message-list**, and **forums-message-detail** carry the switch -- **forums-hero** and **forums-related-topics** look the same in both modes.
-
-The dropdown value is itself the CSS class applied to the fragment root, so the markup just interpolates it -- no conditional is needed to build the class. `forums-ui-standard` matches no rules (an inert flag); `forums-ui-flat` matches the Flat CSS block.
+There is **no per-fragment `UI Style` configuration**.
 
 #### How it works (the maintenance model)
 
-Two independent mechanisms produce the Flat look, kept separate so each can be maintained on its own:
+The Flat look is produced by two independent, **CSS-only** mechanisms -- neither touches fragment markup or JavaScript:
 
-**1. Color tokens -- applied unconditionally, no toggle.** Color values use a nested fallback, e.g. `var(--color-brand-primary, var(--primary, #0b5fff))`. The Dialect token wins when the active theme defines it; otherwise the Classic token (then the literal hex) is used. This renders identically under Classic and adds Dialect support automatically, so no configuration is needed and Classic remains the safe fallback.
+**1. Color tokens -- in the fragments, applied unconditionally.** Color values reference Classic / Lexicon Style Book tokens with a literal hex fallback, e.g. `var(--primary, #0b5fff)`. The Style Book token wins when the active theme (or a Style Book) defines it; otherwise the hex is used. The fragments deliberately do **not** use Dialect tokens (`--color-*`) -- the visual identity belongs to the theme / Style Book, so customers re-skin the forum by editing Style Book tokens or layering a theme CSS client extension, never by touching the fragments.
 
-**2. Layout/structure -- gated by the UI Style switch.** The `uiStyle` configuration value is a namespaced CSS class, so the fragment root just interpolates it directly:
-
-```ftl
-[#assign uiStyle = configuration.uiStyle! /]
-<div class="forums-category-grid ${uiStyle}">
-```
-
-(The `defaultValue` in `configuration.json` already supplies `forums-ui-standard`, so the `!` just guards against a missing value.) Everything Flat-specific keys off that flag:
-
-- **index.css** -- Flat-only rules are grouped in a fenced block at the bottom of the file, every selector scoped under `.forums-ui-flat`. They are inert unless the flag class is present.
-- **index.html** (message-detail only) -- structural differences use `[#if uiStyle == "forums-ui-flat"] ... [#else] ... [/#if]`, where the `[#else]` branch holds the Standard markup.
-- **index.js** (message-detail only) -- `renderReplyCard()` returns an Flat template behind a `forumsUiFlat` guard; the Standard template and its helpers are left intact and simply unused in Flat.
+**2. Layout/structure -- in the `forums-flat-theme-css` client extension.** The Flat skin re-styles the same Standard CSS classes the fragments already emit (e.g. `.forums-category-grid__card`, `.forums-message-card`, `.forums-message-detail__op`, `.forums-message-detail__reply-card`) -- swapping Clay shadows for borders, fills for accent rules, and so on. Because it only overrides existing classes, the fragments stay untouched.
 
 #### Rules for maintainers
 
-- **Standard is the contract.** Selecting Standard must render exactly the default markup and styling. Never change a Standard `[#else]` branch, the Standard JS template, or an unscoped CSS rule to achieve an Flat effect -- put it behind the flag instead.
-- **Scope every Flat rule.** New Flat CSS goes inside the fenced `.forums-ui-flat` block; new Flat markup goes inside an `[#if uiStyle == "forums-ui-flat"]` branch.
-- **Keep IDs shared.** Where an element exists in both looks (e.g. the OP Edit/Delete buttons), reuse the same `id` so the shared JS wiring needs no per-style branching.
-- A change touching only the fenced/branched Flat regions cannot affect Standard, and vice versa -- review them as separate surfaces.
+- **The fragments are style-neutral.** Their markup, JS, and CSS render the one Standard look. Never reintroduce a `uiStyle` flag, an `[#if]` style branch, or a JS style guard -- appearance variants belong in a theme CSS client extension.
+- **The Flat skin is CSS-only.** Anything the Flat look needs must be achievable by overriding the Standard classes from `forums-flat-theme-css`. If a desired change is not expressible in CSS over the Standard markup, it does not belong in the skin.
+- **Keep class names stable.** The skin targets the fragments' CSS classes, so renaming a structural class (`__op`, `__reply-card`, …) is a breaking change for the skin -- update both together.
 
 ---
 
