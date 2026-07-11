@@ -8,7 +8,7 @@
  *   Control Panel → Server Administration → Script (Groovy)
  *
  * IMPORTANT: Before running, delete all existing ForumStatsUser entries via
- *   scripts/_03_util/delete-forum-stats-users.py (or the Liferay UI) to avoid duplicates.
+ *   setup/util/delete-forum-stats-users.py (or the Liferay UI) to avoid duplicates.
  */
 
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil

@@ -26,7 +26,12 @@ import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil
 
-def workspaceFragmentsPath = "/Users/davidaragones/Projects/liferay-forums-neil/client-extensions/forums-site-initializer/site-initializer/fragments/company/forums/fragments"
+// EDIT ME: path to the site-initializer fragments, relative to the home
+// directory of the OS user running the Liferay server. The Server
+// Administration script console reads from the server's filesystem;
+// System.getProperty("user.home") resolves to that server process's home
+// (on a local dev box, that's you).
+def workspaceFragmentsPath = System.getProperty("user.home") + "/Assets/liferay-forums/client-extensions/forums-site-initializer/site-initializer/fragments/company/forums/fragments"
 def collectionKey = "forums"
 def globalGroupId = 20120L
 

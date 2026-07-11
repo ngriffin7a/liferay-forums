@@ -22,7 +22,11 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil
 import com.liferay.portal.kernel.util.PortalUtil
 import groovy.json.JsonSlurper
 
-def dataPath = "/Users/ngriffin/Assets/liferay-forums/scripts/_02_demo/data"
+// EDIT ME: path to setup/demo/data, relative to the home directory of the
+// OS user running the Liferay server. The Server Administration script
+// console reads from the server's filesystem; System.getProperty("user.home")
+// resolves to that server process's home (on a local dev box, that's you).
+def dataPath = System.getProperty("user.home") + "/Assets/liferay-forums/setup/demo/data"
 def messages = new JsonSlurper().parse(new File("$dataPath/messages.json"))
 def usersJson = new JsonSlurper().parse(new File("$dataPath/users.json"))
 
