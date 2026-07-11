@@ -54,9 +54,14 @@ The main artifact of this project is a Liferay site initializer. Before building
 
 You can then build it using the standard Liferay Workspace wrapper commands (e.g., `./gw build`) and deploy it by copying the resulting artifact to `$LIFERAY_HOME/deploy`.
 
+The required Object permissions and Service Access Policy are applied automatically by the site initializer on deployment -- no manual setup step is needed.
+
 | File | Description |
 | :--- | :--- |
-| [setup-forum-permissions.groovy](scripts/_01_setup/setup-forum-permissions.groovy) | Groovy script that grants the required Object permissions to the Guest and Site Member roles. Run via **Control Panel → Server Administration → Script**. This step is necessary because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions — Object permissions must be configured explicitly after import. The Headless REST API does not have endpoints that support this yet. It also sets up a Service Access Policy so that non-authenticated users can invoke the REST APIs in order to see forum messages and replies. |
+| [resource-permissions.json](client-extensions/forums-site-initializer/site-initializer/resource-permissions.json) | Grants the required Object permissions declaratively: `VIEW` on every forum Object to the **Guest** and **Site Member** roles, and `ADD_OBJECT_ENTRY` to the **User** role on the writable objects. This file exists because Liferay Objects has no equivalent to the `<resource-action-mapping>` XML descriptor used by Service Builder to define default permissions -- Object permissions must be configured explicitly. The site initializer resolves the `[$OBJECT_DEFINITION_CLASS_NAME:...$]` and `[$OBJECT_DEFINITION_ID:...$]` placeholders at deploy time. |
+| [sap-entries.json](client-extensions/forums-site-initializer/site-initializer/sap-entries.json) | Declares the `FORUM_GUEST_ACCESS` Service Access Policy so that non-authenticated (Guest) users can invoke the Object REST APIs in order to see forum messages and replies. |
+
+> **Security note -- how Guest access is actually bounded.** The SAP signature (`ObjectEntryResourceImpl#get*`) opens the unauthenticated GET invocation path for **every** custom Object, not just the forum objects, because all Objects share the single `ObjectEntryResourceImpl` REST class -- there is no way to scope a SAP signature to one Object. What actually restricts Guest to *only* the forum data is the second gate: each request re-checks the `VIEW` permission against the specific Object, and `resource-permissions.json` grants Guest `VIEW` on the forum objects only. **The per-object boundary is enforced by permissions, not by the SAP.** Consequently: **never grant the Guest role `VIEW` on any custom Object you do not intend to expose anonymously** -- with this SAP active, such an object becomes readable without authentication immediately, and the SAP will not stop it.
 
 ---
 

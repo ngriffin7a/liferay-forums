@@ -1,0 +1,13 @@
+[
+	{
+		"allowedServiceSignatures": [
+			"com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceImpl#get*"
+		],
+		"defaultSAPEntry": true,
+		"enabled": true,
+		"name": "FORUM_GUEST_ACCESS",
+		"title_i18n": {
+			"en_US": "Forum Guest Access - allows unauthenticated GET on custom Object APIs"
+		}
+	}
+]
