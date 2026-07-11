@@ -87,15 +87,6 @@
 			</div>
 		</div>
 
-		<!-- Author info (above the post body) -->
-		<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
-			<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
-			<div>
-				<span class="d-block text-dark font-weight-bold" id="forumsDetailOPAuthor"></span>
-				<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
-			</div>
-		</div>
-
 		<!-- Solved indicator -->
 		<div class="alert alert-success align-items-center forums-message-detail__solved-banner" id="forumsDetailSolvedBanner" style="display:none;" role="alert">
 			<span class="alert-indicator mr-2">
@@ -167,32 +158,12 @@
 
 		</div>
 
-		<!-- Original Post -->
-		<div class="forums-message-detail__op" id="forumsDetailOP" style="display:none;">
-			<div class="forums-message-detail__post-body" id="forumsDetailOPBody"></div>
-			<div class="forums-message-detail__tags-bar">
-				<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
-				<div class="forums-vote" id="forumsDetailOPVote"></div>
-			</div>
-			<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
-				<button class="btn btn-primary" id="forumsDetailReplyBtn" aria-label="${languageUtil.get(locale, "comment")}">${languageUtil.get(locale, "comment")}</button>
-			</div>
-		</div>
-
-		<!-- Accepted Solution Section -->
-		<div class="forums-message-detail__solution-section" id="forumsDetailSolutionSection" style="display:none;">
-			<div id="forumsDetailSolutionCards"></div>
-		</div>
-
-		<!-- Replies Section -->
-		<div class="forums-message-detail__replies-section" id="forumsDetailRepliesSection" style="display:none;">
-			<h2 class="forums-message-detail__section-header text-dark">
-				<svg class="lexicon-icon lexicon-icon-message" role="presentation" width="18" height="18">
-					<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#message"></use>
-				</svg>
-				<span id="forumsDetailReplyCount"></span>
-			</h2>
-			<div id="forumsDetailReplyCards"></div>
+		<!-- Rendering drop zone: a swappable child fragment (Standard by default,
+		     Flat as an alternate) renders the original post, solution cards, and
+		     reply tree here. The shell owns data + chrome; the child owns markup.
+		     See window.forumsMessageDetail (index.js) for the shell<->child contract. -->
+		<div class="forums-message-detail__drop-zone">
+			<lfr-drop-zone></lfr-drop-zone>
 		</div>
 
 		<!-- Reply Pagination -->

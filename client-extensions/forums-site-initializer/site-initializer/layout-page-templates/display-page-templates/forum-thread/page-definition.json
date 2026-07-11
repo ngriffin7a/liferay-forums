@@ -103,6 +103,25 @@
 													],
 													"indexed": true
 												},
+												"pageElements": [
+													{
+														"definition": {},
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "forums-message-detail-standard"
+																	},
+																	"fragmentConfig": {},
+																	"fragmentFields": [],
+																	"indexed": true
+																},
+																"type": "Fragment"
+															}
+														],
+														"type": "FragmentDropZone"
+													}
+												],
 												"type": "Fragment"
 											},
 											{

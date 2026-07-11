@@ -1,0 +1,61 @@
+<!-- SPDX-License-Identifier: LGPL-2.1-or-later -->
+<!-- Forums Message Detail child (Flat). Structurally distinct from Standard:
+     the original post and replies are framed as bordered cards, the reply vote
+     control is a left column, and author info + inline icon actions sit in a
+     footer separated by a rule. Same shell contract as the Standard child. -->
+<div class="forums-message-detail-child forums-message-detail-child--flat" id="forumsMessageDetailFlat"
+	data-label-unknown="${languageUtil.get(locale, "unknown")}"
+	data-label-untitled-message="${languageUtil.get(locale, "untitled-message")}"
+	data-label-author="${languageUtil.get(locale, "author", "Author")}"
+	data-label-accepted="${languageUtil.get(locale, "accepted")}"
+	data-label-answer-selected-by="${languageUtil.get(locale, "answer-selected-by-x", "Answer selected by {0}")}"
+	data-label-mark-as-answer="${languageUtil.get(locale, "mark-as-answer")}"
+	data-label-reply="${languageUtil.get(locale, "reply")}"
+	data-label-comment="${languageUtil.get(locale, "comment")}"
+	data-label-edit-reply="${languageUtil.get(locale, "edit-reply")}"
+	data-label-delete-reply="${languageUtil.get(locale, "delete-reply")}"
+	data-label-upvote="${languageUtil.get(locale, "upvote")}"
+	data-label-downvote="${languageUtil.get(locale, "downvote")}"
+	data-label-options="${languageUtil.get(locale, "options")}"
+	data-label-x-reply="${languageUtil.get(locale, "x-reply")}"
+	data-label-x-replies="${languageUtil.get(locale, "x-replies")}">
+
+	<!-- Original Post -->
+	<div class="forums-message-detail__op" id="forumsDetailOP" style="display:none;">
+		<div class="forums-message-detail__post-body" id="forumsDetailOPBody"></div>
+		<div class="forums-message-detail__tags" id="forumsDetailOPTags" style="display:none;"></div>
+
+		<!-- Footer: author info on the left, vote + reply right-justified -->
+		<div class="forums-message-detail__post-footer">
+			<div class="forums-message-detail__author-info" id="forumsDetailAuthorInfo" style="display:none;">
+				<span class="sticker sticker-circle sticker-lg sticker-outline-0" id="forumsDetailOPAvatar"></span>
+				<div>
+					<span class="d-block text-dark font-weight-bold" id="forumsDetailOPAuthor"></span>
+					<span class="d-block text-secondary small" id="forumsDetailOPDate"></span>
+				</div>
+			</div>
+			<div class="forums-message-detail__post-actions" id="forumsDetailOPActions">
+				<div class="forums-vote" id="forumsDetailOPVote"></div>
+				<button class="btn btn-monospaced btn-sm btn-outline-secondary" type="button" id="forumsDetailReplyBtn" style="display:none;" aria-label="${languageUtil.get(locale, "comment")}" title="${languageUtil.get(locale, "comment")}">
+					<svg class="lexicon-icon lexicon-icon-reply" role="presentation"><use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#reply"></use></svg>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Accepted Solution Section -->
+	<div class="forums-message-detail__solution-section" id="forumsDetailSolutionSection" style="display:none;">
+		<div id="forumsDetailSolutionCards"></div>
+	</div>
+
+	<!-- Replies Section -->
+	<div class="forums-message-detail__replies-section" id="forumsDetailRepliesSection" style="display:none;">
+		<h2 class="forums-message-detail__section-header text-dark">
+			<svg class="lexicon-icon lexicon-icon-message" role="presentation" width="18" height="18">
+				<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#message"></use>
+			</svg>
+			<span id="forumsDetailReplyCount"></span>
+		</h2>
+		<div id="forumsDetailReplyCards"></div>
+	</div>
+</div>
