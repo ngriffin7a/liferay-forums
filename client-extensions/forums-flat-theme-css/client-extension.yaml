@@ -1,8 +1,0 @@
-assemble:
-    - from: src
-      into: static
-
-forums-flat-theme-css:
-    name: Forums Flat Theme CSS
-    type: globalCSS
-    url: forums-flat.css

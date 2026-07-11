@@ -92,32 +92,9 @@ The following **Release** feature flags must be enabled before deploying.
 | **Forums Message Detail** | [forums-message-detail](fragments/forums-message-detail) | Detailed view of a single forum message, including its replies and engagement metrics. |
 | **Forums Message List** | [forums-message-list](fragments/forums-message-list) | Lists forum messages, typically used for main category views or recent activity. |
 
-### UI Style: Standard and Flat
+### UI Style
 
-The forums fragments ship a single, **style-neutral Standard** look. The opt-in **Flat** treatment (bordered cards, accent rules instead of fills) is delivered separately by the **`forums-flat-theme-css`** client extension, so the fragments never hard-code a second UI -- the markup carries no style flag and therefore cannot drive appearance.
-
-#### Switching between looks
-
-The Flat look is applied at the **site** level, not per fragment instance:
-
-- **Standard** (default): `forums-flat-theme-css` is not active; fragments render with Clay's default treatment (drop-shadow cards, fill highlights).
-- **Flat**: activate the `forums-flat-theme-css` client extension on the site. Its `globalCSS` restyles the Standard markup portal-wide -- no fragment configuration, and the look stays consistent across every page automatically.
-
-There is **no per-fragment `UI Style` configuration**.
-
-#### How it works (the maintenance model)
-
-The Flat look is produced by two independent, **CSS-only** mechanisms -- neither touches fragment markup or JavaScript:
-
-**1. Color tokens -- in the fragments, applied unconditionally.** Color values reference Classic / Lexicon Style Book tokens with a literal hex fallback, e.g. `var(--primary, #0b5fff)`. The Style Book token wins when the active theme (or a Style Book) defines it; otherwise the hex is used. The fragments deliberately do **not** use Dialect tokens (`--color-*`) -- the visual identity belongs to the theme / Style Book, so customers re-skin the forum by editing Style Book tokens or layering a theme CSS client extension, never by touching the fragments.
-
-**2. Layout/structure -- in the `forums-flat-theme-css` client extension.** The Flat skin re-styles the same Standard CSS classes the fragments already emit (e.g. `.forums-category-grid__card`, `.forums-message-card`, `.forums-message-detail__op`, `.forums-message-detail__reply-card`) -- swapping Clay shadows for borders, fills for accent rules, and so on. Because it only overrides existing classes, the fragments stay untouched.
-
-#### Rules for maintainers
-
-- **The fragments are style-neutral.** Their markup, JS, and CSS render the one Standard look. Never reintroduce a `uiStyle` flag, an `[#if]` style branch, or a JS style guard -- appearance variants belong in a theme CSS client extension.
-- **The Flat skin is CSS-only.** Anything the Flat look needs must be achievable by overriding the Standard classes from `forums-flat-theme-css`. If a desired change is not expressible in CSS over the Standard markup, it does not belong in the skin.
-- **Keep class names stable.** The skin targets the fragments' CSS classes, so renaming a structural class (`__op`, `__reply-card`, …) is a breaking change for the skin -- update both together.
+The forums fragments ship a single, **style-neutral** look. Color values reference Classic / Lexicon Style Book tokens with a literal hex fallback, e.g. `var(--primary, #0b5fff)` -- the Style Book token wins when the active theme (or a Style Book) defines it, otherwise the hex is used. The fragments deliberately do **not** use Dialect tokens (`--color-*`): the visual identity belongs to the theme / Style Book, so customers re-skin the forum by editing Style Book tokens or layering a theme CSS client extension, never by touching the fragments.
 
 ---
 
