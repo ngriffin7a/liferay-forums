@@ -71,6 +71,21 @@
 	</div>
 [/#macro]
 
+[#macro attachmentsGroup]
+	<div class="form-group forums-message-composer__attachments-group" id="forumsMessageComposerAttachmentsGroup">
+		<label class="font-weight-bold">${languageUtil.get(locale, "attachments")}</label>
+		<input type="file" multiple class="forums-message-composer__file-input" id="forumsMessageComposerFileInput" hidden aria-hidden="true">
+		<button type="button" class="btn btn-outline-secondary btn-sm forums-message-composer__attach-btn" id="forumsMessageComposerAttachBtn">
+			<svg class="lexicon-icon lexicon-icon-paperclip" focusable="false" role="presentation">
+				<use href="${themeDisplay.getPathThemeImages()}/clay/icons.svg#paperclip"></use>
+			</svg>
+			<span>${languageUtil.get(locale, "attach-files")}</span>
+		</button>
+		<div class="forums-message-composer__existing-files" id="forumsMessageComposerExistingFiles"></div>
+		<div class="forums-message-composer__pending-files" id="forumsMessageComposerPendingFiles"></div>
+	</div>
+[/#macro]
+
 [#macro statusAlerts]
 	<div class="alert alert-success mt-3" id="forumsMessageComposerSuccess" style="display:none;" aria-live="polite">
 		${languageUtil.get(locale, "post-submitted-successfully")}
@@ -98,6 +113,9 @@
 	data-label-edit-reply="${languageUtil.get(locale, "edit-reply")}"
 	data-label-success="${languageUtil.get(locale, "success")}"
 	data-label-subscribe-to-this-message="${languageUtil.get(locale, "subscribe-to-this-message")}"
+	data-label-remove="${languageUtil.get(locale, "remove")}"
+	data-label-remove-attachment="${languageUtil.get(locale, "remove-file-x")}"
+	data-label-file-too-large="${languageUtil.get(locale, "the-file-is-too-large")}"
 	data-label-banned-warning="${languageUtil.get(locale, "your-account-has-been-banned-from-participating-in-the-forums")}">
 
 	[#if formMode == "page"]
@@ -115,6 +133,7 @@
 						[@questionGroup /]
 						[@subscribeGroup /]
 						[@bodyGroup /]
+						[@attachmentsGroup /]
 					</div>
 				</form>
 
@@ -157,6 +176,7 @@
 									[@tagsGroup /]
 									[@questionGroup /]
 									[@subscribeGroup /]
+									[@attachmentsGroup /]
 								</div>
 
 								<div class="forums-message-composer__layout-right" id="forumsMessageComposerRightCol">

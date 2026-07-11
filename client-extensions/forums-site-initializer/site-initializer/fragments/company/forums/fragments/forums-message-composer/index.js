@@ -33,6 +33,23 @@ if (messageComposer) {
 	var cancelBtn = messageComposer.querySelector('#forumsMessageComposerCancel');
 	var successAlert = messageComposer.querySelector('#forumsMessageComposerSuccess');
 	var errorAlert = messageComposer.querySelector('#forumsMessageComposerError');
+	var attachBtn = messageComposer.querySelector('#forumsMessageComposerAttachBtn');
+	var fileInput = messageComposer.querySelector('#forumsMessageComposerFileInput');
+	var pendingFilesEl = messageComposer.querySelector('#forumsMessageComposerPendingFiles');
+	var existingFilesEl = messageComposer.querySelector('#forumsMessageComposerExistingFiles');
+
+	/* Files staged for the next post. Uploaded as ForumMessageAttachment rows once
+	   the message is created/edited (see uploadAttachments). Matches the object
+	   field's maximumFileSize (10 MB) so we can reject oversized files up front. */
+	var stagedFiles = [];
+	var MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+	/* Edit mode only: the message's already-uploaded attachments, and the ids the
+	   user has marked for removal. Removals are staged (like new files) and applied
+	   on Save, so Cancel reverts. Only attachments the current user uploaded show a
+	   remove control (deletion is also enforced server-side by object ownership). */
+	var existingAttachments = [];
+	var removedAttachmentIds = [];
 
 	/* CKEditor instance tracking */
 	var editorName = fragmentElementId + '-forumsMessageComposerBody';
@@ -107,6 +124,163 @@ if (messageComposer) {
 			return textarea.value;
 		}
 		return '';
+	}
+
+	/* ---- Attachment staging ---- */
+
+	function renderPendingFiles() {
+		if (!pendingFilesEl) return;
+		pendingFilesEl.innerHTML = '';
+		stagedFiles.forEach(function(file, index) {
+			var chip = document.createElement('span');
+			chip.className = 'label label-secondary label-dismissible forums-message-composer__pending-file';
+			var removeLabel = (messageComposer.dataset.labelRemove || 'Remove');
+			chip.innerHTML = '<span class="label-item label-item-expand">' +
+				Liferay.Util.escapeHTML(file.name) + '</span>' +
+				'<span class="label-item label-item-after"><button class="close" type="button" data-file-index="' +
+				index + '" aria-label="' + Liferay.Util.escapeHTML(removeLabel) + '">×</button></span>';
+			pendingFilesEl.appendChild(chip);
+		});
+	}
+
+	/* Render the message's existing attachments (edit mode). Each shows a remove ×
+	   only when the current user uploaded it; clicking stages it for deletion on
+	   Save. Files marked for removal are hidden. */
+	function renderExistingAttachments() {
+		if (!existingFilesEl) return;
+		existingFilesEl.innerHTML = '';
+		var removeLabelTmpl = messageComposer.dataset.labelRemoveAttachment || 'Remove {0}';
+		existingAttachments.forEach(function(att) {
+			if (removedAttachmentIds.indexOf(att.id) !== -1) return;
+			var file = att.file || {};
+			var name = file.name || (file.link && file.link.label) || att.id;
+			var canRemove = att.creator &&
+				String(att.creator.id) === String(currentUserId);
+			var chip = document.createElement('span');
+			chip.className = 'label label-secondary forums-message-composer__existing-file';
+			var inner = '<span class="label-item label-item-expand">' + Liferay.Util.escapeHTML(String(name)) + '</span>';
+			if (canRemove) {
+				var removeLabel = Liferay.Util.escapeHTML(removeLabelTmpl.replace('{0}', name));
+				inner += '<span class="label-item label-item-after"><button class="close" type="button" data-attachment-id="' +
+					att.id + '" aria-label="' + removeLabel + '" title="' + removeLabel + '">×</button></span>';
+			}
+			chip.innerHTML = inner;
+			existingFilesEl.appendChild(chip);
+		});
+	}
+
+	/* Fetch the attachments already on the message being edited so they can be shown
+	   (and optionally removed) in the dialog. */
+	function loadExistingAttachments(messageId) {
+		if (!existingFilesEl || !messageId) return;
+		/* The relationship FK is filtered as a quoted value (an unquoted numeric
+		   yields a 400 "Incompatible types."), matching the message-detail fragment. */
+		var filter = encodeURIComponent("r_messageAttachments_c_forumMessageId eq '" + messageId + "'");
+		Liferay.Util.fetch(portalURL + '/o/c/forummessageattachments/scopes/' + scopeGroupId + '?nestedFields=file&pageSize=100&filter=' + filter, {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			existingAttachments = (data && data.items) || [];
+			renderExistingAttachments();
+		})
+		.catch(function(err) { console.warn('ForumsMessageComposer: failed to load existing attachments', err); });
+	}
+
+	if (existingFilesEl) {
+		existingFilesEl.addEventListener('click', function(e) {
+			var btn = e.target.closest('.close');
+			if (btn) {
+				var id = parseInt(btn.getAttribute('data-attachment-id'), 10);
+				if (removedAttachmentIds.indexOf(id) === -1) removedAttachmentIds.push(id);
+				renderExistingAttachments();
+			}
+		});
+	}
+
+	/* Delete the attachments the user marked for removal (edit mode, on Save). */
+	function deleteRemovedAttachments() {
+		if (!removedAttachmentIds.length) return Promise.resolve();
+		return Promise.all(removedAttachmentIds.map(function(id) {
+			return Liferay.Util.fetch(portalURL + '/o/c/forummessageattachments/' + id, {
+				headers: headers,
+				method: 'DELETE'
+			}).catch(function(err) {
+				console.warn('ForumsMessageComposer: attachment delete failed', err);
+			});
+		}));
+	}
+
+	if (attachBtn && fileInput) {
+		attachBtn.addEventListener('click', function() {
+			fileInput.click();
+		});
+		fileInput.addEventListener('change', function() {
+			Array.prototype.forEach.call(fileInput.files, function(file) {
+				if (file.size > MAX_FILE_SIZE) {
+					if (Liferay.Util && Liferay.Util.openToast) {
+						Liferay.Util.openToast({
+							message: (messageComposer.dataset.labelFileTooLarge || 'The file is too large.') + ' (' + file.name + ')',
+							type: 'danger'
+						});
+					}
+					return;
+				}
+				stagedFiles.push(file);
+			});
+			/* Reset so selecting the same file again re-fires change. */
+			fileInput.value = '';
+			renderPendingFiles();
+		});
+	}
+
+	if (pendingFilesEl) {
+		pendingFilesEl.addEventListener('click', function(e) {
+			var btn = e.target.closest('.close');
+			if (btn) {
+				var index = parseInt(btn.getAttribute('data-file-index'), 10);
+				stagedFiles.splice(index, 1);
+				renderPendingFiles();
+			}
+		});
+	}
+
+	/* Read a File as base64 (no data: prefix) for the object Attachment field payload. */
+	function fileToBase64(file) {
+		return new Promise(function(resolve, reject) {
+			var reader = new FileReader();
+			reader.onload = function() {
+				var result = String(reader.result || '');
+				var comma = result.indexOf(',');
+				resolve(comma >= 0 ? result.slice(comma + 1) : result);
+			};
+			reader.onerror = function() { reject(reader.error || new Error('read failed')); };
+			reader.readAsDataURL(file);
+		});
+	}
+
+	/* Upload every staged file as a ForumMessageAttachment row hanging off the given
+	   message. The Attachment field takes the file inline as {name, fileBase64}; the
+	   row inherits the scope-level Site Member VIEW so any member can download it.
+	   Best-effort per file so one failure doesn't abort the rest. */
+	function uploadAttachments(messageId) {
+		if (!messageId || !stagedFiles.length) return Promise.resolve();
+		return Promise.all(stagedFiles.map(function(file) {
+			return fileToBase64(file).then(function(base64) {
+				var body = {
+					file: { name: file.name, fileBase64: base64 },
+					r_messageAttachments_c_forumMessageId: parseInt(messageId)
+				};
+				return Liferay.Util.fetch(portalURL + '/o/c/forummessageattachments/scopes/' + scopeGroupId + '?nestedFields=file', {
+					headers: headers,
+					method: 'POST',
+					body: JSON.stringify(body)
+				});
+			}).catch(function(err) {
+				console.warn('ForumsMessageComposer: attachment upload failed', err);
+			});
+		}));
 	}
 
 	/* Detect mode from URL */
@@ -270,6 +444,12 @@ if (messageComposer) {
 		tagsArray = [];
 		if (tagsInput) tagsInput.value = '';
 		renderTags();
+		stagedFiles = [];
+		if (fileInput) fileInput.value = '';
+		renderPendingFiles();
+		existingAttachments = [];
+		removedAttachmentIds = [];
+		if (existingFilesEl) existingFilesEl.innerHTML = '';
 	}
 
 	/* "page" mode renders the form on its own screen (no modal); "modal" mode
@@ -313,7 +493,9 @@ if (messageComposer) {
 			loadCategories();
 		} else if (isEditMode && !editIsOp) {
 			if (titleEl) titleEl.textContent = messageComposer.dataset.labelEditReply || 'Edit Reply';
-			if (leftCol) leftCol.style.display = 'none';
+			/* Keep the left column visible so the Attachments section shows; the
+			   topic-only field groups below are hidden individually. */
+			if (leftCol) leftCol.style.display = '';
 			if (categoryGroup) categoryGroup.style.display = 'none';
 			if (subjectGroup) subjectGroup.style.display = 'none';
 			if (questionGroup) questionGroup.style.display = 'none';
@@ -323,7 +505,9 @@ if (messageComposer) {
 			if (submitBtn) submitBtn.textContent = messageComposer.dataset.labelSaveChanges || 'Save';
 		} else if (replyMode) {
 			if (titleEl) titleEl.textContent = messageComposer.dataset.labelPostAReply || 'Post a Reply';
-			if (leftCol) leftCol.style.display = 'none';
+			/* Keep the left column visible so the Attachments section shows; the
+			   topic-only field groups below are hidden individually. */
+			if (leftCol) leftCol.style.display = '';
 			if (categoryGroup) categoryGroup.style.display = 'none';
 			if (subjectGroup) subjectGroup.style.display = 'none';
 			if (questionGroup) questionGroup.style.display = 'none';
@@ -389,6 +573,7 @@ if (messageComposer) {
 		configureModal(replyMode);
 
 		if (isEditMode) {
+			loadExistingAttachments(editMessageId);
 			if (subjectInput && options.subject) subjectInput.value = options.subject;
 			if (questionCheck && typeof options.isQuestion !== 'undefined') questionCheck.checked = options.isQuestion;
 			if (options.tags && Array.isArray(options.tags)) {
@@ -558,6 +743,8 @@ if (messageComposer) {
 				}
 
 				Promise.all(promises)
+				.then(function() { return deleteRemovedAttachments(); })
+				.then(function() { return uploadAttachments(editMessageId); })
 				.then(function() {
 					hideModal();
 					sessionStorage.setItem('forumsSuccessToast', messageComposer.dataset.labelSuccess || 'Success!');
@@ -593,6 +780,7 @@ if (messageComposer) {
 					trackForumStatsUser();
 					return r.json();
 				})
+				.then(function(reply) { return uploadAttachments(reply && reply.id); })
 				.then(function() {
 					hideModal();
 					sessionStorage.setItem('forumsSuccessToast', messageComposer.dataset.labelReplyPosted || 'Reply posted successfully!');
@@ -677,7 +865,10 @@ if (messageComposer) {
 						}));
 					}
 
-					return Promise.all(promises).then(function() {
+					return Promise.all(promises).then(function(results) {
+						var rootMsg = results && results[0];
+						return uploadAttachments(rootMsg && rootMsg.id);
+					}).then(function() {
 						if (!msg.friendlyUrlPath) {
 							if (Liferay.Util && Liferay.Util.openToast) {
 								Liferay.Util.openToast({

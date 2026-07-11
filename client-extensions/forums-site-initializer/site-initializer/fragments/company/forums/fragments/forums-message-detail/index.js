@@ -27,6 +27,7 @@ if (messageDetail) {
 	var loadingEl = messageDetail.querySelector('#forumsDetailLoading');
 	var opSection = messageDetail.querySelector('#forumsDetailOP');
 	var opBody = messageDetail.querySelector('#forumsDetailOPBody');
+	var opAttachments = messageDetail.querySelector('#forumsDetailOPAttachments');
 	var opAvatar = messageDetail.querySelector('#forumsDetailOPAvatar');
 	var opAuthor = messageDetail.querySelector('#forumsDetailOPAuthor');
 	var opDate = messageDetail.querySelector('#forumsDetailOPDate');
@@ -328,6 +329,7 @@ if (messageDetail) {
 						})() : ''}
 					</div>
 					<div class="forums-message-detail__reply-body">${body}</div>
+					${renderAttachments(msg)}
 					<div class="forums-message-detail__reply-actions">
 						${canReply ? `<button class="btn btn-outline-primary btn-sm" type="button" data-forums-compose data-forums-reply data-forums-message-id="${msg.r_threadMessages_c_forumThreadId}" data-forums-parent-id="${msg.id}">${messageDetail.dataset.labelReply || 'Reply'}</button>` : ''}
 						${hasOptions ? `<div class="dropdown forums-message-detail__reply-options">
@@ -353,6 +355,38 @@ if (messageDetail) {
 				</div>
 			</div>
 		</div>`;
+	}
+
+	/* Attachments embedded on a message via the messageAttachments relationship
+	   nested field. Liferay returns them under the relationship-name key as either a
+	   bare array or an {items:[...]} envelope; tolerate both. */
+	function attachmentsOf(msg) {
+		var value = msg && msg.messageAttachments;
+		if (!value) return [];
+		if (Array.isArray(value)) return value;
+		return value.items || [];
+	}
+
+	/* The chip markup for one message's attachments. canManage adds a remove (×)
+	   control (shown to the author only; deletion is also enforced server-side).
+	   Returns '' when the message has no files. */
+	function renderAttachments(msg) {
+		var files = attachmentsOf(msg);
+		if (!files.length) return '';
+		/* Read-only view: download chips only. Removing an attachment is done from
+		   the Edit dialog (forums-message-composer), alongside the rest of the post. */
+		var chips = files.map(function(att) {
+			var file = att.file || {};
+			var name = file.name || (file.link && file.link.label) || (messageDetail.dataset.labelDownload || 'Download');
+			var safeName = Liferay.Util.escapeHTML(name);
+			return '<span class="forums-message-detail__attachment" data-attachment-id="' + att.id + '">' +
+				'<button type="button" class="btn btn-outline-secondary btn-sm forums-attachment-download" data-attachment-id="' + att.id + '" data-attachment-name="' + safeName + '" title="' + safeName + '">' +
+					'<svg class="lexicon-icon lexicon-icon-paperclip" role="presentation"><use href="' + clayIconsUrl + '#paperclip"></use></svg>' +
+					'<span class="forums-message-detail__attachment-name">' + safeName + '</span>' +
+				'</button>' +
+			'</span>';
+		}).join('');
+		return '<div class="forums-message-detail__attachments">' + chips + '</div>';
 	}
 
 	/* Sort messages: accepted answers first, then by voteScore desc, then dateCreated asc */
@@ -772,6 +806,57 @@ if (messageDetail) {
 		});
 	}
 
+	/* Download an attachment's bytes and save them client-side. The file's own
+	   /documents link may be permission-gated, so instead we fetch the content as
+	   base64 through object REST (gated by the row's VIEW, which every site member
+	   has) and build a Blob. */
+	function downloadAttachment(attachmentId, name) {
+		Liferay.Util.fetch(portalURL + '/o/c/forummessageattachments/' + attachmentId + '?nestedFields=file.fileBase64', {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(row) {
+			var fileValue = (row && row.file) || {};
+			var base64 = fileValue.fileBase64;
+			if (!base64) throw new Error('no file content');
+			var bytes = atob(base64);
+			var array = new Uint8Array(bytes.length);
+			for (var i = 0; i < bytes.length; i++) {
+				array[i] = bytes.charCodeAt(i);
+			}
+			var blob = new Blob([array], { type: fileValue.mimeType || 'application/octet-stream' });
+			var objectUrl = URL.createObjectURL(blob);
+			var anchor = document.createElement('a');
+			anchor.href = objectUrl;
+			anchor.download = fileValue.name || name;
+			document.body.appendChild(anchor);
+			anchor.click();
+			anchor.remove();
+			URL.revokeObjectURL(objectUrl);
+		})
+		.catch(function(err) {
+			console.error('Download attachment error:', err);
+			if (Liferay.Util && Liferay.Util.openToast) {
+				Liferay.Util.openToast({
+					message: messageDetail.dataset.labelCouldNotDownloadFile || 'Could not download the file. Please try again.',
+					type: 'danger'
+				});
+			}
+		});
+	}
+
+	/* Wire the download control on attachment chips (available to any member).
+	   Removing an attachment lives in the Edit dialog, not this read-only view. */
+	function attachAttachmentHandlers() {
+		messageDetail.querySelectorAll('.forums-attachment-download').forEach(function(btn) {
+			btn.addEventListener('click', function(e) {
+				e.preventDefault();
+				downloadAttachment(this.getAttribute('data-attachment-id'), this.getAttribute('data-attachment-name'));
+			});
+		});
+	}
+
 	/* Load message data */
 	function initMessageDetail() {
 		if (isBanned) {
@@ -1007,7 +1092,8 @@ if (messageDetail) {
 		Liferay.Util.fetch(portalURL + '/o/c/forummessages/scopes/' + scopeGroupId + '?filter='
 			+ encodeURIComponent('r_threadMessages_c_forumThreadId eq \'' + messageId + '\'')
 			+ '&sort=dateCreated:asc&page=' + currentReplyPage
-			+ '&pageSize=' + replyPageSize, {
+			+ '&pageSize=' + replyPageSize
+			+ '&nestedFields=messageAttachments', {
 			headers: headers,
 			method: 'GET'
 		})
@@ -1068,6 +1154,9 @@ if (messageDetail) {
 				if (opBody) {
 					opBody.innerHTML = opMsg.body || '';
 					formatMarkupCodeBlocks(opBody);
+				}
+				if (opAttachments) {
+					opAttachments.innerHTML = renderAttachments(opMsg);
 				}
 				if (opAvatar) {
 					var opAvatarCls = 'sticker sticker-circle sticker-lg';
@@ -1280,6 +1369,7 @@ if (messageDetail) {
 			attachAnswerHandlers();
 			attachDeleteHandlers();
 			attachEditReplyHandlers();
+			attachAttachmentHandlers();
 
 			/* Hide skeleton after render, with a minimum display time to prevent flash */
 			if (loadingEl) {

@@ -23,6 +23,13 @@
 	{
 		"actionIds": ["VIEW"],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumMessageAttachment$]",
+		"roleName": "Guest",
+		"scope": 1
+	},
+	{
+		"actionIds": ["VIEW"],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumVote$]",
 		"roleName": "Guest",
 		"scope": 1
@@ -86,6 +93,13 @@
 	{
 		"actionIds": ["VIEW"],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumMessageAttachment$]",
+		"roleName": "Site Member",
+		"scope": 1
+	},
+	{
+		"actionIds": ["VIEW"],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumVote$]",
 		"roleName": "Site Member",
 		"scope": 1
@@ -143,6 +157,13 @@
 		"actionIds": ["ADD_OBJECT_ENTRY"],
 		"primKey": "0",
 		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:ForumMessage$]",
+		"roleName": "User",
+		"scope": 1
+	},
+	{
+		"actionIds": ["ADD_OBJECT_ENTRY"],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:ForumMessageAttachment$]",
 		"roleName": "User",
 		"scope": 1
 	},

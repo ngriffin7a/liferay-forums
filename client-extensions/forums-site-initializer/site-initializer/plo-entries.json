@@ -410,5 +410,33 @@
 	{
 		"key": "moderation-pagination",
 		"value": "{\"en_US\": \"Moderation Pagination\"}"
+	},
+	{
+		"key": "attach-files",
+		"value": "{\"en_US\": \"Attach Files\"}"
+	},
+	{
+		"key": "attachments",
+		"value": "{\"en_US\": \"Attachments\"}"
+	},
+	{
+		"key": "remove",
+		"value": "{\"en_US\": \"Remove\"}"
+	},
+	{
+		"key": "the-file-is-too-large",
+		"value": "{\"en_US\": \"The file is too large (10 MB maximum).\"}"
+	},
+	{
+		"key": "download",
+		"value": "{\"en_US\": \"Download\"}"
+	},
+	{
+		"key": "remove-file-x",
+		"value": "{\"en_US\": \"Remove {0}\"}"
+	},
+	{
+		"key": "could-not-download-the-file",
+		"value": "{\"en_US\": \"Could not download the file. Please try again.\"}"
 	}
 ]
