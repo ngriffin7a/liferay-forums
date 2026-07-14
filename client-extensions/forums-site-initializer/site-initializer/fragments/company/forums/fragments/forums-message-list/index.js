@@ -52,6 +52,13 @@ if (messageList) {
 	var askBtn = messageList.querySelector('#forumsMessageListAskBtn');
 	var categoryFilter = messageList.querySelector('#forumsMessageListCategoryFilter');
 	var showingEl = messageList.querySelector('#forumsMessageListShowing');
+	var breadcrumbOl = messageList.querySelector('#forumsMessageListBreadcrumb');
+	var subcatsContainer = messageList.querySelector('#forumsMessageListSubcategories');
+	var subcatsRow = messageList.querySelector('#forumsMessageListSubcategoriesRow');
+
+	/* FK field exposed by the ForumCategory self-relationship (0 = top-level) */
+	var PARENT_FK = 'r_categorySubcategories_c_forumCategoryId';
+	var categoryTree = null;
 
 	/* Read URL params */
 	var urlParams = new URLSearchParams(window.location.search);
@@ -110,41 +117,143 @@ if (messageList) {
 		return (family && family !== 'User') ? (given + ' ' + family) : (given || creator.name || '');
 	}
 
-	/* Fetch category name for breadcrumb */
-	if (categoryId) {
-		Liferay.Util.fetch(portalURL + '/o/c/forumcategories/' + categoryId, {
-			headers: headers,
-			method: 'GET'
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(cat) {
-			var name = cat.categoryName || messageList.dataset.labelCategory || 'Category';
-			if (headingEl) headingEl.textContent = name;
-			if (breadcrumbName) breadcrumbName.textContent = name;
-		})
-		.catch(function() {});
+	/* --- Category hierarchy ------------------------------------------- */
+
+	function getParentId(cat) {
+		return Number(cat[PARENT_FK]) || 0;
 	}
 
-	/* Populate category filter dropdown */
-	if (categoryFilter) {
-		Liferay.Util.fetch(portalURL + '/o/c/forumcategories/scopes/' + scopeGroupId + '?pageSize=200&sort=categoryName:asc', {
-			headers: headers,
-			method: 'GET'
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(data) {
-			(data.items || []).forEach(function(cat) {
+	/* Link to another category on this same page */
+	function categoryHref(id) {
+		return window.location.pathname + '?categoryId=' + id;
+	}
+
+	/* Rebuild the breadcrumb as Forums > ancestor > ... > current */
+	function buildBreadcrumb(byId) {
+		if (!breadcrumbName) return;
+
+		var allLabel = messageList.dataset.labelAllMessages || 'All';
+		var activeLi = breadcrumbName.closest('li');
+
+		/* Drop any ancestor crumbs from a previous render */
+		if (breadcrumbOl) {
+			breadcrumbOl.querySelectorAll('.forums-breadcrumb-ancestor').forEach(function(el) { el.remove(); });
+		}
+
+		var current = categoryId ? byId[categoryId] : null;
+		var name = current ? (current.categoryName || messageList.dataset.labelCategory || 'Category') : allLabel;
+		breadcrumbName.textContent = name;
+		if (headingEl) headingEl.textContent = name;
+
+		if (!current || !activeLi || !breadcrumbOl) return;
+
+		/* Walk up the parent chain (guarded against cycles) */
+		var ancestors = [];
+		var pid = getParentId(current);
+		var guard = 0;
+		while (pid && byId[pid] && guard < 50) {
+			ancestors.unshift(byId[pid]);
+			pid = getParentId(byId[pid]);
+			guard++;
+		}
+
+		ancestors.forEach(function(anc) {
+			var li = document.createElement('li');
+			li.className = 'breadcrumb-item forums-breadcrumb-ancestor';
+			var a = document.createElement('a');
+			a.className = 'breadcrumb-link';
+			a.href = categoryHref(anc.id);
+			a.textContent = anc.categoryName || '';
+			li.appendChild(a);
+			breadcrumbOl.insertBefore(li, activeLi);
+		});
+	}
+
+	/* Fill the filter dropdown with an indented category tree */
+	function populateCategoryFilter(childrenOf) {
+		if (!categoryFilter) return;
+		(function walk(parentId, depth) {
+			(childrenOf[parentId] || []).forEach(function(cat) {
 				var opt = document.createElement('option');
 				opt.value = cat.id;
-				opt.textContent = cat.categoryName || '';
-				if (String(cat.id) === String(categoryId)) {
-					opt.selected = true;
-				}
+				var prefix = depth > 0 ? Array(depth + 1).join('— ') : '';
+				opt.textContent = prefix + (cat.categoryName || '');
+				if (String(cat.id) === String(categoryId)) opt.selected = true;
 				categoryFilter.appendChild(opt);
+				walk(cat.id, depth + 1);
 			});
-		})
-		.catch(function() {});
+		})(0, 0);
+	}
 
+	/* Render the current category's subcategories as navigable cards */
+	function renderSubcategories(childrenOf) {
+		if (!subcatsContainer || !subcatsRow) return;
+		subcatsRow.innerHTML = '';
+
+		var children = categoryId ? (childrenOf[categoryId] || []) : [];
+		if (children.length === 0) {
+			subcatsContainer.style.display = 'none';
+			return;
+		}
+
+		children.forEach(function(cat) {
+			var col = document.createElement('div');
+			col.className = 'col-sm-6 col-lg-4 mb-3';
+
+			var card = document.createElement('a');
+			card.href = categoryHref(cat.id);
+			card.className = 'card card-interactive card-interactive-secondary h-100 text-decoration-none';
+
+			var body = document.createElement('div');
+			body.className = 'card-body';
+
+			var title = document.createElement('div');
+			title.className = 'card-title font-weight-semi-bold mb-1';
+			title.textContent = cat.categoryName || '';
+			body.appendChild(title);
+
+			if (cat.categoryDescription) {
+				var desc = document.createElement('p');
+				desc.className = 'card-text text-secondary small mb-0';
+				desc.textContent = cat.categoryDescription;
+				body.appendChild(desc);
+			}
+
+			card.appendChild(body);
+			col.appendChild(card);
+			subcatsRow.appendChild(col);
+		});
+
+		subcatsContainer.style.display = '';
+	}
+
+	/* Load the whole category set once, then drive breadcrumb + filter + subcategories */
+	Liferay.Util.fetch(portalURL + '/o/c/forumcategories/scopes/' + scopeGroupId + '?pageSize=200&sort=categoryName:asc', {
+		headers: headers,
+		method: 'GET'
+	})
+	.then(function(r) { return r.json(); })
+	.then(function(data) {
+		var items = data.items || [];
+		var byId = {};
+		items.forEach(function(cat) { byId[cat.id] = cat; });
+
+		var childrenOf = {};
+		items.forEach(function(cat) {
+			var pid = getParentId(cat);
+			if (pid && !byId[pid]) pid = 0;
+			(childrenOf[pid] = childrenOf[pid] || []).push(cat);
+		});
+
+		categoryTree = { byId: byId, childrenOf: childrenOf };
+
+		buildBreadcrumb(byId);
+		populateCategoryFilter(childrenOf);
+		renderSubcategories(childrenOf);
+	})
+	.catch(function() {});
+
+	if (categoryFilter) {
 		categoryFilter.addEventListener('change', function() {
 			categoryId = this.value || null;
 			currentPage = 1;
@@ -158,16 +267,9 @@ if (messageList) {
 			}
 			history.pushState(null, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
 
-			var allLabel = messageList.dataset.labelAllCategories || messageList.dataset.labelAllMessages || 'All Messages';
-			if (!categoryId) {
-				if (headingEl) headingEl.textContent = allLabel;
-				if (breadcrumbName) breadcrumbName.textContent = allLabel;
-			}
-			else {
-				var selectedOpt = this.options[this.selectedIndex];
-				var catName = selectedOpt ? selectedOpt.textContent : allLabel;
-				if (headingEl) headingEl.textContent = catName;
-				if (breadcrumbName) breadcrumbName.textContent = catName;
+			if (categoryTree) {
+				buildBreadcrumb(categoryTree.byId);
+				renderSubcategories(categoryTree.childrenOf);
 			}
 
 			loadMessages();
