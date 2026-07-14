@@ -10,6 +10,9 @@ if (forumsCategoriesAdmin) {
 		'Content-Type': 'application/json'
 	};
 
+	/* FK field exposed by the ForumCategory self-relationship (0 = top-level) */
+	var PARENT_FK = 'r_categorySubcategories_c_forumCategoryId';
+
 	var cardEl = forumsCategoriesAdmin.querySelector('.forums-categories-admin__card');
 	var noPermissionsEl = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminNoPermissions');
 	var seedSection = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminSeedSection');
@@ -19,12 +22,15 @@ if (forumsCategoriesAdmin) {
 	var addForm = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminAddForm');
 	var addName = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminCatName');
 	var addDesc = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminCatDesc');
+	var addParent = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminCatParent');
 	var addBtn = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminAddBtn');
 	var listEl = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminCategoryList');
 	var loadingEl = forumsCategoriesAdmin.querySelector('#forumsCategoriesAdminLoading');
 
 	/* Track whether the current user has create permission */
 	var canCreate = false;
+
+	var topLevelLabel = forumsCategoriesAdmin.dataset.labelTopLevel || 'None (top-level)';
 
 	var defaultCategories = [
 		{ name: configuration.category1Name, desc: configuration.category1Desc, erc: configuration.category1ERC },
@@ -33,6 +39,66 @@ if (forumsCategoriesAdmin) {
 		{ name: configuration.category4Name, desc: configuration.category4Desc, erc: configuration.category4ERC },
 		{ name: configuration.category5Name, desc: configuration.category5Desc, erc: configuration.category5ERC }
 	].filter(function(cat) { return cat.name; });
+
+	/* --- Tree helpers ---------------------------------------------------- */
+
+	function getParentId(cat) {
+		return Number(cat[PARENT_FK]) || 0;
+	}
+
+	/* Map of parentId -> ordered array of child categories */
+	function buildChildrenMap(items) {
+		var byId = {};
+		items.forEach(function(cat) { byId[cat.id] = cat; });
+
+		var childrenOf = {};
+		items.forEach(function(cat) {
+			var parentId = getParentId(cat);
+			/* Treat categories whose parent is missing as top-level (defensive) */
+			if (parentId && !byId[parentId]) parentId = 0;
+			(childrenOf[parentId] = childrenOf[parentId] || []).push(cat);
+		});
+		return childrenOf;
+	}
+
+	/* All descendant ids of a category (to forbid re-parenting into a cycle) */
+	function getDescendantIds(id, childrenOf) {
+		var ids = [];
+		(function walk(parentId) {
+			(childrenOf[parentId] || []).forEach(function(child) {
+				ids.push(child.id);
+				walk(child.id);
+			});
+		})(id);
+		return ids;
+	}
+
+	/* Fill a <select> with an indented category tree, skipping excludeIds */
+	function populateParentSelect(selectEl, childrenOf, selectedId, excludeIds) {
+		excludeIds = excludeIds || [];
+		selectEl.innerHTML = '';
+
+		var topOption = document.createElement('option');
+		topOption.value = '';
+		topOption.textContent = topLevelLabel;
+		selectEl.appendChild(topOption);
+
+		(function walk(parentId, depth) {
+			(childrenOf[parentId] || []).forEach(function(cat) {
+				if (excludeIds.indexOf(cat.id) === -1) {
+					var opt = document.createElement('option');
+					opt.value = cat.id;
+					var prefix = depth > 0 ? Array(depth + 1).join('— ') : '';
+					opt.textContent = prefix + (cat.categoryName || forumsCategoriesAdmin.dataset.labelUnnamed || 'Unnamed');
+					if (String(cat.id) === String(selectedId)) opt.selected = true;
+					selectEl.appendChild(opt);
+				}
+				walk(cat.id, depth + 1);
+			});
+		})(0, 0);
+	}
+
+	/* --- Data access ----------------------------------------------------- */
 
 	function loadCategories() {
 		if (loadingEl) loadingEl.style.display = 'block';
@@ -65,153 +131,23 @@ if (forumsCategoriesAdmin) {
 
 			var items = data.items || [];
 
+			var childrenOf = buildChildrenMap(items);
+
+			/* Refresh the add-form parent picker with the current tree */
+			if (addParent) populateParentSelect(addParent, childrenOf, '', []);
+
 			if (items.length === 0) {
 				listEl.innerHTML = '<li class="list-group-item text-secondary">' + (forumsCategoriesAdmin.dataset.labelNoCategories || 'No categories found.') + '</li>';
 				return;
 			}
 
-			items.forEach(function(cat) {
-				var li = document.createElement('li');
-				li.className = 'list-group-item flex-column align-items-start';
-
-				var viewContainer = document.createElement('div');
-				viewContainer.className = 'd-flex justify-content-between align-items-center w-100';
-
-				var infoDiv = document.createElement('div');
-				infoDiv.className = 'd-flex flex-column flex-grow-1';
-
-				var nameSpan = document.createElement('span');
-				nameSpan.className = 'font-weight-bold';
-				nameSpan.textContent = cat.categoryName || forumsCategoriesAdmin.dataset.labelUnnamed || 'Unnamed';
-
-				var descSpan = document.createElement('span');
-				descSpan.className = 'text-secondary small';
-				descSpan.textContent = cat.categoryDescription || '';
-
-				infoDiv.appendChild(nameSpan);
-				if (cat.categoryDescription) infoDiv.appendChild(descSpan);
-
-				viewContainer.appendChild(infoDiv);
-
-				var actionsDiv = document.createElement('div');
-				actionsDiv.className = 'd-flex';
-
-				/* HATEOAS: only render edit button if the item-level actions include 'update' */
-				var updateAction = cat.actions && (cat.actions['update'] || cat.actions['patch'] || cat.actions['put'] || cat.actions['PATCH'] || cat.actions['PUT']);
-				var editBtn = null;
-				if (updateAction) {
-					editBtn = document.createElement('button');
-					editBtn.className = 'btn btn-sm btn-outline-secondary mr-2';
-					editBtn.title = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
-					editBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
-					editBtn.setAttribute('data-tooltip-align', 'top');
-					editBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="' + clayIconsUrl + '#pencil"></use></svg>';
-					actionsDiv.appendChild(editBtn);
-				}
-
-				/* HATEOAS: only render delete button if the item-level actions include 'delete' */
-				if (cat.actions && cat.actions['delete']) {
-					var delBtn = document.createElement('button');
-					delBtn.className = 'btn btn-sm btn-outline-danger';
-					delBtn.title = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
-					delBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
-					delBtn.setAttribute('data-tooltip-align', 'top');
-					delBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg>';
-					delBtn.addEventListener('click', function() {
-						deleteCategory(cat.actions['delete'].href, cat.id);
-					});
-					actionsDiv.appendChild(delBtn);
-				}
-
-				viewContainer.appendChild(actionsDiv);
-				li.appendChild(viewContainer);
-
-				if (updateAction && editBtn) {
-					var editContainer = document.createElement('div');
-					editContainer.className = 'w-100 mt-3';
-					editContainer.style.display = 'none';
-
-					var editForm = document.createElement('form');
-					editForm.className = 'mb-0';
-					var nameFieldId = 'forumsCatEditName-' + cat.id;
-					var descFieldId = 'forumsCatEditDesc-' + cat.id;
-					var labelName = forumsCategoriesAdmin.dataset.labelCategoryName || 'Category Name';
-					var labelDesc = forumsCategoriesAdmin.dataset.labelDescription || 'Description';
-					editForm.innerHTML = '<div class="row align-items-end">' +
-						'<div class="col-12 col-md">' +
-							'<div class="form-group mb-3 mb-md-0">' +
-								'<label for="' + nameFieldId + '" class="sr-only">' + labelName + '</label>' +
-								'<input type="text" class="form-control" id="' + nameFieldId + '" aria-label="' + labelName + '" required>' +
-							'</div>' +
-						'</div>' +
-						'<div class="col-12 col-md">' +
-							'<div class="form-group mb-3 mb-md-0">' +
-								'<label for="' + descFieldId + '" class="sr-only">' + labelDesc + '</label>' +
-								'<input type="text" class="form-control" id="' + descFieldId + '" aria-label="' + labelDesc + '">' +
-							'</div>' +
-						'</div>' +
-						'<div class="col-12 col-md-auto mt-3 mt-md-0">' +
-							'<button type="submit" class="btn btn-primary mr-2">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
-							'<button type="button" class="btn btn-outline-secondary cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
-						'</div>' +
-					'</div>';
-
-					var inputs = editForm.querySelectorAll('input');
-					var nameInput = inputs[0];
-					var descInput = inputs[1];
-					var cancelBtn = editForm.querySelector('.cancel-edit-btn');
-					var saveBtn = editForm.querySelector('button[type="submit"]');
-
-					editBtn.addEventListener('click', function() {
-						nameInput.value = cat.categoryName || '';
-						descInput.value = cat.categoryDescription || '';
-						viewContainer.style.display = 'none';
-						editContainer.style.display = 'block';
-					});
-
-					cancelBtn.addEventListener('click', function() {
-						editContainer.style.display = 'none';
-						viewContainer.style.display = 'flex';
-					});
-
-					editForm.addEventListener('submit', function(e) {
-						e.preventDefault();
-						var newName = nameInput.value.trim();
-						var newDesc = descInput.value.trim();
-						if (!newName) return;
-
-						saveBtn.disabled = true;
-						cancelBtn.disabled = true;
-
-						updateCategory(updateAction.href, cat.id, newName, newDesc)
-							.then(function(updatedCat) {
-								cat = updatedCat;
-								nameSpan.textContent = cat.categoryName || forumsCategoriesAdmin.dataset.labelUnnamed || 'Unnamed';
-								descSpan.textContent = cat.categoryDescription || '';
-								if (cat.categoryDescription && !descSpan.parentNode) {
-									infoDiv.appendChild(descSpan);
-								} else if (!cat.categoryDescription && descSpan.parentNode) {
-									infoDiv.removeChild(descSpan);
-								}
-								saveBtn.disabled = false;
-								cancelBtn.disabled = false;
-								editContainer.style.display = 'none';
-								viewContainer.style.display = 'flex';
-							})
-							.catch(function(err) {
-								console.error(err);
-								alert(forumsCategoriesAdmin.dataset.labelErrorUpdating || 'Error updating category.');
-								saveBtn.disabled = false;
-								cancelBtn.disabled = false;
-							});
-					});
-
-					editContainer.appendChild(editForm);
-					li.appendChild(editContainer);
-				}
-
-				listEl.appendChild(li);
-			});
+			/* Render the tree depth-first so subcategories sit under their parent */
+			(function renderLevel(parentId, depth) {
+				(childrenOf[parentId] || []).forEach(function(cat) {
+					listEl.appendChild(renderCategoryItem(cat, depth, childrenOf));
+					renderLevel(cat.id, depth + 1);
+				});
+			})(0, 0);
 		})
 		.catch(function(err) {
 			if (loadingEl) loadingEl.style.display = 'none';
@@ -223,13 +159,162 @@ if (forumsCategoriesAdmin) {
 		});
 	}
 
-	function createCategory(name, desc, erc) {
+	/* Build a single list row (with inline edit form) for one category */
+	function renderCategoryItem(cat, depth, childrenOf) {
+		var li = document.createElement('li');
+		li.className = 'list-group-item flex-column align-items-start';
+		if (depth > 0) li.style.marginLeft = (depth * 1.5) + 'rem';
+
+		var viewContainer = document.createElement('div');
+		viewContainer.className = 'd-flex justify-content-between align-items-center w-100';
+
+		var infoDiv = document.createElement('div');
+		infoDiv.className = 'd-flex flex-column flex-grow-1';
+
+		var nameSpan = document.createElement('span');
+		nameSpan.className = 'font-weight-bold';
+		nameSpan.textContent = cat.categoryName || forumsCategoriesAdmin.dataset.labelUnnamed || 'Unnamed';
+
+		var descSpan = document.createElement('span');
+		descSpan.className = 'text-secondary small';
+		descSpan.textContent = cat.categoryDescription || '';
+
+		infoDiv.appendChild(nameSpan);
+		if (cat.categoryDescription) infoDiv.appendChild(descSpan);
+
+		viewContainer.appendChild(infoDiv);
+
+		var actionsDiv = document.createElement('div');
+		actionsDiv.className = 'd-flex';
+
+		/* HATEOAS: only render edit button if the item-level actions include 'update' */
+		var updateAction = cat.actions && (cat.actions['update'] || cat.actions['patch'] || cat.actions['put'] || cat.actions['PATCH'] || cat.actions['PUT']);
+		var editBtn = null;
+		if (updateAction) {
+			editBtn = document.createElement('button');
+			editBtn.className = 'btn btn-sm btn-outline-secondary mr-2';
+			editBtn.title = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
+			editBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelEdit || 'Edit';
+			editBtn.setAttribute('data-tooltip-align', 'top');
+			editBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-pencil" role="presentation"><use href="' + clayIconsUrl + '#pencil"></use></svg>';
+			actionsDiv.appendChild(editBtn);
+		}
+
+		/* HATEOAS: only render delete button if the item-level actions include 'delete' */
+		if (cat.actions && cat.actions['delete']) {
+			var delBtn = document.createElement('button');
+			delBtn.className = 'btn btn-sm btn-outline-danger';
+			delBtn.title = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
+			delBtn.ariaLabel = forumsCategoriesAdmin.dataset.labelDelete || 'Delete';
+			delBtn.setAttribute('data-tooltip-align', 'top');
+			delBtn.innerHTML = '<svg class="lexicon-icon lexicon-icon-trash" role="presentation"><use href="' + clayIconsUrl + '#trash"></use></svg>';
+			delBtn.addEventListener('click', function() {
+				deleteCategory(cat.actions['delete'].href, cat.id);
+			});
+			actionsDiv.appendChild(delBtn);
+		}
+
+		viewContainer.appendChild(actionsDiv);
+		li.appendChild(viewContainer);
+
+		if (updateAction && editBtn) {
+			var editContainer = document.createElement('div');
+			editContainer.className = 'w-100 mt-3';
+			editContainer.style.display = 'none';
+
+			var editForm = document.createElement('form');
+			editForm.className = 'mb-0';
+			var nameFieldId = 'forumsCatEditName-' + cat.id;
+			var descFieldId = 'forumsCatEditDesc-' + cat.id;
+			var parentFieldId = 'forumsCatEditParent-' + cat.id;
+			var labelName = forumsCategoriesAdmin.dataset.labelCategoryName || 'Category Name';
+			var labelDesc = forumsCategoriesAdmin.dataset.labelDescription || 'Description';
+			var labelParent = forumsCategoriesAdmin.dataset.labelParentCategory || 'Parent Category';
+			editForm.innerHTML = '<div class="row align-items-end">' +
+				'<div class="col-12 col-md">' +
+					'<div class="form-group mb-3 mb-md-0">' +
+						'<label for="' + nameFieldId + '" class="sr-only">' + labelName + '</label>' +
+						'<input type="text" class="form-control" id="' + nameFieldId + '" aria-label="' + labelName + '" required>' +
+					'</div>' +
+				'</div>' +
+				'<div class="col-12 col-md">' +
+					'<div class="form-group mb-3 mb-md-0">' +
+						'<label for="' + descFieldId + '" class="sr-only">' + labelDesc + '</label>' +
+						'<input type="text" class="form-control" id="' + descFieldId + '" aria-label="' + labelDesc + '">' +
+					'</div>' +
+				'</div>' +
+				'<div class="col-12 col-md">' +
+					'<div class="form-group mb-3 mb-md-0">' +
+						'<label for="' + parentFieldId + '" class="sr-only">' + labelParent + '</label>' +
+						'<select class="form-control" id="' + parentFieldId + '" aria-label="' + labelParent + '"></select>' +
+					'</div>' +
+				'</div>' +
+				'<div class="col-12 col-md-auto mt-3 mt-md-0">' +
+					'<button type="submit" class="btn btn-primary mr-2">' + (forumsCategoriesAdmin.dataset.labelSave || 'Save') + '</button>' +
+					'<button type="button" class="btn btn-outline-secondary cancel-edit-btn">' + (forumsCategoriesAdmin.dataset.labelCancel || 'Cancel') + '</button>' +
+				'</div>' +
+			'</div>';
+
+			var nameInput = editForm.querySelector('#' + nameFieldId);
+			var descInput = editForm.querySelector('#' + descFieldId);
+			var parentSelect = editForm.querySelector('#' + parentFieldId);
+			var cancelBtn = editForm.querySelector('.cancel-edit-btn');
+			var saveBtn = editForm.querySelector('button[type="submit"]');
+
+			/* A category cannot be its own parent or a child of its descendants */
+			var excludeIds = [cat.id].concat(getDescendantIds(cat.id, childrenOf));
+
+			editBtn.addEventListener('click', function() {
+				nameInput.value = cat.categoryName || '';
+				descInput.value = cat.categoryDescription || '';
+				populateParentSelect(parentSelect, childrenOf, getParentId(cat) || '', excludeIds);
+				viewContainer.style.display = 'none';
+				editContainer.style.display = 'block';
+			});
+
+			cancelBtn.addEventListener('click', function() {
+				editContainer.style.display = 'none';
+				viewContainer.style.display = 'flex';
+			});
+
+			editForm.addEventListener('submit', function(e) {
+				e.preventDefault();
+				var newName = nameInput.value.trim();
+				var newDesc = descInput.value.trim();
+				var newParent = parentSelect.value;
+				if (!newName) return;
+
+				saveBtn.disabled = true;
+				cancelBtn.disabled = true;
+
+				updateCategory(updateAction.href, cat.id, newName, newDesc, newParent)
+					.then(function() {
+						/* Reload so the tree reflects any re-parenting */
+						loadCategories();
+					})
+					.catch(function(err) {
+						console.error(err);
+						alert(forumsCategoriesAdmin.dataset.labelErrorUpdating || 'Error updating category.');
+						saveBtn.disabled = false;
+						cancelBtn.disabled = false;
+					});
+			});
+
+			editContainer.appendChild(editForm);
+			li.appendChild(editContainer);
+		}
+
+		return li;
+	}
+
+	function createCategory(name, desc, erc, parentId) {
 		var body = {
 			categoryName: name,
 			categoryName_i18n: { en_US: name },
 			categoryDescription: desc || ''
 		};
 		if (erc) body.externalReferenceCode = erc;
+		if (parentId) body[PARENT_FK] = parseInt(parentId, 10);
 
 		return Liferay.Util.fetch(portalURL + '/o/c/forumcategories/scopes/' + scopeGroupId, {
 			headers: headers,
@@ -241,17 +326,21 @@ if (forumsCategoriesAdmin) {
 		});
 	}
 
-	function updateCategory(updateUrl, id, name, desc) {
+	function updateCategory(updateUrl, id, name, desc, parentId) {
 		var url = updateUrl || (portalURL + '/o/c/forumcategories/' + id);
+
+		var body = {
+			categoryName: name,
+			categoryName_i18n: { en_US: name },
+			categoryDescription: desc || ''
+		};
+		/* 0 unsets the relationship (promotes the category back to top-level) */
+		body[PARENT_FK] = parentId ? parseInt(parentId, 10) : 0;
 
 		return Liferay.Util.fetch(url, {
 			headers: headers,
 			method: 'PATCH',
-			body: JSON.stringify({
-				categoryName: name,
-				categoryName_i18n: { en_US: name },
-				categoryDescription: desc || ''
-			})
+			body: JSON.stringify(body)
 		}).then(function(r) {
 			if (!r.ok) throw new Error('Update failed');
 			return r.json();
@@ -374,14 +463,16 @@ if (forumsCategoriesAdmin) {
 			e.preventDefault();
 			var name = addName.value.trim();
 			var desc = addDesc.value.trim();
+			var parentId = addParent ? addParent.value : '';
 
 			if (!name) return;
 
 			addBtn.disabled = true;
-			createCategory(name, desc)
+			createCategory(name, desc, null, parentId)
 			.then(function() {
 				addName.value = '';
 				addDesc.value = '';
+				if (addParent) addParent.value = '';
 				addBtn.disabled = false;
 				loadCategories();
 			})
