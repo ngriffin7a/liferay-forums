@@ -110,6 +110,24 @@ if (messageList) {
 		return (family && family !== 'User') ? (given + ' ' + family) : (given || creator.name || '');
 	}
 
+	/* Thread priority badge (Message Boards parity: Urgent|bolt|3.0,
+	   Sticky|pin|2.0, Announcement|comments|1.0). Values <= 0, missing, or
+	   unknown render nothing, matching MBUtil.getThreadPriority. */
+	var PRIORITY_LEVELS = {
+		3: { icon: 'bolt', labelKey: 'labelUrgent', fallback: 'Urgent', textClass: 'text-danger' },
+		2: { icon: 'pin', labelKey: 'labelSticky', fallback: 'Sticky', textClass: 'text-warning' },
+		1: { icon: 'comments', labelKey: 'labelAnnouncement', fallback: 'Announcement', textClass: 'text-info' }
+	};
+
+	function priorityBadge(priority, dataset) {
+		var level = PRIORITY_LEVELS[Math.round(parseFloat(priority)) || 0];
+		if (!level) return '';
+		var label = dataset[level.labelKey] || level.fallback;
+		return '<span class="forums-message-card__solved ' + level.textClass + ' ml-2" title="' + Liferay.Util.escapeHTML(label) + '">'
+			+ '<svg class="lexicon-icon lexicon-icon-' + level.icon + '" role="presentation"><use href="' + clayIconsUrl + '#' + level.icon + '"></use></svg> '
+			+ Liferay.Util.escapeHTML(label) + '</span>';
+	}
+
 	/* Fetch category name for breadcrumb */
 	if (categoryId) {
 		Liferay.Util.fetch(portalURL + '/o/c/forumcategories/' + categoryId, {
@@ -194,9 +212,15 @@ if (messageList) {
 			filterParts.push('r_categoryThreads_c_forumCategoryId eq \'' + categoryId + '\'');
 		}
 
+		/* Prioritized threads always sort on top (MB orders every listing by
+		   priority DESC, lastPostDate DESC). Search results are the exception:
+		   the priority field is not search-indexed, so — as in MB — search-driven
+		   listings keep the plain tab sort. */
+		var effectiveSort = searchQuery ? currentSort : 'priority:desc,' + currentSort;
+
 		var url = portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId + '?page=' + currentPage
 			+ '&pageSize=' + pageSize
-			+ '&sort=' + currentSort;
+			+ '&sort=' + effectiveSort;
 
 		if (filterParts.length > 0) {
 			url += '&filter=' + encodeURIComponent(filterParts.join(' and '));
@@ -325,6 +349,8 @@ if (messageList) {
 					solvedBadge = '<span class="forums-message-card__solved text-success font-weight-semi-bold ml-2">' + checkIcon + ' ' + solvedText + '</span>';
 				}
 
+				var priorityBadgeHtml = priorityBadge(msg.priority, messageList.dataset);
+
 				var siteSlug = (msg.scopeKey || '').toLowerCase().replace(/ /g, '-');
 				var topicHref = msg.friendlyUrlPath
 					? sitePrefix + '/c_forumthread/' + msg.friendlyUrlPath
@@ -346,6 +372,7 @@ if (messageList) {
 					+ '<div class="autofit-col autofit-col-expand forums-message-card__content">'
 					+ '<h5 class="card-title forums-message-card__title">'
 					+ (topicHref ? '<a href="' + topicHref + '">' + Liferay.Util.escapeHTML(title) + '</a>' : '<span>' + Liferay.Util.escapeHTML(title) + '</span>')
+					+ priorityBadgeHtml
 					+ solvedBadge
 					+ flaggedBadge
 					+ '</h5>'

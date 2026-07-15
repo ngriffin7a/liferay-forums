@@ -54,6 +54,21 @@
 	</div>
 [/#macro]
 
+[#macro priorityGroup]
+	[#-- Mirrors the Message Boards thread-priority feature (Urgent 3.0 / Sticky 2.0 /
+	     Announcement 1.0). Hidden until the JS confirms the user has moderation-level
+	     permissions (see canSetPriority in index.js). --]
+	<div class="form-group" id="forumsMessageComposerPriorityGroup" style="display:none;">
+		<label for="forumsMessageComposerPriority" class="font-weight-bold">${languageUtil.get(locale, "priority")}</label>
+		<select class="form-control" id="forumsMessageComposerPriority">
+			<option value="0" selected>${languageUtil.get(locale, "none")}</option>
+			<option value="1">${languageUtil.get(locale, "announcement")}</option>
+			<option value="2">${languageUtil.get(locale, "sticky")}</option>
+			<option value="3">${languageUtil.get(locale, "urgent")}</option>
+		</select>
+	</div>
+[/#macro]
+
 [#macro subscribeGroup]
 	<div class="form-group form-check" id="forumsMessageComposerSubscribeGroup">
 		<input type="checkbox" class="form-check-input" id="forumsMessageComposerSubscribe" checked>
@@ -130,6 +145,7 @@
 						[@subjectGroup /]
 						[@categoryGroup /]
 						[@tagsGroup /]
+						[@priorityGroup /]
 						[@questionGroup /]
 						[@subscribeGroup /]
 						[@bodyGroup /]
@@ -174,6 +190,7 @@
 									[@subjectGroup /]
 									[@categoryGroup /]
 									[@tagsGroup /]
+									[@priorityGroup /]
 									[@questionGroup /]
 									[@subscribeGroup /]
 									[@attachmentsGroup /]

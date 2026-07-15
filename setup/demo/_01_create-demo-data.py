@@ -287,6 +287,7 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
     body_html = msg_def["body"]
     keywords = msg_def["keywords"]
     is_question = msg_def.get("question", False)
+    priority = msg_def.get("priority", 0)  # MB parity: Urgent 3 / Sticky 2 / Announcement 1 / none 0
     author_screen = msg_def.get("author", "")
 
     cat_id = cat_map.get(cat_erc)
@@ -322,6 +323,7 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
             "r_categoryThreads_c_forumCategoryId": cat_id,
             "question": is_question,
             "keywords": keywords,
+            "priority": priority,
             "viewCount": random.randint(5, 320),
             "displayDate": _fmt_date(msg_date),
         },

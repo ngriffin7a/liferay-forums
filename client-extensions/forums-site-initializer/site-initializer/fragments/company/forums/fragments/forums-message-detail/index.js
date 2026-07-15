@@ -275,7 +275,26 @@ if (messageDetail) {
 	var isMessageQuestion = false; /* Track if the message was marked as a question */
 	var messageCategoryFK = null;
 	var messageTitleText = '';
+	var messagePriority = 0; /* Thread priority (MB parity: Urgent 3 / Sticky 2 / Announcement 1) */
 	var messageTagsArray = [];
+
+	/* Thread priority badge (Message Boards parity: Urgent|bolt|3.0,
+	   Sticky|pin|2.0, Announcement|comments|1.0). Values <= 0, missing, or
+	   unknown render nothing, matching MBUtil.getThreadPriority. */
+	var PRIORITY_LEVELS = {
+		3: { icon: 'bolt', labelKey: 'labelUrgent', fallback: 'Urgent', textClass: 'text-danger' },
+		2: { icon: 'pin', labelKey: 'labelSticky', fallback: 'Sticky', textClass: 'text-warning' },
+		1: { icon: 'comments', labelKey: 'labelAnnouncement', fallback: 'Announcement', textClass: 'text-info' }
+	};
+
+	function priorityBadge(priority) {
+		var level = PRIORITY_LEVELS[Math.round(parseFloat(priority)) || 0];
+		if (!level) return '';
+		var label = Liferay.Util.escapeHTML(messageDetail.dataset[level.labelKey] || level.fallback);
+		return '<span class="forums-message-detail__priority-badge ' + level.textClass + '" title="' + label + '">'
+			+ '<svg class="lexicon-icon lexicon-icon-' + level.icon + '" role="presentation"><use href="' + clayIconsUrl + '#' + level.icon + '"></use></svg> '
+			+ label + '</span>';
+	}
 	var replyMessagesMap = {};
 	var existingFlagId = null; /* Track if the current user already flagged this message */
 
@@ -1014,11 +1033,16 @@ if (messageDetail) {
 
 		messageTitleText = msg.messageTitle || messageDetail.dataset.labelUntitledMessage || 'Untitled Message';
 		messageCategoryFK = msg.r_categoryThreads_c_forumCategoryId;
+		messagePriority = msg.priority || 0;
 		messageTagsArray = msg.keywords || [];
 		var title = messageTitleText;
 		var categoryFK = messageCategoryFK;
 
-		if (titleEl) titleEl.textContent = title;
+		if (titleEl) {
+			titleEl.textContent = title;
+			var priorityBadgeHtml = priorityBadge(messagePriority);
+			if (priorityBadgeHtml) titleEl.insertAdjacentHTML('beforeend', priorityBadgeHtml);
+		}
 		if (breadcrumbMessage) breadcrumbMessage.textContent = title;
 
 		/* Fetch category for breadcrumb */
@@ -1236,6 +1260,7 @@ if (messageDetail) {
 								subject: messageTitleText,
 								body: opMsg.body,
 								isQuestion: isMessageQuestion,
+								priority: messagePriority,
 								tags: messageTagsArray
 							});
 						}

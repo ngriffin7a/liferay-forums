@@ -11,6 +11,7 @@ This Liferay Workspace project is a Fragments and Liferay Objects based replacem
 - [Required Feature Flags](#required-feature-flags)
 - [Fragments](#fragments)
   - [UI Style: Standard and Flat](#ui-style-standard-and-flat)
+- [Thread Priorities](#thread-priorities)
 - [Page Layout and Fragment Placement](#page-layout-and-fragment-placement)
 - [Display Page Templates](#display-page-templates)
 - [Demo Data](#demo-data)
@@ -22,6 +23,7 @@ This Liferay Workspace project is a Fragments and Liferay Objects based replacem
 - [Known Limitations](#known-limitations)
   - [View Count Not Incremented for Guest Users](#view-count-not-incremented-for-guest-users)
   - [Ban Enforcement Is UI-Only](#ban-enforcement-is-ui-only)
+  - [Thread Priority Permission Is UI-Only](#thread-priority-permission-is-ui-only)
   - ["Top Replies" Implemented as "Recent Activity"](#top-replies-implemented-as-recent-activity)
 
 ---
@@ -95,6 +97,19 @@ The following **Release** feature flags must be enabled before deploying.
 ### UI Style
 
 The forums fragments ship a single, **style-neutral** look. Color values reference Classic / Lexicon Style Book tokens with a literal hex fallback, e.g. `var(--primary, #0b5fff)` -- the Style Book token wins when the active theme (or a Style Book) defines it, otherwise the hex is used. The fragments deliberately do **not** use Dialect tokens (`--color-*`): the visual identity belongs to the theme / Style Book, so customers re-skin the forum by editing Style Book tokens or layering a theme CSS client extension, never by touching the fragments.
+
+---
+
+## Thread Priorities
+
+Mirrors the legacy Message Boards thread-priority feature (`message.boards.thread.priorities=Urgent|bolt|3.0, Sticky|pin|2.0, Announcement|comments|1.0` in portal.properties):
+
+- **Storage** — the `ForumThread` Object already carries a numeric `priority` field. The fragments use the same discrete levels as Message Boards: **Urgent (3)**, **Sticky (2)**, **Announcement (1)**, none (0).
+- **Setting a priority** — the Message Composer shows a **Priority** select when creating or editing a topic (never on replies). The select is only offered to moderator-level users, detected the same way the Moderation page detects moderators: the HATEOAS `create` action on the `ForumBan` collection, which regular users are never granted. This mirrors Message Boards, where the priority select is gated by the `UPDATE_THREAD_PRIORITY` permission granted to moderators. When a non-privileged author edits their topic, the `priority` field is omitted from the PATCH so the current value is preserved.
+- **Ordering** — the Message List sorts every listing by `priority:desc` before the active tab's sort (`dateCreated` / `lastPostDate`), so prioritized threads pin to the top — exactly how `MBThread`'s default order (`priority DESC, lastPostDate DESC`) works. Search results are the exception: the `priority` field is not search-indexed, so search-driven listings keep the plain tab sort — also matching Message Boards, where priority ordering exists only in DB-backed listings.
+- **Display** — threads with a priority > 0 show a colored badge (Clay icon + localized name: `bolt`/Urgent, `pin`/Sticky, `comments`/Announcement) next to the title in the Message List and on the Message Detail page, following the Message Boards convention of rendering the priority icon next to the subject.
+
+> **Existing sites:** threads created before this feature have no `priority` value at all. NULL ordering in a descending sort is database-specific (PostgreSQL sorts NULLs first), so run [backfill-thread-priority.py](setup/util/backfill-thread-priority.py) once to normalize them to `0`.
 
 ---
 
@@ -265,6 +280,7 @@ The `setup/util/` directory contains cleanup and teardown scripts.
 | [delete-demo-data.py](setup/util/delete-demo-data.py) | Deletes all Forum Stats User, Forum Message, Forum Thread, and Forum Category entries for a given site. Forum Votes are removed automatically via cascade. Demo user accounts are left in place. Usage: `python3 setup/util/delete-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
 | [delete-forum-stats-users.py](setup/util/delete-forum-stats-users.py) | Deletes all `ForumStatsUser` entries via the Objects REST API. Run this before re-executing Step 4 to ensure no duplicate records. Accepts an optional `--scope` argument (site `groupId` or friendly URL); if omitted the script auto-detects the correct scope. Usage: `python3 setup/util/delete-forum-stats-users.py [BASE_URL] [--scope SCOPE] [--email EMAIL] [--password PASSWORD]` |
 | [delete-forum-object-definitions.py](setup/util/delete-forum-object-definitions.py) | Deletes all Object definitions whose name starts with `Forum` via the Object Admin REST API. Useful for fully resetting a dev environment. |
+| [backfill-thread-priority.py](setup/util/backfill-thread-priority.py) | Sets `priority: 0` on every Forum Thread that has no priority value. Run once on sites whose threads were created before the [Thread Priorities](#thread-priorities) feature, so the `priority:desc` sort behaves deterministically on every database. Usage: `python3 setup/util/backfill-thread-priority.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]` |
 
 ---
 
@@ -416,6 +432,10 @@ A Spring Boot Microservice Client Extension can be registered as an Object Actio
 3. If a ban record exists, immediately call `DELETE /o/c/forumthreads/{entryId}` or `DELETE /o/c/forummessages/{entryId}` to remove the entry.
 
 There is an unavoidable brief window (milliseconds to low seconds depending on load) between the entry being created and the microservice deleting it. In practice this is acceptable given that banning is rare and the moderation fragment provides a backstop for any content that appears during that window.
+
+### Thread Priority Permission Is UI-Only
+
+The [Thread Priorities](#thread-priorities) select in the composer is only shown to moderator-level users (detected via the HATEOAS `create` action on the `ForumBan` collection), and a non-privileged edit omits the `priority` field from the PATCH. However — like ban enforcement — this is purely client-side: `PATCH /o/c/forumthreads/{id}` accepts a `priority` value from anyone with UPDATE permission on the thread, which includes the thread's author (Objects grant owners UPDATE by default). The legacy Message Boards close this gap server-side by resetting any incoming priority when the caller lacks the `UPDATE_THREAD_PRIORITY` permission (`MBMessageServiceImpl`); custom Liferay Objects have no equivalent hook. The same microservice-webhook approach described under [Ban Enforcement Is UI-Only](#ban-enforcement-is-ui-only) could be used to revert unauthorized priority changes if server-side enforcement is required.
 
 ### "Top Replies" Implemented as "Recent Activity"
 

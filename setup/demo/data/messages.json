@@ -6,6 +6,7 @@
 		"body": "<p>Hello everyone! This is the place to connect, share ideas, and get help from fellow Liferay developers. Feel free to introduce yourself and tell us what you're working on!</p>",
 		"keywords": ["welcome", "introduction", "community"],
 		"question": false,
+		"priority": 1,
 		"replies": [
 			{"author": "bob.chen", "replyIndex": 35, "answer": false, "upvotes": 5, "downvotes": 0},
 			{"author": "carla.rivera", "replyIndex": 36, "answer": false, "upvotes": 3, "downvotes": 0}
@@ -73,6 +74,7 @@
 		"body": "<p>We're seeing a steady increase in heap usage when users upload multiple large files (500MB+) to the Document Library. The JVM eventually crashes with an OutOfMemoryError.</p>",
 		"keywords": ["OOM", "Document Library", "Performance"],
 		"question": true,
+		"priority": 3,
 		"replies": [
 			{"author": "grace.obi", "replyIndex": 11, "answer": false, "upvotes": 6, "downvotes": 0},
 			{"author": "dan.novak", "replyIndex": 12, "answer": false, "upvotes": 9, "downvotes": 0},
@@ -113,6 +115,7 @@
 		"body": "<p>We're expecting a massive traffic spike next month. What are the most important configurations to tune in Liferay to handle high concurrency?</p>",
 		"keywords": ["Performance", "Tuning", "Scaling"],
 		"question": false,
+		"priority": 2,
 		"replies": [
 			{"author": "bob.chen", "replyIndex": 17, "answer": false, "upvotes": 14, "downvotes": 0},
 			{"author": "dan.novak", "replyIndex": 18, "answer": false, "upvotes": 11, "downvotes": 0},

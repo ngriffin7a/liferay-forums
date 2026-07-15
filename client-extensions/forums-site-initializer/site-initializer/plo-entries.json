@@ -438,5 +438,25 @@
 	{
 		"key": "could-not-download-the-file",
 		"value": "{\"en_US\": \"Could not download the file. Please try again.\"}"
+	},
+	{
+		"key": "priority",
+		"value": "{\"en_US\": \"Priority\"}"
+	},
+	{
+		"key": "none",
+		"value": "{\"en_US\": \"None\"}"
+	},
+	{
+		"key": "urgent",
+		"value": "{\"en_US\": \"Urgent\"}"
+	},
+	{
+		"key": "sticky",
+		"value": "{\"en_US\": \"Sticky\"}"
+	},
+	{
+		"key": "announcement",
+		"value": "{\"en_US\": \"Announcement\"}"
 	}
 ]

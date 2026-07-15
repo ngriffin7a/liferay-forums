@@ -21,6 +21,8 @@ if (messageComposer) {
 	var subjectGroup = messageComposer.querySelector('#forumsMessageComposerSubjectGroup');
 	var questionCheck = messageComposer.querySelector('#forumsMessageComposerQuestion');
 	var questionGroup = messageComposer.querySelector('#forumsMessageComposerQuestionGroup');
+	var prioritySelect = messageComposer.querySelector('#forumsMessageComposerPriority');
+	var priorityGroup = messageComposer.querySelector('#forumsMessageComposerPriorityGroup');
 	var subscribeCheck = messageComposer.querySelector('#forumsMessageComposerSubscribe');
 	var subscribeGroup = messageComposer.querySelector('#forumsMessageComposerSubscribeGroup');
 	var tagsGroup = messageComposer.querySelector('#forumsMessageComposerTagsGroup');
@@ -298,6 +300,22 @@ if (messageComposer) {
 	var isBanned = false;
 	var currentUserId = Liferay.ThemeDisplay.getUserId();
 
+	/* Thread priority (Message Boards parity). Whether the priority select is
+	   offered is gated the same way the moderation page detects moderators: the
+	   HATEOAS create action on the ForumBan collection, which regular users are
+	   never granted. Like ban enforcement, this is UI-only — see the README. */
+	var canSetPriority = false;
+	/* True while the form is in a mode where priority applies (new topic or
+	   edit topic, never replies). Combined with canSetPriority, which may
+	   resolve after the modal is already open. */
+	var priorityApplicable = false;
+
+	function syncPriorityGroup() {
+		if (priorityGroup) {
+			priorityGroup.style.display = (priorityApplicable && canSetPriority) ? '' : 'none';
+		}
+	}
+
 	if (Liferay.ThemeDisplay.isSignedIn()) {
 		Liferay.Util.fetch(portalURL + '/o/c/forumbans/scopes/' + scopeGroupId + '?filter=' + encodeURIComponent('banUserId eq ' + currentUserId) + '&pageSize=1', {
 			headers: headers,
@@ -313,6 +331,8 @@ if (messageComposer) {
 					errorAlert.style.display = '';
 				}
 			}
+			canSetPriority = !isBanned && !!(data.actions && (data.actions['create'] || data.actions['post'] || data.actions['POST']));
+			syncPriorityGroup();
 		})
 		.catch(function(err) { console.error('Error checking ban status', err); });
 	}
@@ -441,6 +461,7 @@ if (messageComposer) {
 		isEditMode = false;
 		editIsOp = false;
 		editMessageId = null;
+		if (prioritySelect) prioritySelect.value = '0';
 		tagsArray = [];
 		if (tagsInput) tagsInput.value = '';
 		renderTags();
@@ -480,6 +501,8 @@ if (messageComposer) {
 	/* ---- Configure form for new-message vs reply mode ---- */
 
 	function configureModal(replyMode) {
+		priorityApplicable = (isEditMode && editIsOp) || (!isEditMode && !replyMode);
+		syncPriorityGroup();
 		if (isEditMode && editIsOp) {
 			if (titleEl) titleEl.textContent = messageComposer.dataset.labelEditTopic || 'Edit Topic';
 			if (leftCol) leftCol.style.display = '';
@@ -576,6 +599,13 @@ if (messageComposer) {
 			loadExistingAttachments(editMessageId);
 			if (subjectInput && options.subject) subjectInput.value = options.subject;
 			if (questionCheck && typeof options.isQuestion !== 'undefined') questionCheck.checked = options.isQuestion;
+			if (prioritySelect) {
+				/* Priority arrives as a decimal (e.g. 2.0); the select only knows
+				   the discrete MB levels 0-3, anything else falls back to None. */
+				var priorityValue = String(Math.round(parseFloat(options.priority)) || 0);
+				prioritySelect.value = priorityValue;
+				if (prioritySelect.value !== priorityValue) prioritySelect.value = '0';
+			}
 			if (options.tags && Array.isArray(options.tags)) {
 				tagsArray = [].concat(options.tags);
 				renderTags();
@@ -705,17 +735,24 @@ if (messageComposer) {
 
 				var promises = [];
 				if (editIsOp) {
+					var threadPatchPayload = {
+						messageTitle: subject,
+						messageTitle_i18n: { en_US: subject },
+						r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
+						question: isQuestion,
+						keywords: tagsArray
+					};
+					/* Only privileged users may change the priority; omitting the
+					   field keeps the thread's current value (MB resets a priority
+					   sent without UPDATE_THREAD_PRIORITY the same way). */
+					if (canSetPriority && prioritySelect) {
+						threadPatchPayload.priority = parseFloat(prioritySelect.value) || 0;
+					}
 					promises.push(
 						Liferay.Util.fetch(portalURL + '/o/c/forumthreads/' + messageId, {
 							headers: headers,
 							method: 'PATCH',
-							body: JSON.stringify({
-								messageTitle: subject,
-								messageTitle_i18n: { en_US: subject },
-								r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
-								question: isQuestion,
-								keywords: tagsArray
-							})
+							body: JSON.stringify(threadPatchPayload)
 						}).then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
 					);
 					promises.push(
@@ -823,7 +860,8 @@ if (messageComposer) {
 					messageTitle_i18n: { en_US: subject },
 					r_categoryThreads_c_forumCategoryId: parseInt(selectedCategory),
 					question: isQuestion,
-					keywords: tagsArray
+					keywords: tagsArray,
+					priority: (canSetPriority && prioritySelect) ? (parseFloat(prioritySelect.value) || 0) : 0
 				};
 
 				Liferay.Util.fetch(portalURL + '/o/c/forumthreads/scopes/' + scopeGroupId, {

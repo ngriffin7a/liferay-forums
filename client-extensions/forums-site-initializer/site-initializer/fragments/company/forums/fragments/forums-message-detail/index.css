@@ -19,6 +19,24 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	margin: 0;
 }
 
+/* Thread priority badge (Urgent / Sticky / Announcement) next to the title */
+
+.forums-message-detail__priority-badge {
+	align-items: center;
+	display: inline-flex;
+	font-size: 1rem;
+	font-weight: 600;
+	gap: 0.25rem;
+	margin-left: 0.75rem;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.forums-message-detail__priority-badge svg {
+	height: 16px;
+	width: 16px;
+}
+
 .forums-message-detail__op {
 	margin-bottom: 1.5rem;
 }
