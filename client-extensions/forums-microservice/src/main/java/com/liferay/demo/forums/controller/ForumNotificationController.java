@@ -5,9 +5,13 @@ import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.demo.forums.service.EmailNotificationService;
 import com.liferay.demo.forums.service.SubscriptionService;
 import com.liferay.demo.forums.service.Subscriber;
+import com.liferay.demo.forums.service.MentionService;
 import com.liferay.demo.forums.service.WebNotificationService;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,10 +78,12 @@ public class ForumNotificationController extends BaseRestController {
 
 		long parentMessageId = 0L;
 		String replyBody = "";
+		String rawReplyBody = "";
 
 		if (values != null) {
 			parentMessageId = values.optLong("r_threadMessages_c_forumThreadId", 0L);
-			replyBody = _stripHtml(values.optString("body", ""));
+			rawReplyBody = values.optString("body", "");
+			replyBody = _stripHtml(rawReplyBody);
 		}
 
 		if (parentMessageId == 0L) {
@@ -128,7 +134,74 @@ public class ForumNotificationController extends BaseRestController {
 			subscribers, "New Reply: " + messageTitle,
 			replyAuthor + " has replied to the discussion.", url, jwt.getTokenValue());
 
+		// Notify any users @mentioned in the post body. This also covers a new
+		// topic's opening post, since its root ForumMessage triggers this same
+		// handler. Subscribers already notified above are excluded to avoid a
+		// duplicate ping.
+
+		_notifyMentions(
+			rawReplyBody, messageTitle, replyAuthor, replyBody, url, subscribers,
+			authorEmail, jwt.getTokenValue());
+
 		return new ResponseEntity<>(json, HttpStatus.OK);
+	}
+
+	/**
+	 * Notifies users @mentioned in a post body, by email and in-portal
+	 * notification, excluding the author and anyone in
+	 * {@code alreadyNotified} (e.g. topic subscribers already pinged).
+	 */
+	private void _notifyMentions(
+		String rawBody, String messageTitle, String author, String bodyPreview,
+		String url, List<Subscriber> alreadyNotified, String authorEmail,
+		String authToken) {
+
+		Set<Long> mentionedUserIds = _mentionService.extractMentionedUserIds(
+			rawBody);
+
+		if (mentionedUserIds.isEmpty()) {
+			return;
+		}
+
+		List<Subscriber> mentioned = _mentionService.resolveMentions(
+			mentionedUserIds, authToken);
+
+		Set<Long> excludeUserIds = new HashSet<>();
+
+		for (Subscriber subscriber : alreadyNotified) {
+			excludeUserIds.add(subscriber.getUserId());
+		}
+
+		List<Subscriber> recipients = new ArrayList<>();
+
+		for (Subscriber subscriber : mentioned) {
+			if (excludeUserIds.contains(subscriber.getUserId())) {
+				continue;
+			}
+
+			if ((authorEmail != null) &&
+				subscriber.getEmailAddress().equalsIgnoreCase(authorEmail)) {
+
+				continue;
+			}
+
+			recipients.add(subscriber);
+		}
+
+		if (recipients.isEmpty()) {
+			return;
+		}
+
+		List<String> recipientEmails = recipients.stream()
+			.map(Subscriber::getEmailAddress)
+			.toList();
+
+		_emailNotificationService.sendMentionNotification(
+			messageTitle, author, bodyPreview, recipientEmails, url, authToken);
+
+		_webNotificationService.sendNotifications(
+			recipients, author + " mentioned you",
+			author + " mentioned you in: " + messageTitle, url, authToken);
 	}
 
 	/**
@@ -310,6 +383,9 @@ public class ForumNotificationController extends BaseRestController {
 
 	@Autowired
 	private EmailNotificationService _emailNotificationService;
+
+	@Autowired
+	private MentionService _mentionService;
 
 	@Autowired
 	private WebNotificationService _webNotificationService;

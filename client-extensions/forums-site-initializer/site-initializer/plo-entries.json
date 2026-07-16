@@ -458,5 +458,9 @@
 	{
 		"key": "announcement",
 		"value": "{\"en_US\": \"Announcement\"}"
+	},
+	{
+		"key": "no-users-found",
+		"value": "{\"en_US\": \"No users found\"}"
 	}
 ]

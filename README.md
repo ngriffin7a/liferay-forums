@@ -12,6 +12,7 @@ This Liferay Workspace project is a Fragments and Liferay Objects based replacem
 - [Fragments](#fragments)
   - [UI Style: Standard and Flat](#ui-style-standard-and-flat)
 - [Thread Priorities](#thread-priorities)
+- [User Mentions](#user-mentions)
 - [Page Layout and Fragment Placement](#page-layout-and-fragment-placement)
 - [Display Page Templates](#display-page-templates)
 - [Demo Data](#demo-data)
@@ -110,6 +111,19 @@ Mirrors the legacy Message Boards thread-priority feature (`message.boards.threa
 - **Display** — threads with a priority > 0 show a colored badge (Clay icon + localized name: `bolt`/Urgent, `pin`/Sticky, `comments`/Announcement) next to the title in the Message List and on the Message Detail page, following the Message Boards convention of rendering the priority icon next to the subject.
 
 > **Existing sites:** threads created before this feature have no `priority` value at all. NULL ordering in a descending sort is database-specific (PostgreSQL sorts NULLs first), so run [backfill-thread-priority.py](setup/util/backfill-thread-priority.py) once to normalize them to `0`.
+
+---
+
+## User Mentions
+
+Users can @mention each other in a topic or reply body, similar to the legacy Message Boards mention support:
+
+- **Composing** — typing `@` in the body editor opens a caret-anchored dropdown of users, searched live via `GET /o/headless-admin-user/v1.0/user-accounts?search={query}`. Arrow keys / Enter (or a click) select one. The picker works with both the legacy CKEditor 4 and CKEditor 5 (the LPD-11235 flag decides which the server renders): caret detection uses the browser Selection API, while insertion uses each editor's own API (`model.insertContent` for CKEditor 5, `insertHtml` for CKEditor 4).
+- **Storage** — a mention is stored as an anchor whose href carries the user id: `<a class="forums-mention" href="#mention-{userId}">@Jane Doe</a>`. The href fragment is the reliable channel across editor versions — CKEditor 5's schema may strip `class`/`data-*` attributes on serialization, but the anchor href survives — so downstream parsing keys off the `#mention-{id}` pattern rather than a data attribute.
+- **Display** — because bodies are injected as HTML, mentions render automatically as highlighted, non-navigating chips in the Message Detail view (the `#mention-` href is neutralized with `preventDefault`).
+- **Notification** — mentioning a user notifies them by **email and in-portal bell notification**, reusing the same [Forums Microservice](#forums-microservice-client-extension) path as subscriptions. The microservice's `MentionService` parses `#mention-{id}` ids from the posted body, resolves each to an email, then excludes the author and anyone already notified as a topic subscriber before sending. As with subscription notifications, this requires the microservice and the [`forum-subscriptions`](#forum-subscriptions-restbuilder-osgi-module-forum-subscriptions) module to be running — see [The Feature Gap](#the-feature-gap).
+
+> **Mention search requires listing permission:** the picker calls the headless user-accounts endpoint, which only returns users the caller is permitted to see. In environments where regular members cannot list user accounts, the dropdown shows "No users found." Grant the appropriate view permission (or scope the search to site members) if mentions should be available to all members.
 
 ---
 

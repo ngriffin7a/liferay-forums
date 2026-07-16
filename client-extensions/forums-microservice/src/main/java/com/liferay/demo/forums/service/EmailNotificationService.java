@@ -86,6 +86,38 @@ public class EmailNotificationService {
 		_sendToAll(subject, body, subscriberEmails, authToken);
 	}
 
+	/**
+	 * Sends a "you were mentioned" notification to users mentioned in a post.
+	 *
+	 * @param messageTitle     title of the topic the post belongs to
+	 * @param author           display name of the user who wrote the post
+	 * @param bodyPreview       plain-text body of the post (HTML stripped by caller)
+	 * @param subscriberEmails list of mentioned users' email addresses
+	 * @param messageUrl       the display page url
+	 * @param authToken        OAuth2 bearer token
+	 */
+	public void sendMentionNotification(
+		String messageTitle, String author, String bodyPreview,
+		List<String> subscriberEmails, String messageUrl, String authToken) {
+
+		if (subscriberEmails.isEmpty()) {
+			return;
+		}
+
+		String subject = author + " mentioned you in: " + messageTitle;
+		String fullUrl = _siteBaseUrl + messageUrl;
+
+		String body = "Hello,\n\n"
+			+ author + " mentioned you in the topic:\n\n"
+			+ "  \"" + messageTitle + "\"\n\n"
+			+ _truncate(bodyPreview, 300) + "\n\n"
+			+ "View the discussion:\n" + fullUrl + "\n\n"
+			+ "---\n"
+			+ "You are receiving this email because someone mentioned you in a forum post.";
+
+		_sendToAll(subject, body, subscriberEmails, authToken);
+	}
+
 	private void _sendToAll(String subject, String body, List<String> recipients, String authToken) {
 		int successCount = 0;
 

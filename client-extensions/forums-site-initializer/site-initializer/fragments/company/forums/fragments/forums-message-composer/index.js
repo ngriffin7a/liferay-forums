@@ -932,4 +932,275 @@ if (messageComposer) {
 			}
 		});
 	}
+
+	/* ---------------------------------------------------------------------
+	   @mention picker
+
+	   Typing "@" in the body editor opens a caret-anchored dropdown of users
+	   (searched via headless-admin-user). Selecting one inserts a mention as
+	   an anchor: <a class="forums-mention" href="#mention-{userId}">@Name</a>.
+
+	   The href fragment is the reliable channel across editor versions:
+	   CKEditor 5's schema may strip class/data-* attributes, but the anchor
+	   href survives, so the forums-microservice parses mentioned user ids
+	   from the "#mention-{id}" hrefs in the posted body (see MentionService).
+	   --------------------------------------------------------------------- */
+	(function setupMentions() {
+		var MENTION_MAX = 6;
+		var mentionAttached = false;
+
+		var dropdown = document.createElement('div');
+		dropdown.className = 'forums-mention-dropdown';
+		dropdown.style.display = 'none';
+		dropdown.setAttribute('role', 'listbox');
+		document.body.appendChild(dropdown);
+
+		var activeIndex = -1;
+		var currentItems = [];
+		var currentQuery = null;    /* the text typed after "@" (may be "") */
+		var fetchTimer = null;
+		var lastReqId = 0;
+
+		function mentionDisplayName(u) {
+			var given = u.givenName || '';
+			var family = u.familyName || '';
+			var full = (given + ' ' + family).trim();
+			return full || u.name || u.alternateName || '';
+		}
+
+		/* The contenteditable element the editor renders into, and helpers to
+		   read the DOM selection inside it (works for both editor versions;
+		   CKEditor 4 may host the editable inside an iframe). */
+		function getEditableEl(editor) {
+			if (editor.editing && editor.editing.view &&
+				typeof editor.editing.view.getDomRoot === 'function') {
+				return editor.editing.view.getDomRoot();   /* CKEditor 5 */
+			}
+			if (typeof editor.editable === 'function' && editor.editable()) {
+				return editor.editable().$;                 /* CKEditor 4 */
+			}
+			return null;
+		}
+
+		function frameOffset(editableEl) {
+			var win = editableEl.ownerDocument.defaultView;
+			var frameEl = win && win.frameElement;
+			if (frameEl) {
+				var r = frameEl.getBoundingClientRect();
+				return { x: r.left, y: r.top };
+			}
+			return { x: 0, y: 0 };
+		}
+
+		/* Inspect the caret; if it sits right after an "@token", return the
+		   token text, else null. Only fires for a collapsed caret in a text
+		   node so we never hijack a range selection. */
+		function detectQuery(editableEl) {
+			var doc = editableEl.ownerDocument;
+			var sel = doc.getSelection();
+			if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return null;
+			var node = sel.anchorNode;
+			if (!node || node.nodeType !== 3) return null;
+			var before = node.textContent.slice(0, sel.anchorOffset);
+			var m = before.match(/(?:^|[\s (\[])@([\w.\-]{0,30})$/);
+			return m ? m[1] : null;
+		}
+
+		function hideDropdown() {
+			dropdown.style.display = 'none';
+			activeIndex = -1;
+			currentItems = [];
+			currentQuery = null;
+		}
+
+		function positionDropdown(editableEl) {
+			var doc = editableEl.ownerDocument;
+			var sel = doc.getSelection();
+			if (!sel || sel.rangeCount === 0) return;
+			var rect = sel.getRangeAt(0).getBoundingClientRect();
+			var off = frameOffset(editableEl);
+			var top = rect.bottom + off.y;
+			var left = rect.left + off.x;
+			if (!rect.height && !rect.width) {
+				/* Some browsers return an empty rect for a collapsed caret;
+				   fall back to the editable's top-left. */
+				var er = editableEl.getBoundingClientRect();
+				top = er.top + off.y + 24;
+				left = er.left + off.x + 8;
+			}
+			var maxLeft = window.innerWidth - dropdown.offsetWidth - 8;
+			dropdown.style.top = Math.round(top + 4) + 'px';
+			dropdown.style.left = Math.round(Math.max(8, Math.min(left, maxLeft))) + 'px';
+		}
+
+		function renderDropdown(editableEl) {
+			if (currentQuery === null) { hideDropdown(); return; }
+
+			if (!currentItems.length) {
+				dropdown.innerHTML = '<div class="forums-mention-dropdown__empty">' +
+					Liferay.Util.escapeHTML(messageComposer.dataset.labelMentionNoUsers || 'No users found') + '</div>';
+				dropdown.style.display = 'block';
+				positionDropdown(editableEl);
+				return;
+			}
+
+			var html = '';
+			currentItems.forEach(function(u, i) {
+				var name = mentionDisplayName(u);
+				var screen = u.alternateName ? ('@' + u.alternateName) : '';
+				var initial = (name || '?').charAt(0).toUpperCase();
+				var avatar = u.image
+					? '<span class="sticker sticker-circle sticker-sm"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(u.image) + '" alt=""></span></span>'
+					: '<span class="sticker sticker-circle sticker-sm sticker-outline-' + (i % 10) + '"><span class="sticker-overlay">' + Liferay.Util.escapeHTML(initial) + '</span></span>';
+				html += '<button type="button" role="option" class="forums-mention-dropdown__item' +
+					(i === activeIndex ? ' is-active' : '') + '" data-mention-index="' + i + '"' +
+					(i === activeIndex ? ' aria-selected="true"' : '') + '>' +
+					avatar +
+					'<span class="forums-mention-dropdown__text">' +
+						'<span class="forums-mention-dropdown__name">' + Liferay.Util.escapeHTML(name) + '</span>' +
+						(screen ? '<span class="forums-mention-dropdown__screen">' + Liferay.Util.escapeHTML(screen) + '</span>' : '') +
+					'</span>' +
+					'</button>';
+			});
+			dropdown.innerHTML = html;
+			dropdown.style.display = 'block';
+			positionDropdown(editableEl);
+		}
+
+		function searchUsers(query, editableEl) {
+			var reqId = ++lastReqId;
+			var url = portalURL + '/o/headless-admin-user/v1.0/user-accounts' +
+				'?page=1&pageSize=' + MENTION_MAX +
+				(query ? '&search=' + encodeURIComponent(query) : '');
+			Liferay.Util.fetch(url, { headers: headers, method: 'GET' })
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (reqId !== lastReqId || currentQuery === null) return;
+					var items = (data && data.items) || [];
+					/* Never offer to mention yourself. */
+					currentItems = items.filter(function(u) {
+						return String(u.id) !== String(currentUserId);
+					}).slice(0, MENTION_MAX);
+					activeIndex = currentItems.length ? 0 : -1;
+					renderDropdown(editableEl);
+				})
+				.catch(function() {
+					if (reqId !== lastReqId) return;
+					currentItems = [];
+					activeIndex = -1;
+					renderDropdown(editableEl);
+				});
+		}
+
+		function insertMention(editor, user) {
+			var name = mentionDisplayName(user) || (user.alternateName || 'user');
+			var href = '#mention-' + user.id;
+			var query = currentQuery || '';
+			var removeLen = query.length + 1; /* the "@" plus the typed query */
+
+			if (editor.model && editor.editing) {
+				/* CKEditor 5: delete "@query" then insert linked text + space. */
+				try {
+					editor.model.change(function(writer) {
+						var pos = editor.model.document.selection.getFirstPosition();
+						var startPos = pos.getShiftedBy(-removeLen);
+						writer.remove(writer.createRange(startPos, pos));
+						editor.model.insertContent(
+							writer.createText('@' + name, { linkHref: href }), startPos);
+						var afterPos = startPos.getShiftedBy(('@' + name).length);
+						editor.model.insertContent(writer.createText(' '), afterPos);
+						writer.setSelection(afterPos.getShiftedBy(1));
+					});
+				} catch (e) { console.warn('mention insert (v5) failed', e); }
+			} else if (typeof editor.getSelection === 'function') {
+				/* CKEditor 4: extend the range back over "@query", replace. */
+				try {
+					var sel = editor.getSelection();
+					var range = sel.getRanges()[0];
+					if (range && range.startOffset >= removeLen) {
+						range.setStart(range.startContainer, range.startOffset - removeLen);
+						range.select();
+					}
+					editor.insertHtml('<a class="forums-mention" href="' + href + '">@' +
+						Liferay.Util.escapeHTML(name) + '</a>&nbsp;');
+				} catch (e) { console.warn('mention insert (v4) failed', e); }
+			}
+			hideDropdown();
+		}
+
+		function choose(editor, editableEl, index) {
+			if (index < 0 || index >= currentItems.length) return;
+			insertMention(editor, currentItems[index]);
+			editableEl.focus();
+		}
+
+		function onActivity(editor, editableEl) {
+			var q = detectQuery(editableEl);
+			if (q === null) { hideDropdown(); return; }
+			currentQuery = q;
+			if (fetchTimer) clearTimeout(fetchTimer);
+			fetchTimer = setTimeout(function() { searchUsers(q, editableEl); }, 150);
+		}
+
+		function attach(editor) {
+			if (mentionAttached) return;
+			var editableEl = getEditableEl(editor);
+			if (!editableEl) return;
+			mentionAttached = true;
+
+			['keyup', 'input', 'mouseup'].forEach(function(evt) {
+				editableEl.addEventListener(evt, function() {
+					/* Arrow/enter/esc are handled in keydown; skip here. */
+					onActivity(editor, editableEl);
+				});
+			});
+
+			/* Intercept navigation keys in the capture phase so the editor
+			   doesn't also act on them while the dropdown is open. Bound on the
+			   editable's document (not the element) so a document-level capture
+			   listener fires before the editor's own keydown handler — CKEditor
+			   4 hosts the editable in an iframe, hence ownerDocument. */
+			editableEl.ownerDocument.addEventListener('keydown', function(e) {
+				if (dropdown.style.display === 'none' || currentQuery === null) return;
+				if (e.key === 'ArrowDown') {
+					e.preventDefault(); e.stopPropagation();
+					if (currentItems.length) { activeIndex = (activeIndex + 1) % currentItems.length; renderDropdown(editableEl); }
+				} else if (e.key === 'ArrowUp') {
+					e.preventDefault(); e.stopPropagation();
+					if (currentItems.length) { activeIndex = (activeIndex - 1 + currentItems.length) % currentItems.length; renderDropdown(editableEl); }
+				} else if (e.key === 'Enter' || e.key === 'Tab') {
+					if (activeIndex >= 0 && currentItems.length) {
+						e.preventDefault(); e.stopPropagation();
+						choose(editor, editableEl, activeIndex);
+					}
+				} else if (e.key === 'Escape') {
+					e.preventDefault(); e.stopPropagation();
+					hideDropdown();
+				}
+			}, true);
+
+			editableEl.addEventListener('blur', function() {
+				/* Delay so a click on a dropdown item registers first. */
+				setTimeout(hideDropdown, 150);
+			});
+		}
+
+		/* Mouse selection from the dropdown. mousedown (not click) so it fires
+		   before the editable's blur hides the list. */
+		dropdown.addEventListener('mousedown', function(e) {
+			var btn = e.target.closest('[data-mention-index]');
+			if (!btn) return;
+			e.preventDefault();
+			var idx = parseInt(btn.getAttribute('data-mention-index'), 10);
+			if (bodyEditorInstance) choose(bodyEditorInstance, getEditableEl(bodyEditorInstance), idx);
+		});
+
+		window.addEventListener('scroll', function() {
+			if (dropdown.style.display !== 'none' && bodyEditorInstance) {
+				positionDropdown(getEditableEl(bodyEditorInstance));
+			}
+		}, true);
+
+		editorPromise.then(attach);
+	})();
 }
