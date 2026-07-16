@@ -1067,6 +1067,26 @@ if (messageComposer) {
 			positionDropdown(editableEl);
 		}
 
+		/* Build an OData prefix filter over the name fields. `startswith` maps to
+		   a prefix wildcard ("q*"), which the search index resolves efficiently
+		   (unlike `contains`'s leading wildcard "*q*", which forces a term-
+		   dictionary scan). Prefix matching also fits type-ahead: users type
+		   names/handles from the start, and OR-ing the individual fields covers
+		   first name, last name and screen name prefixes. The mapped index
+		   fields are the lowercased *_sortable variants, so the value is
+		   lowercased to match; single quotes are doubled per OData escaping.
+		   Note: OData function names are lowercase/case-sensitive — it must be
+		   `startswith`, not `startsWith` (the latter yields a 400). */
+		function buildMentionFilter(query) {
+			var q = query.toLowerCase().replace(/'/g, "''");
+			/* Match on display-name fields and the screen name (alternateName).
+			   Email is intentionally excluded so a mention search can't be used
+			   to probe users by email address. */
+			return ['name', 'givenName', 'familyName', 'alternateName']
+				.map(function(field) { return "startswith(" + field + ",'" + q + "')"; })
+				.join(' or ');
+		}
+
 		function searchUsers(query, editableEl) {
 			var reqId = ++lastReqId;
 			/* Scope the search to members of the current site (not the whole
@@ -1077,7 +1097,7 @@ if (messageComposer) {
 			var url = portalURL + '/o/headless-admin-user/v1.0/sites/' + scopeGroupId + '/user-accounts' +
 				'?page=1&pageSize=' + MENTION_MAX +
 				'&fields=' + encodeURIComponent('id,givenName,familyName,name,alternateName,image') +
-				(query ? '&search=' + encodeURIComponent(query) : '');
+				(query ? '&filter=' + encodeURIComponent(buildMentionFilter(query)) : '');
 			Liferay.Util.fetch(url, { headers: headers, method: 'GET' })
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
