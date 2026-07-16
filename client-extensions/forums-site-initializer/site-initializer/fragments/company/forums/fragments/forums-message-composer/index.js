@@ -1069,8 +1069,14 @@ if (messageComposer) {
 
 		function searchUsers(query, editableEl) {
 			var reqId = ++lastReqId;
-			var url = portalURL + '/o/headless-admin-user/v1.0/user-accounts' +
+			/* Scope the search to members of the current site (not the whole
+			   company) and request only the fields the picker renders, for
+			   smaller/faster responses. Email is intentionally NOT fetched
+			   here — the notification microservice resolves it server-side
+			   from the mentioned user id. */
+			var url = portalURL + '/o/headless-admin-user/v1.0/sites/' + scopeGroupId + '/user-accounts' +
 				'?page=1&pageSize=' + MENTION_MAX +
+				'&fields=' + encodeURIComponent('id,givenName,familyName,name,alternateName,image') +
 				(query ? '&search=' + encodeURIComponent(query) : '');
 			Liferay.Util.fetch(url, { headers: headers, method: 'GET' })
 				.then(function(r) { return r.json(); })
