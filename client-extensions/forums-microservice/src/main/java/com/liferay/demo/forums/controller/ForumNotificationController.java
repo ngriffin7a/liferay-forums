@@ -8,6 +8,9 @@ import com.liferay.demo.forums.service.Subscriber;
 import com.liferay.demo.forums.service.MentionService;
 import com.liferay.demo.forums.service.WebNotificationService;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -167,9 +170,31 @@ public class ForumNotificationController extends BaseRestController {
 
 		long siteId = _resolveSiteId(dto, site);
 
+		// When this message is a new topic's opening post, the new-message
+		// handler has already notified the parent category's subscribers of the
+		// topic. Add them to the mention exclusion set so a category subscriber
+		// who is also @mentioned in the opening post is not notified twice. This
+		// does not apply to ordinary replies, whose category subscribers are
+		// never notified of the reply.
+
+		List<Subscriber> mentionExclusions = subscribers;
+
+		if (!mentionedScreenNames.isEmpty() &&
+			_isThreadOpeningPost(parentMessageId, jwt.getTokenValue())) {
+
+			List<Subscriber> categorySubscribers = _getCategorySubscribers(
+				parentMessageId, jwt.getTokenValue());
+
+			if (!categorySubscribers.isEmpty()) {
+				mentionExclusions = new ArrayList<>(subscribers);
+
+				mentionExclusions.addAll(categorySubscribers);
+			}
+		}
+
 		_notifyMentions(
 			mentionedScreenNames, messageTitle, replyAuthor, replyBody, url,
-			subscribers, authorUserId, siteId, jwt.getTokenValue());
+			mentionExclusions, authorUserId, siteId, jwt.getTokenValue());
 
 		return new ResponseEntity<>(json, HttpStatus.OK);
 	}
@@ -438,6 +463,65 @@ public class ForumNotificationController extends BaseRestController {
 			_log.error("Failed to fetch ForumThread title for id=" + messageId + ": " + e.getMessage());
 
 			return null;
+		}
+	}
+
+	/**
+	 * Returns {@code true} when the given thread has exactly one message, which
+	 * identifies a new topic's opening post: the opening post is created before
+	 * any reply, so at the moment its On After Add action fires it is the only
+	 * message in the thread.
+	 */
+	private boolean _isThreadOpeningPost(long threadId, String authToken) {
+		try {
+			String filter = URLEncoder.encode(
+				"r_threadMessages_c_forumThreadId eq '" + threadId + "'",
+				StandardCharsets.UTF_8);
+
+			String response = _liferayApiClient.get(
+				"/o/c/forummessages?fields=id&pageSize=1&filter=" + filter,
+				authToken);
+
+			return new JSONObject(response).optInt("totalCount", 0) == 1;
+		}
+		catch (Exception exception) {
+			_log.warn(
+				"Could not determine opening-post status for thread " +
+					threadId + ": " + exception.getMessage());
+
+			return false;
+		}
+	}
+
+	/**
+	 * Fetches the subscribers of the thread's parent category (the users the
+	 * new-message handler notifies when a topic is created), for exclusion from
+	 * opening-post mention notifications.
+	 */
+	private List<Subscriber> _getCategorySubscribers(
+		long threadId, String authToken) {
+
+		try {
+			String response = _liferayApiClient.get(
+				"/o/c/forumthreads/" + threadId +
+					"?fields=r_categoryThreads_c_forumCategoryId",
+				authToken);
+
+			long categoryId = new JSONObject(response).optLong(
+				"r_categoryThreads_c_forumCategoryId", 0L);
+
+			if (categoryId == 0L) {
+				return List.of();
+			}
+
+			return _subscriptionService.getSubscribers(categoryId, authToken);
+		}
+		catch (Exception exception) {
+			_log.warn(
+				"Could not fetch category subscribers for thread " + threadId +
+					": " + exception.getMessage());
+
+			return List.of();
 		}
 	}
 
