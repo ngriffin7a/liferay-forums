@@ -18,6 +18,24 @@
 			},
 			"name": "statsUserId",
 			"required": false
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"label": {
+				"en_US": "Message Count"
+			},
+			"name": "messageCount",
+			"required": false
+		},
+		{
+			"DBType": "Date",
+			"businessType": "DateTime",
+			"label": {
+				"en_US": "Last Post Date"
+			},
+			"name": "lastPostDate",
+			"required": false
 		}
 	],
 	"scope": "site",
