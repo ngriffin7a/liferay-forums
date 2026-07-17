@@ -1,0 +1,53 @@
+{
+	"enableComments": false,
+	"enableObjectEntryVersioning": false,
+	"enableCategorization": false,
+	"enableFriendlyURLCustomization": false,
+	"accountEntryRestrictedObjectFieldName": "",
+	"enableLocalization": false,
+	"accountEntryRestricted": false,
+	"enableFormContainer": true,
+	"enableObjectEntrySubscription": false,
+	"externalReferenceCode": "FORUM-RANK",
+	"objectFields": [
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"label": {
+				"en_US": "Label"
+			},
+			"name": "label",
+			"required": true
+		},
+		{
+			"DBType": "Integer",
+			"businessType": "Integer",
+			"label": {
+				"en_US": "Minimum Posts"
+			},
+			"name": "minPosts",
+			"required": true
+		}
+	],
+	"scope": "site",
+	"portlet": false,
+	"modifiable": true,
+	"parameterRequired": false,
+	"enableObjectEntryHistory": false,
+	"titleObjectFieldName": "label",
+	"active": true,
+	"defaultLanguageId": "en_US",
+	"enableIndexSearch": true,
+	"label": {
+		"en_US": "Forum Rank"
+	},
+	"panelCategoryKey": "",
+	"pluralLabel": {
+		"en_US": "Forum Ranks"
+	},
+	"enableObjectEntrySchedule": false,
+	"system": false,
+	"enableObjectEntryDraft": false,
+	"name": "ForumRank",
+	"objectFolderExternalReferenceCode": "FORUMS-FOLDER"
+}
