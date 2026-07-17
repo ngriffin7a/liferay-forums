@@ -270,6 +270,94 @@ if (messageDetail) {
 
 	/* Vote state: maps messageId -> { voteId, voteValue } for current user */
 	var userVoteMap = {};
+
+	/* Gamification state (Phase 3b). rankLadder is the ForumRank ladder sorted
+	   descending by minPosts, fetched once and cached. statsUserMap maps a
+	   userId -> that user's ForumStatsUser.messageCount. Both feed the rank +
+	   post-count shown on author cards; rank is computed client-side since no
+	   server-side rank field/action is used. */
+	var rankLadder = null;
+	var statsUserMap = {};
+
+	/* Fetch the ForumRank ladder once, sorted so the highest threshold comes
+	   first (rankLabel walks it top-down). Failures degrade to an empty ladder
+	   -> no rank shown, post count still renders. */
+	function ensureRankLadder(callback) {
+		if (rankLadder) { callback(); return; }
+		Liferay.Util.fetch(portalURL + '/o/c/forumranks/scopes/' + scopeGroupId + '?pageSize=100&sort=minPosts:desc', {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			var items = (data && data.items) || [];
+			rankLadder = items.map(function(it) {
+				return { minPosts: it.minPosts || 0, label: it.label || '' };
+			});
+			rankLadder.sort(function(a, b) { return b.minPosts - a.minPosts; });
+			callback();
+		})
+		.catch(function() { rankLadder = []; callback(); });
+	}
+
+	/* Batch-fetch ForumStatsUser rows for the given user ids, caching each
+	   messageCount. Ids already cached (including queried-but-absent, stored as
+	   0) are skipped so repeated renders don't refetch. */
+	function fetchForumStats(userIds, callback) {
+		var pending = userIds.filter(function(id) { return !(id in statsUserMap); });
+		if (!pending.length) { callback(); return; }
+		var filter = pending.map(function(id) { return 'statsUserId eq ' + id; }).join(' or ');
+		Liferay.Util.fetch(portalURL + '/o/c/forumstatsusers/scopes/' + scopeGroupId + '?pageSize=200&filter=' + encodeURIComponent(filter), {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			var items = (data && data.items) || [];
+			items.forEach(function(it) { statsUserMap[it.statsUserId] = it.messageCount || 0; });
+			pending.forEach(function(id) { if (!(id in statsUserMap)) statsUserMap[id] = 0; });
+			callback();
+		})
+		.catch(function() { callback(); });
+	}
+
+	/* Highest rank whose threshold the post count meets (ladder is descending). */
+	function rankLabel(count) {
+		if (!rankLadder) return '';
+		for (var i = 0; i < rankLadder.length; i++) {
+			if (count >= rankLadder[i].minPosts) return rankLadder[i].label;
+		}
+		return '';
+	}
+
+	/* After cards render, fill every rank placeholder (OP + solutions + replies)
+	   with "<rank> · <n> posts". Placeholders carry data-forums-rank-user with
+	   the author's userId. */
+	function fillAuthorRanks() {
+		var els = messageDetail.querySelectorAll('[data-forums-rank-user]');
+		if (!els.length) return;
+		var ids = [];
+		var seen = {};
+		els.forEach(function(el) {
+			var id = el.getAttribute('data-forums-rank-user');
+			if (id && !seen[id]) { seen[id] = true; ids.push(id); }
+		});
+		ensureRankLadder(function() {
+			fetchForumStats(ids, function() {
+				els.forEach(function(el) {
+					var id = el.getAttribute('data-forums-rank-user');
+					var count = statsUserMap[id];
+					if (count == null) return;
+					var rank = rankLabel(count);
+					var postsLabel = count === 1
+						? (messageDetail.dataset.labelPost || 'post')
+						: (messageDetail.dataset.labelPosts || 'posts');
+					el.textContent = (rank ? rank + ' · ' : '') + count + ' ' + postsLabel;
+					el.style.display = '';
+				});
+			});
+		});
+	}
 	var opCreatorId = null; /* Track message owner for Mark as Answer */
 	var opAuthorName = ''; /* Display name of the OP, used in the "Answer selected by" annotation on the accepted reply */
 	var currentAnswerId = null; /* Track currently accepted answer message ID */
@@ -346,6 +434,7 @@ if (messageDetail) {
 						<span class="text-dark font-weight-bold">${Liferay.Util.escapeHTML(name)}</span>
 						${isAuthor ? `<span class="label forums-message-detail__author-badge">${messageDetail.dataset.labelAuthor || 'Author'}</span>` : ''}
 						<span class="text-secondary small">${date}</span>
+						${creator.id ? `<span class="text-secondary small forums-message-detail__rank" data-forums-rank-user="${creator.id}" style="display:none"></span>` : ''}
 						${isSolution ? (function() {
 							var tmpl = messageDetail.dataset.labelAnswerSelectedBy || 'Answer selected by {0}';
 							var parts = tmpl.split('{0}');
@@ -1198,6 +1287,18 @@ if (messageDetail) {
 					}
 				}
 				if (opAuthor) opAuthor.textContent = displayName(creator) || messageDetail.dataset.labelUnknown || 'Unknown';
+				/* Tag the OP rank placeholder with the author's id so fillAuthorRanks
+				   populates it alongside the reply cards. */
+				var opRankEl = messageDetail.querySelector('#forumsDetailOPRank');
+				if (opRankEl) {
+					if (creator.id) {
+						opRankEl.setAttribute('data-forums-rank-user', creator.id);
+					}
+					else {
+						opRankEl.removeAttribute('data-forums-rank-user');
+						opRankEl.style.display = 'none';
+					}
+				}
 				if (opDate) {
 					opDate.textContent = timeAgo(opMsg.dateCreated);
 					var opDateFull = fullDateTime(opMsg.dateCreated);
@@ -1400,6 +1501,10 @@ if (messageDetail) {
 			attachDeleteHandlers();
 			attachEditReplyHandlers();
 			attachAttachmentHandlers();
+
+			/* Populate rank + post count on the OP and every reply card now that
+			   all placeholders are in the DOM. */
+			fillAuthorRanks();
 
 			/* Hide skeleton after render, with a minimum display time to prevent flash */
 			if (loadingEl) {
