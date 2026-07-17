@@ -137,11 +137,15 @@ public class ForumNotificationController extends BaseRestController {
 		// Notify any users @mentioned in the post body. This also covers a new
 		// topic's opening post, since its root ForumMessage triggers this same
 		// handler. Subscribers already notified above are excluded to avoid a
-		// duplicate ping.
+		// duplicate ping. Mentions are resolved only against members of the
+		// site the post belongs to, so an id injected into the body cannot
+		// notify users outside the site.
+
+		long siteId = _resolveSiteId(dto, jwt.getTokenValue());
 
 		_notifyMentions(
 			rawReplyBody, messageTitle, replyAuthor, replyBody, url, subscribers,
-			authorEmail, jwt.getTokenValue());
+			authorEmail, siteId, jwt.getTokenValue());
 
 		return new ResponseEntity<>(json, HttpStatus.OK);
 	}
@@ -154,7 +158,7 @@ public class ForumNotificationController extends BaseRestController {
 	private void _notifyMentions(
 		String rawBody, String messageTitle, String author, String bodyPreview,
 		String url, List<Subscriber> alreadyNotified, String authorEmail,
-		String authToken) {
+		long siteId, String authToken) {
 
 		Set<Long> mentionedUserIds = _mentionService.extractMentionedUserIds(
 			rawBody);
@@ -164,7 +168,7 @@ public class ForumNotificationController extends BaseRestController {
 		}
 
 		List<Subscriber> mentioned = _mentionService.resolveMentions(
-			mentionedUserIds, authToken);
+			mentionedUserIds, siteId, authToken);
 
 		Set<Long> excludeUserIds = new HashSet<>();
 
@@ -330,6 +334,54 @@ public class ForumNotificationController extends BaseRestController {
 		}
 
 		return html.replaceAll("<[^>]+>", " ").replaceAll("\\s{2,}", " ").trim();
+	}
+
+	/**
+	 * Resolves the numeric group id of the site a post belongs to, from the
+	 * entry's scope. Prefers a numeric scope id if the payload carries one,
+	 * otherwise looks the site up by its external reference code (the same
+	 * identifier {@link #_constructDisplayPageUrl} uses). Returns {@code 0}
+	 * when the site cannot be determined, so mention resolution fails closed.
+	 */
+	private long _resolveSiteId(JSONObject dto, String authToken) {
+		if (dto == null) {
+			return 0L;
+		}
+
+		JSONObject systemProperties = dto.optJSONObject("systemProperties");
+		JSONObject scope = (systemProperties != null) ?
+			systemProperties.optJSONObject("scope") : null;
+
+		if (scope == null) {
+			return 0L;
+		}
+
+		long scopeId = scope.optLong("id", 0L);
+
+		if (scopeId > 0L) {
+			return scopeId;
+		}
+
+		String siteErc = scope.optString("externalReferenceCode", "");
+
+		if (siteErc.isBlank()) {
+			return 0L;
+		}
+
+		try {
+			String siteResponse = _liferayApiClient.get(
+				"/o/headless-admin-site/v1.0/sites/" + siteErc + "?fields=id",
+				authToken);
+
+			return new JSONObject(siteResponse).optLong("id", 0L);
+		}
+		catch (Exception exception) {
+			_log.warn(
+				"Could not resolve site id from ERC " + siteErc + ": " +
+					exception.getMessage());
+
+			return 0L;
+		}
 	}
 
 	private String _constructDisplayPageUrl(JSONObject payload, JSONObject dto, String authToken) {
