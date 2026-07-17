@@ -1,0 +1,35 @@
+{
+	"object-entries": [
+		{
+			"externalReferenceCode": "FORUM-RANK-YOUNGLING",
+			"label": "Youngling",
+			"minPosts": 0
+		},
+		{
+			"externalReferenceCode": "FORUM-RANK-PADAWAN",
+			"label": "Padawan",
+			"minPosts": 25
+		},
+		{
+			"externalReferenceCode": "FORUM-RANK-JEDI-KNIGHT",
+			"label": "Jedi Knight",
+			"minPosts": 100
+		},
+		{
+			"externalReferenceCode": "FORUM-RANK-JEDI-MASTER",
+			"label": "Jedi Master",
+			"minPosts": 250
+		},
+		{
+			"externalReferenceCode": "FORUM-RANK-JEDI-COUNCIL-MEMBER",
+			"label": "Jedi Council Member",
+			"minPosts": 500
+		},
+		{
+			"externalReferenceCode": "FORUM-RANK-YODA",
+			"label": "Yoda",
+			"minPosts": 1000
+		}
+	],
+	"objectDefinitionName": "ForumRank"
+}
