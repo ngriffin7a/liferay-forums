@@ -1124,8 +1124,10 @@ if (messageComposer) {
 			/* Encode the screen name (alternateName), not the numeric id: the
 			   notification microservice resolves mentions with a single
 			   site-scoped query filtered on the indexed alternateName field
-			   (see MentionService). Screen names are fragment-safe. */
-			var href = '#mention-' + (user.alternateName || '');
+			   (see MentionService). URL-encode it so screen names containing
+			   characters outside the default set still round-trip safely
+			   through the href fragment (the microservice URL-decodes). */
+			var href = '#mention-' + encodeURIComponent(user.alternateName || '');
 			var query = currentQuery || '';
 			var removeLen = query.length + 1; /* the "@" plus the typed query */
 

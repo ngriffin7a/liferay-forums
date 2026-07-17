@@ -3,6 +3,7 @@ package com.liferay.demo.forums.service;
 
 import com.liferay.demo.forums.client.LiferayApiClient;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -46,10 +47,12 @@ public class MentionService {
 
 	private static final Logger _log = LoggerFactory.getLogger(MentionService.class);
 
-	/* Screen names are lowercase and may contain word characters, dots and
-	   hyphens; the composer inserts exactly these into the href fragment. */
+	/* The composer URL-encodes the screen name into the href fragment, so the
+	   captured token runs up to the closing quote (or a tag/whitespace
+	   boundary) and is URL-decoded below. Capturing broadly keeps parsing
+	   correct for screen names outside the default character set. */
 	private static final Pattern _MENTION_PATTERN = Pattern.compile(
-		"#mention-([\\w.\\-]+)");
+		"#mention-([^\"'\\s<>]+)");
 
 	/**
 	 * Extracts the distinct screen names mentioned in the given (raw HTML) body.
@@ -68,7 +71,17 @@ public class MentionService {
 		Matcher matcher = _MENTION_PATTERN.matcher(bodyHtml);
 
 		while (matcher.find()) {
-			String screenName = matcher.group(1);
+			String screenName;
+
+			try {
+				screenName = URLDecoder.decode(
+					matcher.group(1), StandardCharsets.UTF_8);
+			}
+			catch (IllegalArgumentException illegalArgumentException) {
+				// Malformed percent-encoding; skip this token.
+
+				continue;
+			}
 
 			if (!screenName.isBlank()) {
 				screenNames.add(screenName.toLowerCase());

@@ -122,7 +122,12 @@ public class ForumNotificationController extends BaseRestController {
 			.map(Subscriber::getEmailAddress)
 			.toList();
 
-		String url = _constructDisplayPageUrl(payload, dto, jwt.getTokenValue());
+		// Fetch the site once; both the display page URL and the mention site
+		// scope read from it, so a reply makes a single site lookup.
+
+		JSONObject site = _fetchSite(dto, jwt.getTokenValue());
+
+		String url = _constructDisplayPageUrl(payload, dto, site, jwt.getTokenValue());
 		_log.info("Constructed Display Page URL for Reply: " + url);
 
 		_emailNotificationService.sendNewReplyNotification(
@@ -138,10 +143,10 @@ public class ForumNotificationController extends BaseRestController {
 		// topic's opening post, since its root ForumMessage triggers this same
 		// handler. Subscribers already notified above are excluded to avoid a
 		// duplicate ping. Mentions are resolved only against members of the
-		// site the post belongs to, so an id injected into the body cannot
+		// site the post belongs to, so a handle injected into the body cannot
 		// notify users outside the site.
 
-		long siteId = _resolveSiteId(dto, jwt.getTokenValue());
+		long siteId = _resolveSiteId(dto, site);
 
 		_notifyMentions(
 			rawReplyBody, messageTitle, replyAuthor, replyBody, url, subscribers,
@@ -267,7 +272,9 @@ public class ForumNotificationController extends BaseRestController {
 			.map(Subscriber::getEmailAddress)
 			.toList();
 
-		String url = _constructDisplayPageUrl(payload, dto, jwt.getTokenValue());
+		JSONObject site = _fetchSite(dto, jwt.getTokenValue());
+
+		String url = _constructDisplayPageUrl(payload, dto, site, jwt.getTokenValue());
 		_log.info("Constructed Display Page URL for Topic: " + url);
 
 		_emailNotificationService.sendNewTopicNotification(
@@ -337,15 +344,14 @@ public class ForumNotificationController extends BaseRestController {
 	}
 
 	/**
-	 * Resolves the numeric group id of the site a post belongs to, from the
-	 * entry's scope. Prefers a numeric scope id if the payload carries one,
-	 * otherwise looks the site up by its external reference code (the same
-	 * identifier {@link #_constructDisplayPageUrl} uses). Returns {@code 0}
-	 * when the site cannot be determined, so mention resolution fails closed.
+	 * Fetches the entry's site once (id + friendly URL path) so the display
+	 * page URL and the mention site scope can share a single lookup. Returns
+	 * {@code null} when the scope's external reference code is missing or the
+	 * site cannot be fetched.
 	 */
-	private long _resolveSiteId(JSONObject dto, String authToken) {
+	private JSONObject _fetchSite(JSONObject dto, String authToken) {
 		if (dto == null) {
-			return 0L;
+			return null;
 		}
 
 		JSONObject systemProperties = dto.optJSONObject("systemProperties");
@@ -353,72 +359,81 @@ public class ForumNotificationController extends BaseRestController {
 			systemProperties.optJSONObject("scope") : null;
 
 		if (scope == null) {
-			return 0L;
-		}
-
-		long scopeId = scope.optLong("id", 0L);
-
-		if (scopeId > 0L) {
-			return scopeId;
+			return null;
 		}
 
 		String siteErc = scope.optString("externalReferenceCode", "");
 
 		if (siteErc.isBlank()) {
-			return 0L;
+			return null;
 		}
 
 		try {
 			String siteResponse = _liferayApiClient.get(
-				"/o/headless-admin-site/v1.0/sites/" + siteErc + "?fields=id",
+				"/o/headless-admin-site/v1.0/sites/" + siteErc +
+					"?fields=id,friendlyUrlPath",
 				authToken);
 
-			return new JSONObject(siteResponse).optLong("id", 0L);
+			return new JSONObject(siteResponse);
 		}
 		catch (Exception exception) {
 			_log.warn(
-				"Could not resolve site id from ERC " + siteErc + ": " +
+				"Could not fetch site for ERC " + siteErc + ": " +
 					exception.getMessage());
 
-			return 0L;
+			return null;
 		}
 	}
 
-	private String _constructDisplayPageUrl(JSONObject payload, JSONObject dto, String authToken) {
+	/**
+	 * Resolves the numeric group id of the site a post belongs to. Prefers a
+	 * numeric scope id carried in the payload, otherwise reads it from the
+	 * already-fetched {@code site} (see {@link #_fetchSite}), so no additional
+	 * REST call is made. Returns {@code 0} when the site cannot be determined,
+	 * so mention resolution fails closed.
+	 */
+	private long _resolveSiteId(JSONObject dto, JSONObject site) {
+		if (dto != null) {
+			JSONObject systemProperties = dto.optJSONObject("systemProperties");
+			JSONObject scope = (systemProperties != null) ?
+				systemProperties.optJSONObject("scope") : null;
+
+			if (scope != null) {
+				long scopeId = scope.optLong("id", 0L);
+
+				if (scopeId > 0L) {
+					return scopeId;
+				}
+			}
+		}
+
+		return (site != null) ? site.optLong("id", 0L) : 0L;
+	}
+
+	private String _constructDisplayPageUrl(
+		JSONObject payload, JSONObject dto, JSONObject site, String authToken) {
+
 		if (payload == null || dto == null) {
 			return "";
 		}
 
 		try {
-			JSONObject systemProperties = dto.optJSONObject("systemProperties");
-			if (systemProperties == null) {
-				_log.warn("Cannot construct display page URL; missing systemProperties.");
-				return "";
-			}
-
-			String siteErc = systemProperties
-				.optJSONObject("scope")
-				.optString("externalReferenceCode", "");
-
 			long objectDefinitionId = payload.optLong("objectDefinitionId", 0L);
 			String entryFriendlyUrl = dto.optString("friendlyUrlPath", "");
+			String siteFriendlyUrl = (site != null) ?
+				site.optString("friendlyUrlPath", "") : "";
 
-			if (siteErc.isBlank() || objectDefinitionId == 0L || entryFriendlyUrl.isBlank()) {
-				_log.warn("Cannot construct display page URL; missing properties in dto.");
+			if (siteFriendlyUrl.isBlank() || objectDefinitionId == 0L || entryFriendlyUrl.isBlank()) {
+				_log.warn("Cannot construct display page URL; missing properties in dto or site.");
 				return "";
 			}
-
-			// Fetch site friendly URL
-			String siteResponse = _liferayApiClient.get(
-				"/o/headless-admin-site/v1.0/sites/" + siteErc + "?fields=friendlyUrlPath", authToken);
-			String siteFriendlyUrl = new JSONObject(siteResponse).optString("friendlyUrlPath", "");
 
 			// Fetch object definition friendly URL separator
 			String objDefResponse = _liferayApiClient.get(
 				"/o/object-admin/v1.0/object-definitions/" + objectDefinitionId + "?fields=friendlyURLSeparator", authToken);
 			String urlSeparator = new JSONObject(objDefResponse).optString("friendlyURLSeparator", "");
 
-			if (siteFriendlyUrl.isBlank() || urlSeparator.isBlank()) {
+			if (urlSeparator.isBlank()) {
 				return "";
 			}
 
