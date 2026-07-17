@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+
 /**
  * Sends plain-text email notifications to forum subscribers.
  *
@@ -119,40 +121,69 @@ public class EmailNotificationService {
 	}
 
 	private void _sendToAll(String subject, String body, List<String> recipients, String authToken) {
-		int successCount = 0;
-
-		for (String recipient : recipients) {
-			try {
-				org.json.JSONObject payload = new org.json.JSONObject();
-				payload.put("subject", subject);
-				payload.put("body", body);
-				payload.put("type", "email");
-
-				org.json.JSONArray recipientsArray = new org.json.JSONArray();
-				org.json.JSONObject recipientObj = new org.json.JSONObject();
-				recipientObj.put("from", _fromAddress);
-				recipientObj.put("fromName", _fromName);
-				recipientObj.put("to", recipient);
-				recipientObj.put("toType", "email");
-				recipientsArray.put(recipientObj);
-
-				payload.put("recipients", recipientsArray);
-
-				_liferayApiClient.post("/o/notification/v1.0/notification-queue-entries", authToken, payload.toString());
-
-				successCount++;
-
-				_log.debug("Sent notification to {}", recipient);
-			}
-			catch (Exception e) {
-				_log.error("Failed to send notification to {}: {}", recipient, e.getMessage());
-			}
+		if (recipients.isEmpty()) {
+			return;
 		}
+
+		// Each recipient gets its own notification-queue entry so its email is
+		// addressed only to them. The notification REST API puts every recipient
+		// of a single entry into a shared To: header, so batching recipients into
+		// one entry would expose every subscriber's address to the others.
+		// Instead, the isolated entries are posted concurrently (bounded so a
+		// large thread does not flood the portal) rather than one blocking call
+		// at a time, keeping the fan-out off the caller's critical path.
+
+		long successCount = Flux.fromIterable(recipients)
+			.flatMap(
+				recipient -> _liferayApiClient.postAsync(
+					_NOTIFICATION_QUEUE_ENTRIES_PATH, authToken,
+					_toPayload(subject, body, recipient)
+				).doOnNext(
+					response -> _log.debug("Sent notification to {}", recipient)
+				).thenReturn(
+					recipient
+				).onErrorResume(
+					throwable -> {
+						_log.error(
+							"Failed to send notification to {}: {}", recipient,
+							throwable.getMessage());
+
+						return reactor.core.publisher.Mono.empty();
+					}
+				),
+				_MAX_SEND_CONCURRENCY)
+			.count()
+			.blockOptional()
+			.orElse(0L);
 
 		_log.info(
 			"Forum notification sent to {}/{} subscriber(s): subject=\"{}\"",
 			successCount, recipients.size(), subject);
 	}
+
+	private String _toPayload(String subject, String body, String recipient) {
+		org.json.JSONObject payload = new org.json.JSONObject();
+		payload.put("subject", subject);
+		payload.put("body", body);
+		payload.put("type", "email");
+
+		org.json.JSONArray recipientsArray = new org.json.JSONArray();
+		org.json.JSONObject recipientObj = new org.json.JSONObject();
+		recipientObj.put("from", _fromAddress);
+		recipientObj.put("fromName", _fromName);
+		recipientObj.put("to", recipient);
+		recipientObj.put("toType", "email");
+		recipientsArray.put(recipientObj);
+
+		payload.put("recipients", recipientsArray);
+
+		return payload.toString();
+	}
+
+	private static final int _MAX_SEND_CONCURRENCY = 8;
+
+	private static final String _NOTIFICATION_QUEUE_ENTRIES_PATH =
+		"/o/notification/v1.0/notification-queue-entries";
 
 	private String _truncate(String text, int maxLength) {
 		if ((text == null) || (text.length() <= maxLength)) {

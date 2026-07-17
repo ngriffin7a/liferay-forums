@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import reactor.core.publisher.Mono;
+
 /**
  * HTTP client for communicating with a Liferay DXP headless API instance.
  *
@@ -82,6 +84,20 @@ public class LiferayApiClient {
 
 			throw e;
 		}
+	}
+
+	/**
+	 * Non-blocking variant of {@link #post}, for callers that fan out many
+	 * requests concurrently and await them together. The returned {@link Mono}
+	 * is cold — nothing is sent until it is subscribed.
+	 */
+	public Mono<String> postAsync(String path, String authToken, Object jsonBody) {
+		return _webClient.post()
+			.uri(path)
+			.headers(h -> _setAuthHeader(h, authToken))
+			.bodyValue(jsonBody)
+			.retrieve()
+			.bodyToMono(String.class);
 	}
 
 	private void _setAuthHeader(HttpHeaders headers, String authToken) {
