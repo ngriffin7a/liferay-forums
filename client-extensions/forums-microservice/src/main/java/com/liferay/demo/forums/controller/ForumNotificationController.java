@@ -114,11 +114,13 @@ public class ForumNotificationController extends BaseRestController {
 		List<Subscriber> subscribers = _subscriptionService.getSubscribers(
 			parentMessageId, jwt.getTokenValue());
 
-		// Exclude the reply author from notifications
+		// Exclude the reply author from notifications. The object-action
+		// payload's creator carries the author's user id but no email, so
+		// exclusion is keyed on user id.
 
-		String authorEmail = _resolveCreatorEmail(creator);
+		long authorUserId = _resolveCreatorUserId(creator);
 
-		subscribers.removeIf(s -> s.getEmailAddress().equalsIgnoreCase(authorEmail));
+		subscribers.removeIf(s -> s.getUserId() == authorUserId);
 
 		List<String> subscriberEmails = subscribers.stream()
 			.map(Subscriber::getEmailAddress)
@@ -162,7 +164,7 @@ public class ForumNotificationController extends BaseRestController {
 
 		_notifyMentions(
 			mentionedScreenNames, messageTitle, replyAuthor, replyBody, url,
-			subscribers, authorEmail, siteId, jwt.getTokenValue());
+			subscribers, authorUserId, siteId, jwt.getTokenValue());
 
 		return new ResponseEntity<>(json, HttpStatus.OK);
 	}
@@ -199,7 +201,7 @@ public class ForumNotificationController extends BaseRestController {
 	private void _notifyMentions(
 		Set<String> mentionedScreenNames, String messageTitle, String author,
 		String bodyPreview, String url, List<Subscriber> alreadyNotified,
-		String authorEmail, long siteId, String authToken) {
+		long authorUserId, long siteId, String authToken) {
 
 		if (mentionedScreenNames.isEmpty()) {
 			return;
@@ -221,8 +223,8 @@ public class ForumNotificationController extends BaseRestController {
 				continue;
 			}
 
-			if ((authorEmail != null) &&
-				subscriber.getEmailAddress().equalsIgnoreCase(authorEmail)) {
+			if ((authorUserId > 0) &&
+				(subscriber.getUserId() == authorUserId)) {
 
 				continue;
 			}
@@ -297,9 +299,9 @@ public class ForumNotificationController extends BaseRestController {
 		List<Subscriber> subscribers = _subscriptionService.getSubscribers(
 			categoryId, jwt.getTokenValue());
 
-		String authorEmail = _resolveCreatorEmail(creator);
+		long authorUserId = _resolveCreatorUserId(creator);
 
-		subscribers.removeIf(s -> s.getEmailAddress().equalsIgnoreCase(authorEmail));
+		subscribers.removeIf(s -> s.getUserId() == authorUserId);
 
 		if (subscribers.isEmpty()) {
 			return new ResponseEntity<>(json, HttpStatus.OK);
@@ -364,12 +366,12 @@ public class ForumNotificationController extends BaseRestController {
 		return "A community member";
 	}
 
-	private String _resolveCreatorEmail(JSONObject creator) {
+	private long _resolveCreatorUserId(JSONObject creator) {
 		if (creator != null) {
-			return creator.optString("email", "").trim().toLowerCase();
+			return creator.optLong("id", 0L);
 		}
 
-		return "";
+		return 0L;
 	}
 
 	private String _stripHtml(String html) {
