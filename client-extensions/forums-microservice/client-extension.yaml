@@ -25,3 +25,8 @@ liferay-forumsmicroservice-object-action-new-message:
     oAuth2ApplicationExternalReferenceCode: liferay-forumsmicroservice-oauth-application-user-agent
     resourcePath: /object-action/new-message
     type: objectAction
+liferay-forumsmicroservice-object-action-updated-reply:
+    name: ForumsMicroservice Object Action Updated Reply
+    oAuth2ApplicationExternalReferenceCode: liferay-forumsmicroservice-oauth-application-user-agent
+    resourcePath: /object-action/updated-reply
+    type: objectAction

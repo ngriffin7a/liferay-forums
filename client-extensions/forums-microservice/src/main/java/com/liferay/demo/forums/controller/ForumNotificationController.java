@@ -32,15 +32,20 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Object Action Client Extension handlers for forum email notifications.
  *
- * <p>Two endpoints are registered in {@code client-extension.yaml}:</p>
+ * <p>Three endpoints are registered in {@code client-extension.yaml}:</p>
  * <ul>
  *   <li>{@code /object-action/new-reply} — triggered when a
  *       {@code ForumMessage} Object entry is created.  Notifies all users who
- *       subscribed to the parent {@code ForumThread}.</li>
+ *       subscribed to the parent {@code ForumThread}, plus any users
+ *       @mentioned in the body.</li>
  *   <li>{@code /object-action/new-message} — triggered when a new root
  *       {@code ForumThread} Object entry is created (i.e. a new topic).
  *       Notifies all users who subscribed to the parent
  *       {@code ForumCategory}.</li>
+ *   <li>{@code /object-action/updated-reply} — triggered when a
+ *       {@code ForumMessage} Object entry is updated.  Notifies only the users
+ *       @mentioned by the edit (mentions present before the edit are diffed
+ *       out); subscribers are not re-notified.</li>
  * </ul>
  *
  * <p>Liferay invokes these endpoints with a signed JWT (verified by the
@@ -170,6 +175,98 @@ public class ForumNotificationController extends BaseRestController {
 	}
 
 	/**
+	 * Handles an existing ForumMessage being edited.
+	 *
+	 * <p>Only @mentions <em>added by the edit</em> are notified. The mentions
+	 * in the prior body — carried in the update payload as
+	 * {@code originalObjectEntry} — are diffed out, so editing a post never
+	 * re-pings a user who was already mentioned. Subscribers are not
+	 * re-notified on edits (only new-reply/new-message do that); this handler
+	 * exists solely to deliver mentions that a subsequent edit introduces.</p>
+	 */
+	@PostMapping("/object-action/updated-reply")
+	public ResponseEntity<String> onUpdatedReply(
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
+		throws Exception {
+
+		log(jwt, _log, json);
+
+		JSONObject payload = new JSONObject(json);
+
+		JSONObject objectEntry = payload.optJSONObject("objectEntry");
+		JSONObject values = (objectEntry != null) ? objectEntry.optJSONObject("values") : null;
+
+		JSONObject originalObjectEntry = payload.optJSONObject("originalObjectEntry");
+		JSONObject originalValues = (originalObjectEntry != null) ?
+			originalObjectEntry.optJSONObject("values") : null;
+
+		long parentMessageId = 0L;
+		String rawReplyBody = "";
+		String rawOriginalBody = "";
+
+		if (values != null) {
+			parentMessageId = values.optLong("r_threadMessages_c_forumThreadId", 0L);
+			rawReplyBody = values.optString("body", "");
+		}
+
+		if (originalValues != null) {
+			rawOriginalBody = originalValues.optString("body", "");
+		}
+
+		if (parentMessageId == 0L) {
+			_log.warn("onUpdatedReply: missing r_threadMessages_c_forumThreadId in payload");
+
+			return new ResponseEntity<>(json, HttpStatus.OK);
+		}
+
+		// Notify only the mentions this edit added: diff the new body's mentions
+		// against the prior body's, so already-mentioned users are never
+		// re-pinged. Both extractions are cheap local regexes, so a no-op edit
+		// (or one that adds no mentions) makes no REST calls.
+
+		Set<String> addedMentions =
+			_mentionService.extractMentionedScreenNames(rawReplyBody);
+
+		addedMentions.removeAll(
+			_mentionService.extractMentionedScreenNames(rawOriginalBody));
+
+		addedMentions = _capMentions(addedMentions);
+
+		if (addedMentions.isEmpty()) {
+			return new ResponseEntity<>(json, HttpStatus.OK);
+		}
+
+		JSONObject dto = payload.optJSONObject("objectEntryDTOForumMessage");
+		JSONObject creator = (dto != null) ? dto.optJSONObject("creator") : null;
+
+		String replyAuthor = _resolveAuthorName(creator);
+		long authorUserId = _resolveCreatorUserId(creator);
+		String replyBody = _stripHtml(rawReplyBody);
+
+		String messageTitle = _fetchMessageTitle(parentMessageId, jwt.getTokenValue());
+
+		if (messageTitle == null) {
+			messageTitle = "Forum Discussion";
+		}
+
+		JSONObject site = _fetchSite(dto, jwt.getTokenValue());
+
+		String url = _constructDisplayPageUrl(payload, dto, site, jwt.getTokenValue());
+		_log.info("Constructed Display Page URL for Edited Reply: " + url);
+
+		long siteId = _resolveSiteId(dto, site);
+
+		// An edit pre-notifies no one, so the only exclusion is the author
+		// (handled inside _notifyMentions via authorUserId).
+
+		_notifyMentions(
+			addedMentions, messageTitle, replyAuthor, replyBody, url,
+			List.of(), authorUserId, siteId, jwt.getTokenValue());
+
+		return new ResponseEntity<>(json, HttpStatus.OK);
+	}
+
+	/**
 	 * Extracts the @mention screen names from a post body, capped at
 	 * {@code _MAX_MENTIONS}. Capping bounds the notification fan-out (a body
 	 * crafted with many handles cannot be used to spam) and keeps the
@@ -177,15 +274,16 @@ public class ForumNotificationController extends BaseRestController {
 	 * Insertion order is preserved, so the first mentions in the body win.
 	 */
 	private Set<String> _extractCappedMentions(String rawBody) {
-		Set<String> mentionedScreenNames =
-			_mentionService.extractMentionedScreenNames(rawBody);
+		return _capMentions(_mentionService.extractMentionedScreenNames(rawBody));
+	}
 
+	private Set<String> _capMentions(Set<String> mentionedScreenNames) {
 		if (mentionedScreenNames.size() > _MAX_MENTIONS) {
 			_log.warn(
 				"Post mentions " + mentionedScreenNames.size() +
 					" users; honoring only the first " + _MAX_MENTIONS);
 
-			mentionedScreenNames = mentionedScreenNames.stream()
+			return mentionedScreenNames.stream()
 				.limit(_MAX_MENTIONS)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
