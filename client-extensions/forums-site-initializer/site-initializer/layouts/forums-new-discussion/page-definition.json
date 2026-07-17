@@ -51,7 +51,13 @@
 						"definition": {
 							"widgetInstance": {
 								"widgetConfig": {},
-								"widgetName": "com_liferay_mentions_web_portlet_MentionsPortlet"
+								"widgetName": "com_liferay_mentions_web_portlet_MentionsPortlet",
+								"widgetPermissions": [
+									{
+										"actionKeys": ["VIEW"],
+										"roleKey": "Site Member"
+									}
+								]
 							}
 						},
 						"type": "Widget"
