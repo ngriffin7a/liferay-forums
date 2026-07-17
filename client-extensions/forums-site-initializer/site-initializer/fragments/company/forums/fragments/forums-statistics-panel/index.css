@@ -1,0 +1,58 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
+.forums-statistics-panel__heading {
+	font-size: 1.25rem;
+	margin-bottom: 1rem;
+}
+
+.forums-statistics-panel__stat-value {
+	font-size: 1.75rem;
+	font-weight: 600;
+	line-height: 1.1;
+}
+
+.forums-statistics-panel__stat-label {
+	font-size: 0.875rem;
+}
+
+.forums-statistics-panel__subheading {
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.forums-statistics-panel__leaderboard {
+	margin-bottom: 0;
+}
+
+.forums-statistics-panel__row {
+	align-items: center;
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.5rem 0;
+}
+
+.forums-statistics-panel__row + .forums-statistics-panel__row {
+	border-top: 1px solid var(--gray-200, #e7e7ed);
+}
+
+.forums-statistics-panel__position {
+	flex-shrink: 0;
+	font-weight: 600;
+	min-width: 1.5rem;
+	text-align: center;
+}
+
+.forums-statistics-panel__poster {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.forums-statistics-panel__poster-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.forums-statistics-panel__poster-count {
+	flex-shrink: 0;
+	white-space: nowrap;
+}

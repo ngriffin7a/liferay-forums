@@ -1,0 +1,16 @@
+{
+	"fieldSets": [
+		{
+			"label": "Content",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "10",
+					"label": "Leaderboard Page Size",
+					"name": "leaderboardPageSize",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

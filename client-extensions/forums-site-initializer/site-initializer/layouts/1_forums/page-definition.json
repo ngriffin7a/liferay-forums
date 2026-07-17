@@ -47,6 +47,26 @@
 					{
 						"definition": {
 							"fragment": {
+								"key": "forums-statistics-panel"
+							},
+							"fragmentConfig": {},
+							"fragmentFields": [],
+							"indexed": true
+						},
+						"type": "Fragment"
+					}
+				],
+				"type": "Section"
+			},
+			{
+				"definition": {
+					"indexed": true,
+					"layout": {}
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"fragment": {
 								"key": "forums-category-grid"
 							},
 							"fragmentConfig": {},
