@@ -3,7 +3,6 @@ package com.liferay.demo.forums.service;
 
 import com.liferay.demo.forums.client.LiferayApiClient;
 
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -28,13 +27,13 @@ import org.springframework.stereotype.Service;
  * Resolves user mentions embedded in a forum post body.
  *
  * <h3>How mentions are stored</h3>
- * <p>The message composer inserts a mention as an anchor whose href carries the
- * mentioned user's screen name (the {@code alternateName} field), e.g.
- * {@code <a class="forums-mention" href="#mention-jane.doe">@Jane Doe</a>}. The
- * href fragment is the reliable channel: CKEditor 5's schema may strip the
- * {@code class}/{@code data-*} attributes when the body is serialized, but the
- * anchor href survives — so handles are parsed from the {@code #mention-{handle}}
- * pattern rather than from a data attribute.</p>
+ * <p>The message composer inserts a mention in the platform's OOTB shape: the
+ * visible {@code @screenName} token, wrapped in a
+ * {@code <span class="lfr-ac-content">} by CKEditor 4 or emitted as a bare text
+ * token by CKEditor 5 (which drops unknown spans on serialization). The visible
+ * token is the reliable channel across editor versions, so handles are parsed
+ * with a boundary-anchored {@code @screenName} regex rather than from a class or
+ * data attribute — mirroring the platform's own {@code DefaultMentionsMatcher}.</p>
  *
  * <p>The screen name (rather than the numeric user id) is the durable channel
  * because it is a filterable/indexed field: mentions resolve to email addresses
@@ -47,12 +46,23 @@ public class MentionService {
 
 	private static final Logger _log = LoggerFactory.getLogger(MentionService.class);
 
-	/* The composer URL-encodes the screen name into the href fragment, so the
-	   captured token runs up to the closing quote (or a tag/whitespace
-	   boundary) and is URL-decoded below. Capturing broadly keeps parsing
-	   correct for screen names outside the default character set. */
+	/* Match the visible "@screenName" token, whether it sits in plain text or
+	   inside a tag such as the OOTB <span class="lfr-ac-content">. The token
+	   must be preceded by start-of-input, whitespace, "]" or ">" (so "@" that
+	   follows other text -- e.g. an email address -- is not treated as a
+	   mention). "@" may also appear HTML-encoded as "&#64;".
+
+	   The screen name is captured as dot/hyphen-separated word segments
+	   (\w+(?:[.\-]\w+)*), which stops on its own at the first non-screen-name
+	   character. This deliberately does NOT require a trailing boundary: unlike
+	   the platform's DefaultMentionsMatcher -- whose mentions are always tag-
+	   wrapped, so the next character is always "<" -- our CKEditor 5 mentions
+	   are BARE text tokens that may be butted directly against punctuation
+	   (e.g. "@ravi.patel: hello"). The segment structure also avoids swallowing
+	   a trailing "." or "-" (e.g. a sentence-ending "@ravi.patel." yields
+	   "ravi.patel", not "ravi.patel."). */
 	private static final Pattern _MENTION_PATTERN = Pattern.compile(
-		"#mention-([^\"'\\s<>]+)");
+		"(?:^|[\\s\\]>])(?:@|&#64;)(\\w+(?:[.\\-]\\w+)*)");
 
 	/**
 	 * Extracts the distinct screen names mentioned in the given (raw HTML) body.
@@ -71,17 +81,7 @@ public class MentionService {
 		Matcher matcher = _MENTION_PATTERN.matcher(bodyHtml);
 
 		while (matcher.find()) {
-			String screenName;
-
-			try {
-				screenName = URLDecoder.decode(
-					matcher.group(1), StandardCharsets.UTF_8);
-			}
-			catch (IllegalArgumentException illegalArgumentException) {
-				// Malformed percent-encoding; skip this token.
-
-				continue;
-			}
+			String screenName = matcher.group(1);
 
 			if (!screenName.isBlank()) {
 				screenNames.add(screenName.toLowerCase());

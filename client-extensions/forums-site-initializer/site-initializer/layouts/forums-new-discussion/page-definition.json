@@ -40,6 +40,24 @@
 					}
 				],
 				"type": "Section"
+			},
+			{
+				"definition": {
+					"indexed": false,
+					"layout": {}
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"widgetInstance": {
+								"widgetConfig": {},
+								"widgetName": "com_liferay_mentions_web_portlet_MentionsPortlet"
+							}
+						},
+						"type": "Widget"
+					}
+				],
+				"type": "Section"
 			}
 		],
 		"type": "Root"

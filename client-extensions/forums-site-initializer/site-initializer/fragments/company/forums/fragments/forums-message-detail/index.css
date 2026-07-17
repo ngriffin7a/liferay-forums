@@ -289,22 +289,17 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 	white-space: nowrap;
 }
 
-/* User mentions rendered inside a topic/reply body. The href is a
-   "#mention-{screenName}" fragment used only to carry the screen name (parsed
-   by the notification microservice); clicks are neutralized in JS. */
-.forums-message-detail__body .forums-mention,
-.forums-message-detail__reply-body .forums-mention {
+/* User mentions rendered inside a topic/reply body. Authored in the OOTB
+   shape: a "@screenName" token wrapped in a <span class="lfr-ac-content">
+   (CKEditor 4). CKEditor 5 drops the span, leaving a bare "@screenName" text
+   token that reads fine unstyled; the notification microservice resolves the
+   visible token either way. */
+.forums-message-detail__body .lfr-ac-content,
+.forums-message-detail__reply-body .lfr-ac-content {
 	background: #f0f5ff;
 	border-radius: 0.25rem;
 	color: #0053f0;
 	font-weight: 600;
 	padding: 0 0.2em;
-	text-decoration: none;
 	white-space: nowrap;
-}
-
-.forums-message-detail__body .forums-mention:hover,
-.forums-message-detail__reply-body .forums-mention:hover {
-	background: #dbe9ff;
-	text-decoration: none;
 }

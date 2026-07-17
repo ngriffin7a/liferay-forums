@@ -168,7 +168,8 @@
 	padding: 0.5rem 0.75rem;
 }
 
-/* A mention rendered inside the editor body while composing. */
-.forums-message-composer .forums-mention {
+/* A mention rendered inside the editor body while composing (OOTB
+   lfr-ac-content span; CKEditor 5 emits a bare token with no wrapper). */
+.forums-message-composer .lfr-ac-content {
 	font-weight: 600;
 }

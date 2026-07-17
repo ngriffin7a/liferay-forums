@@ -641,7 +641,6 @@ if (messageComposer) {
 			e.preventDefault();
 			var composeMessageId = trigger.getAttribute('data-forums-message-id') || messageId;
 			var composeCategoryId = trigger.getAttribute('data-forums-category-id') || categoryIdParam;
-			var composeMessageId = trigger.getAttribute('data-forums-message-id') || null;
 			/* For a reply to another reply, the root ForumMessage id is the
 			   foreign key (data-forums-message-id) and the reply being answered
 			   is the threading parent (data-forums-parent-id). */
@@ -937,18 +936,38 @@ if (messageComposer) {
 	   @mention picker
 
 	   Typing "@" in the body editor opens a caret-anchored dropdown of users
-	   (searched via headless-admin-user). Selecting one inserts a mention as
-	   an anchor: <a class="forums-mention" href="#mention-{screenName}">@Name</a>.
+	   served by the OOTB (hidden) Mentions portlet's resource phase. That
+	   portlet is embedded as a widget on every page that hosts this composer
+	   (see the site-initializer page definitions), so it counts as "on the
+	   page" and its serveResource can be invoked without a p_p_auth token --
+	   letting us build the resource URL as a plain string in JS. The finder
+	   honors the portal Social Interactions configuration, already excludes the
+	   current user and guests, and returns [{fullName, screenName,
+	   portraitHTML, mention}] (no user id and no email address, by design).
 
-	   The href fragment is the reliable channel across editor versions:
-	   CKEditor 5's schema may strip class/data-* attributes, but the anchor
-	   href survives, so the forums-microservice parses mentioned screen names
-	   from the "#mention-{screenName}" hrefs in the posted body and resolves
-	   them with a single site-scoped query (see MentionService).
+	   Selecting one inserts the OOTB mention shape -- the visible "@screenName"
+	   token, wrapped in a <span class="lfr-ac-content"> (CKEditor 4) or as a
+	   bare text token (CKEditor 5, which drops unknown spans on serialization).
+
+	   The visible "@screenName" token is the reliable channel across editor
+	   versions: the forums-microservice parses mentioned screen names with a
+	   boundary-anchored @screenName regex from the posted body and resolves
+	   them with a single site-scoped query (see MentionService), mirroring the
+	   platform's own DefaultMentionsMatcher.
 	   --------------------------------------------------------------------- */
 	(function setupMentions() {
 		var MENTION_MAX = 6;
 		var mentionAttached = false;
+
+		/* The OOTB Mentions portlet, embedded as an on-page widget. Its
+		   resource params are namespaced with "_<portletId>_". The finder
+		   permission-scopes its candidate list against a "discussion portlet";
+		   the page comments portlet is a sensible default and mirrors how OOTB
+		   comment mentions are scoped. */
+		var MENTIONS_ID = 'com_liferay_mentions_web_portlet_MentionsPortlet';
+		var MENTIONS_NS = '_' + MENTIONS_ID + '_';
+		var MENTIONS_DISCUSSION_PORTLET_ID =
+			'com_liferay_comment_page_comments_web_portlet_PageCommentsPortlet';
 
 		/* Track every global/document listener added below so they can all be
 		   removed on SPA navigation; otherwise each visit to this fragment would
@@ -982,10 +1001,7 @@ if (messageComposer) {
 		var lastReqId = 0;
 
 		function mentionDisplayName(u) {
-			var given = u.givenName || '';
-			var family = u.familyName || '';
-			var full = (given + ' ' + family).trim();
-			return full || u.name || u.alternateName || '';
+			return u.fullName || u.screenName || '';
 		}
 
 		/* The contenteditable element the editor renders into, and helpers to
@@ -1014,7 +1030,13 @@ if (messageComposer) {
 
 		/* Inspect the caret; if it sits right after an "@token", return the
 		   token text, else null. Only fires for a collapsed caret in a text
-		   node so we never hijack a range selection. */
+		   node so we never hijack a range selection.
+
+		   At least one alphanumeric character must follow "@" before a query is
+		   reported, so a bare "@" does not fire an XHR and dump the whole user
+		   list -- matching the OOTB Page Comments autocomplete, which only
+		   searches once a screen-name character is typed. The first character is
+		   alphanumeric; later ones may include the punctuation "." "-" "_". */
 		function detectQuery(editableEl) {
 			var doc = editableEl.ownerDocument;
 			var sel = doc.getSelection();
@@ -1022,7 +1044,7 @@ if (messageComposer) {
 			var node = sel.anchorNode;
 			if (!node || node.nodeType !== 3) return null;
 			var before = node.textContent.slice(0, sel.anchorOffset);
-			var m = before.match(/(?:^|[\s (\[])@([\w.\-]{0,30})$/);
+			var m = before.match(/(?:^|[\s (\[])@([a-zA-Z0-9][\w.\-]{0,29})$/);
 			return m ? m[1] : null;
 		}
 
@@ -1066,19 +1088,22 @@ if (messageComposer) {
 
 			var html = '';
 			currentItems.forEach(function(u, i) {
+				/* fullName and screenName arrive already HTML-escaped from the
+				   Mentions portlet; insert them as-is (re-escaping would render
+				   visible entities). portraitHTML is ready-to-render markup. */
 				var name = mentionDisplayName(u);
-				var screen = u.alternateName ? ('@' + u.alternateName) : '';
+				var screen = u.screenName ? ('@' + u.screenName) : '';
 				var initial = (name || '?').charAt(0).toUpperCase();
-				var avatar = u.image
-					? '<span class="sticker sticker-circle sticker-sm"><span class="sticker-overlay"><img class="sticker-img" src="' + Liferay.Util.escapeHTML(u.image) + '" alt=""></span></span>'
+				var avatar = u.portraitHTML
+					? u.portraitHTML
 					: '<span class="sticker sticker-circle sticker-sm sticker-outline-' + (i % 10) + '"><span class="sticker-overlay">' + Liferay.Util.escapeHTML(initial) + '</span></span>';
 				html += '<button type="button" role="option" class="forums-mention-dropdown__item' +
 					(i === activeIndex ? ' is-active' : '') + '" data-mention-index="' + i + '"' +
 					(i === activeIndex ? ' aria-selected="true"' : '') + '>' +
 					avatar +
 					'<span class="forums-mention-dropdown__text">' +
-						'<span class="forums-mention-dropdown__name">' + Liferay.Util.escapeHTML(name) + '</span>' +
-						(screen ? '<span class="forums-mention-dropdown__screen">' + Liferay.Util.escapeHTML(screen) + '</span>' : '') +
+						'<span class="forums-mention-dropdown__name">' + name + '</span>' +
+						(screen ? '<span class="forums-mention-dropdown__screen">' + screen + '</span>' : '') +
 					'</span>' +
 					'</button>';
 			});
@@ -1087,46 +1112,27 @@ if (messageComposer) {
 			positionDropdown(editableEl);
 		}
 
-		/* Build an OData prefix filter over the name fields. `startswith` maps to
-		   a prefix wildcard ("q*"), which the search index resolves efficiently
-		   (unlike `contains`'s leading wildcard "*q*", which forces a term-
-		   dictionary scan). Prefix matching also fits type-ahead: users type
-		   names/handles from the start, and OR-ing the individual fields covers
-		   first name, last name and screen name prefixes. The mapped index
-		   fields are the lowercased *_sortable variants, so the value is
-		   lowercased to match; single quotes are doubled per OData escaping.
-		   Note: OData function names are lowercase/case-sensitive — it must be
-		   `startswith`, not `startsWith` (the latter yields a 400). */
-		function buildMentionFilter(query) {
-			var q = query.toLowerCase().replace(/'/g, "''");
-			/* Match on display-name fields and the screen name (alternateName).
-			   Email is intentionally excluded so a mention search can't be used
-			   to probe users by email address. */
-			return ['name', 'givenName', 'familyName', 'alternateName']
-				.map(function(field) { return "startswith(" + field + ",'" + q + "')"; })
-				.join(' or ');
-		}
-
 		function searchUsers(query, editableEl) {
 			var reqId = ++lastReqId;
-			/* Scope the search to members of the current site (not the whole
-			   company) and request only the fields the picker renders, for
-			   smaller/faster responses. Email is intentionally NOT fetched
-			   here — the notification microservice resolves it server-side
-			   from the mentioned user id. */
-			var url = portalURL + '/o/headless-admin-user/v1.0/sites/' + scopeGroupId + '/user-accounts' +
-				'?page=1&pageSize=' + MENTION_MAX +
-				'&fields=' + encodeURIComponent('id,givenName,familyName,name,alternateName,image') +
-				(query ? '&filter=' + encodeURIComponent(buildMentionFilter(query)) : '');
+			/* Invoke the embedded Mentions portlet's serveResource. The base is
+			   the current layout URL; because the portlet is on this page, no
+			   p_p_auth token is needed. Resource params are namespaced. The
+			   finder is Social Interactions-scoped and already excludes the
+			   current user and guests, so no client-side self-filtering. */
+			var base = Liferay.ThemeDisplay.getLayoutRelativeURL() ||
+				window.location.pathname;
+			var url = base +
+				'?p_p_id=' + MENTIONS_ID +
+				'&p_p_lifecycle=2' +
+				'&p_p_state=exclusive' +
+				'&' + MENTIONS_NS + 'discussionPortletId=' + encodeURIComponent(MENTIONS_DISCUSSION_PORTLET_ID) +
+				'&' + MENTIONS_NS + 'query=' + encodeURIComponent(query || '');
 			Liferay.Util.fetch(url, { headers: headers, method: 'GET' })
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (reqId !== lastReqId || currentQuery === null) return;
-					var items = (data && data.items) || [];
-					/* Never offer to mention yourself. */
-					currentItems = items.filter(function(u) {
-						return String(u.id) !== String(currentUserId);
-					}).slice(0, MENTION_MAX);
+					/* The Mentions portlet returns a plain JSON array. */
+					currentItems = (Array.isArray(data) ? data : []).slice(0, MENTION_MAX);
 					activeIndex = currentItems.length ? 0 : -1;
 					renderDropdown(editableEl);
 				})
@@ -1139,33 +1145,37 @@ if (messageComposer) {
 		}
 
 		function insertMention(editor, user) {
-			var name = mentionDisplayName(user) || (user.alternateName || 'user');
-			/* Encode the screen name (alternateName), not the numeric id: the
-			   notification microservice resolves mentions with a single
-			   site-scoped query filtered on the indexed alternateName field
-			   (see MentionService). URL-encode it so screen names containing
-			   characters outside the default set still round-trip safely
-			   through the href fragment (the microservice URL-decodes). */
-			var href = '#mention-' + encodeURIComponent(user.alternateName || '');
+			/* Insert the OOTB mention shape: the visible "@screenName" token is
+			   the durable channel the notification microservice resolves (a
+			   boundary-anchored @screenName regex, matching how the platform's
+			   DefaultMentionsMatcher works). CKEditor 4 wraps it in the OOTB
+			   "lfr-ac-content" span for chip styling; CKEditor 5 drops unknown
+			   spans on serialization, so it gets the bare token (still fully
+			   resolvable). screenName is already HTML-escaped by the portlet. */
+			var screenName = user.screenName || '';
+			if (!screenName) { hideDropdown(); return; }
+			var label = '@' + screenName;
 			var query = currentQuery || '';
 			var removeLen = query.length + 1; /* the "@" plus the typed query */
 
 			if (editor.model && editor.editing) {
-				/* CKEditor 5: delete "@query" then insert linked text + space. */
+				/* CKEditor 5: delete "@query" then insert the plain token + space
+				   (no link -- the mention is a text token, not a hyperlink). */
 				try {
 					editor.model.change(function(writer) {
 						var pos = editor.model.document.selection.getFirstPosition();
 						var startPos = pos.getShiftedBy(-removeLen);
 						writer.remove(writer.createRange(startPos, pos));
 						editor.model.insertContent(
-							writer.createText('@' + name, { linkHref: href }), startPos);
-						var afterPos = startPos.getShiftedBy(('@' + name).length);
+							writer.createText(label), startPos);
+						var afterPos = startPos.getShiftedBy(label.length);
 						editor.model.insertContent(writer.createText(' '), afterPos);
 						writer.setSelection(afterPos.getShiftedBy(1));
 					});
 				} catch (e) { console.warn('mention insert (v5) failed', e); }
 			} else if (typeof editor.getSelection === 'function') {
-				/* CKEditor 4: extend the range back over "@query", replace. */
+				/* CKEditor 4: extend the range back over "@query", replace with
+				   the OOTB lfr-ac-content span. label is already HTML-escaped. */
 				try {
 					var sel = editor.getSelection();
 					var range = sel.getRanges()[0];
@@ -1173,8 +1183,8 @@ if (messageComposer) {
 						range.setStart(range.startContainer, range.startOffset - removeLen);
 						range.select();
 					}
-					editor.insertHtml('<a class="forums-mention" href="' + href + '">@' +
-						Liferay.Util.escapeHTML(name) + '</a>&nbsp;');
+					editor.insertHtml('<span class="lfr-ac-content">' +
+						label + '</span>&nbsp;');
 				} catch (e) { console.warn('mention insert (v4) failed', e); }
 			}
 			hideDropdown();

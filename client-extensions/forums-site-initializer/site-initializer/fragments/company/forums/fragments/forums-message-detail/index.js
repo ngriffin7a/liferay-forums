@@ -17,13 +17,9 @@ if (messageDetail) {
 	}
 	var currentUserId = Liferay.ThemeDisplay.getUserId();
 
-	/* Mentions render as <a href="#mention-{screenName}"> anchors (the href only
-	   carries the screen name for the notification microservice). Neutralize
-	   clicks so they don't scroll/jump the page. */
-	messageDetail.addEventListener('click', function(e) {
-		var mention = e.target.closest('a.forums-mention, a[href^="#mention-"]');
-		if (mention) e.preventDefault();
-	});
+	/* Mentions render in the OOTB shape -- a "@screenName" token in a
+	   <span class="lfr-ac-content"> (or a bare text token from CKEditor 5).
+	   Neither navigates, so no click handling is needed. */
 
 	var headers = {
 		'Accept': 'application/json',
