@@ -349,10 +349,11 @@ if (messageDetail) {
 					var count = statsUserMap[id];
 					if (count == null) return;
 					var rank = rankLabel(count);
-					var postsLabel = count === 1
-						? (messageDetail.dataset.labelPost || 'post')
-						: (messageDetail.dataset.labelPosts || 'posts');
-					el.textContent = (rank ? rank + ' · ' : '') + count + ' ' + postsLabel;
+					var tmpl = count === 1
+						? (messageDetail.dataset.labelXPost || '{0} post')
+						: (messageDetail.dataset.labelXPosts || '{0} posts');
+					var posts = tmpl.replace('{0}', count);
+					el.textContent = (rank ? rank + ' · ' : '') + posts;
 					el.style.display = '';
 				});
 			});
