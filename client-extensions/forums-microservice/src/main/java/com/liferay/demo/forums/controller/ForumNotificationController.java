@@ -10,8 +10,10 @@ import com.liferay.demo.forums.service.WebNotificationService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -170,6 +172,22 @@ public class ForumNotificationController extends BaseRestController {
 
 		if (mentionedScreenNames.isEmpty()) {
 			return;
+		}
+
+		// Cap the number of mentions honored per post. This bounds the
+		// notification fan-out (a body crafted with many handles cannot be used
+		// to spam), and keeps the site-scoped resolution query's "or" clauses
+		// within a sane URL length. Insertion order is preserved, so the first
+		// mentions in the body win.
+
+		if (mentionedScreenNames.size() > _MAX_MENTIONS) {
+			_log.warn(
+				"Post mentions " + mentionedScreenNames.size() +
+					" users; honoring only the first " + _MAX_MENTIONS);
+
+			mentionedScreenNames = mentionedScreenNames.stream()
+				.limit(_MAX_MENTIONS)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
 
 		List<Subscriber> mentioned = _mentionService.resolveMentions(
@@ -459,6 +477,8 @@ public class ForumNotificationController extends BaseRestController {
 
 	@Autowired
 	private SubscriptionService _subscriptionService;
+
+	private static final int _MAX_MENTIONS = 25;
 
 	private static final Log _log = LogFactory.getLog(ForumNotificationController.class);
 
