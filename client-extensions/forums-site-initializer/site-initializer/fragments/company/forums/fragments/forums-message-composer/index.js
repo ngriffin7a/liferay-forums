@@ -950,7 +950,26 @@ if (messageComposer) {
 		var MENTION_MAX = 6;
 		var mentionAttached = false;
 
+		/* Track every global/document listener added below so they can all be
+		   removed on SPA navigation; otherwise each visit to this fragment would
+		   leave behind orphaned listeners (and dropdowns) that accumulate. */
+		var cleanups = [];
+		function addListener(target, type, handler, options) {
+			target.addEventListener(type, handler, options);
+			cleanups.push(function() {
+				target.removeEventListener(type, handler, options);
+			});
+		}
+
+		/* Reuse a single dropdown per fragment instance: remove any stale one
+		   left by a prior render before creating a fresh one, so they don't
+		   stack up in the document body across SPA transitions. */
+		var dropdownId = fragmentElementId + '-forumsMentionDropdown';
+		var staleDropdown = document.getElementById(dropdownId);
+		if (staleDropdown) staleDropdown.remove();
+
 		var dropdown = document.createElement('div');
+		dropdown.id = dropdownId;
 		dropdown.className = 'forums-mention-dropdown';
 		dropdown.style.display = 'none';
 		dropdown.setAttribute('role', 'listbox');
@@ -1182,7 +1201,7 @@ if (messageComposer) {
 			mentionAttached = true;
 
 			['keyup', 'input', 'mouseup'].forEach(function(evt) {
-				editableEl.addEventListener(evt, function() {
+				addListener(editableEl, evt, function() {
 					/* Arrow/enter/esc are handled in keydown; skip here. */
 					onActivity(editor, editableEl);
 				});
@@ -1193,7 +1212,7 @@ if (messageComposer) {
 			   editable's document (not the element) so a document-level capture
 			   listener fires before the editor's own keydown handler — CKEditor
 			   4 hosts the editable in an iframe, hence ownerDocument. */
-			editableEl.ownerDocument.addEventListener('keydown', function(e) {
+			addListener(editableEl.ownerDocument, 'keydown', function(e) {
 				if (dropdown.style.display === 'none' || currentQuery === null) return;
 				if (e.key === 'ArrowDown') {
 					e.preventDefault(); e.stopPropagation();
@@ -1212,7 +1231,7 @@ if (messageComposer) {
 				}
 			}, true);
 
-			editableEl.addEventListener('blur', function() {
+			addListener(editableEl, 'blur', function() {
 				/* Delay so a click on a dropdown item registers first. */
 				setTimeout(hideDropdown, 150);
 			});
@@ -1228,12 +1247,29 @@ if (messageComposer) {
 			if (bodyEditorInstance) choose(bodyEditorInstance, getEditableEl(bodyEditorInstance), idx);
 		});
 
-		window.addEventListener('scroll', function() {
+		addListener(window, 'scroll', function() {
 			if (dropdown.style.display !== 'none' && bodyEditorInstance) {
 				positionDropdown(getEditableEl(bodyEditorInstance));
 			}
 		}, true);
 
 		editorPromise.then(attach);
+
+		/* On SPA navigation away, remove the dropdown and every listener bound
+		   above so nothing accumulates across page transitions. */
+		function cleanup() {
+			cleanups.forEach(function(fn) {
+				try { fn(); } catch (e) {}
+			});
+			cleanups = [];
+			if (dropdown && dropdown.parentNode) {
+				dropdown.parentNode.removeChild(dropdown);
+			}
+		}
+		if (window.Liferay && Liferay.once) {
+			Liferay.once('beforeScreenFlip', cleanup);
+		} else if (window.Liferay && Liferay.on) {
+			Liferay.on('beforeScreenFlip', cleanup);
+		}
 	})();
 }

@@ -107,16 +107,6 @@ public class ForumNotificationController extends BaseRestController {
 
 		String replyAuthor = _resolveAuthorName(creator);
 
-		// Fetch the parent ForumThread to get the topic title
-
-		String messageTitle = _fetchMessageTitle(parentMessageId, jwt.getTokenValue());
-
-		if (messageTitle == null) {
-			_log.warn("onNewReply: could not fetch title for messageId=" + parentMessageId);
-
-			messageTitle = "Forum Discussion";
-		}
-
 		// Notify subscribers
 
 		List<Subscriber> subscribers = _subscriptionService.getSubscribers(
@@ -136,12 +126,22 @@ public class ForumNotificationController extends BaseRestController {
 
 		// Parsing the body for @mentions is a cheap local regex (no network),
 		// so do it up front: if there are neither subscribers nor mentions to
-		// notify, skip the site lookup and URL construction entirely.
+		// notify, skip the title lookup, site lookup and URL construction.
 
 		Set<String> mentionedScreenNames = _extractCappedMentions(rawReplyBody);
 
 		if (subscribers.isEmpty() && mentionedScreenNames.isEmpty()) {
 			return new ResponseEntity<>(json, HttpStatus.OK);
+		}
+
+		// Fetch the parent ForumThread to get the topic title
+
+		String messageTitle = _fetchMessageTitle(parentMessageId, jwt.getTokenValue());
+
+		if (messageTitle == null) {
+			_log.warn("onNewReply: could not fetch title for messageId=" + parentMessageId);
+
+			messageTitle = "Forum Discussion";
 		}
 
 		// Fetch the site once; both the display page URL and the mention site
@@ -638,15 +638,22 @@ public class ForumNotificationController extends BaseRestController {
 			return "";
 		}
 
+		// When the site friendly URL is known, fall back to the site home rather
+		// than an empty (dead) link if the entry-specific parts of the display
+		// page URL cannot be resolved.
+
+		String siteFriendlyUrl = (site != null) ?
+			site.optString("friendlyUrlPath", "") : "";
+		String siteFallbackUrl = siteFriendlyUrl.isBlank() ?
+			"" : "/web" + siteFriendlyUrl;
+
 		try {
 			long objectDefinitionId = payload.optLong("objectDefinitionId", 0L);
 			String entryFriendlyUrl = dto.optString("friendlyUrlPath", "");
-			String siteFriendlyUrl = (site != null) ?
-				site.optString("friendlyUrlPath", "") : "";
 
 			if (siteFriendlyUrl.isBlank() || objectDefinitionId == 0L || entryFriendlyUrl.isBlank()) {
-				_log.warn("Cannot construct display page URL; missing properties in dto or site.");
-				return "";
+				_log.warn("Cannot construct display page URL; falling back to site URL.");
+				return siteFallbackUrl;
 			}
 
 			// Fetch object definition friendly URL separator
@@ -655,14 +662,14 @@ public class ForumNotificationController extends BaseRestController {
 			String urlSeparator = new JSONObject(objDefResponse).optString("friendlyURLSeparator", "");
 
 			if (urlSeparator.isBlank()) {
-				return "";
+				return siteFallbackUrl;
 			}
 
 			return "/web" + siteFriendlyUrl + "/" + urlSeparator + "/" + entryFriendlyUrl;
 		}
 		catch (Exception e) {
 			_log.error("Failed to construct display page URL: " + e.getMessage());
-			return "";
+			return siteFallbackUrl;
 		}
 	}
 
