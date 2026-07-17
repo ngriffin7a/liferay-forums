@@ -110,6 +110,84 @@ if (messageList) {
 		return (family && family !== 'User') ? (given + ' ' + family) : (given || creator.name || '');
 	}
 
+	/* Gamification (Phase 3, Step A): show each thread author's rank title
+	   beneath their avatar. rankLadder is the ForumRank ladder sorted
+	   descending by minPosts (fetched once); statsUserMap caches userId ->
+	   messageCount. Rank is computed client-side; no post count is shown here
+	   (the raw count is left to the message-detail cards). */
+	var rankLadder = null;
+	var statsUserMap = {};
+
+	function ensureRankLadder(callback) {
+		if (rankLadder) { callback(); return; }
+		Liferay.Util.fetch(portalURL + '/o/c/forumranks/scopes/' + scopeGroupId + '?pageSize=100&sort=minPosts:desc', {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			var items = (data && data.items) || [];
+			rankLadder = items.map(function(it) {
+				return { minPosts: it.minPosts || 0, label: it.label || '' };
+			});
+			rankLadder.sort(function(a, b) { return b.minPosts - a.minPosts; });
+			callback();
+		})
+		.catch(function() { rankLadder = []; callback(); });
+	}
+
+	function fetchForumStats(userIds, callback) {
+		var pending = userIds.filter(function(id) { return !(id in statsUserMap); });
+		if (!pending.length) { callback(); return; }
+		var filter = pending.map(function(id) { return 'statsUserId eq ' + id; }).join(' or ');
+		Liferay.Util.fetch(portalURL + '/o/c/forumstatsusers/scopes/' + scopeGroupId + '?pageSize=200&filter=' + encodeURIComponent(filter), {
+			headers: headers,
+			method: 'GET'
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			var items = (data && data.items) || [];
+			items.forEach(function(it) { statsUserMap[it.statsUserId] = it.messageCount || 0; });
+			pending.forEach(function(id) { if (!(id in statsUserMap)) statsUserMap[id] = 0; });
+			callback();
+		})
+		.catch(function() { callback(); });
+	}
+
+	function rankLabel(count) {
+		if (!rankLadder) return '';
+		for (var i = 0; i < rankLadder.length; i++) {
+			if (count >= rankLadder[i].minPosts) return rankLadder[i].label;
+		}
+		return '';
+	}
+
+	/* Fill the rank placeholder under each thread author's avatar. Rank-only:
+	   no post count. Placeholders with an empty rank stay hidden. */
+	function fillAuthorRanks() {
+		var els = cardsContainer.querySelectorAll('[data-forums-rank-user]');
+		if (!els.length) return;
+		var ids = [];
+		var seen = {};
+		els.forEach(function(el) {
+			var id = el.getAttribute('data-forums-rank-user');
+			if (id && !seen[id]) { seen[id] = true; ids.push(id); }
+		});
+		ensureRankLadder(function() {
+			fetchForumStats(ids, function() {
+				els.forEach(function(el) {
+					var id = el.getAttribute('data-forums-rank-user');
+					var count = statsUserMap[id];
+					if (count == null) return;
+					var rank = rankLabel(count);
+					if (!rank) return;
+					el.textContent = rank;
+					el.style.display = '';
+				});
+			});
+		});
+	}
+
 	/* Thread priority badge (Message Boards parity: Urgent|bolt|3.0,
 	   Sticky|pin|2.0, Announcement|comments|1.0). Values <= 0, missing, or
 	   unknown render nothing, matching MBUtil.getThreadPriority. */
@@ -368,6 +446,9 @@ if (messageList) {
 					+ '<div class="autofit-row">'
 					+ '<div class="autofit-col forums-message-card__avatar-col text-center">'
 					+ avatarHtml
+					+ (msg.creator && msg.creator.id
+						? '<span class="d-block text-secondary small forums-message-card__rank" data-forums-rank-user="' + msg.creator.id + '" style="display:none"></span>'
+						: '')
 					+ '</div>'
 					+ '<div class="autofit-col autofit-col-expand forums-message-card__content">'
 					+ '<h5 class="card-title forums-message-card__title">'
@@ -403,6 +484,9 @@ if (messageList) {
 
 			cardsContainer.innerHTML = html;
 			attachDeleteHandlers();
+
+			/* Fill each thread author's rank title now that the cards exist. */
+			fillAuthorRanks();
 
 			if (missingDisplayPage && Liferay.Util && Liferay.Util.openToast) {
 				Liferay.Util.openToast({

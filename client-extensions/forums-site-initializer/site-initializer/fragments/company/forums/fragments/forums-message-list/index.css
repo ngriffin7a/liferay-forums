@@ -38,6 +38,12 @@
 	width: 64px;
 }
 
+.forums-message-card__rank {
+	margin-top: 0.25rem;
+	line-height: 1.2;
+	word-break: break-word;
+}
+
 .forums-message-card__title {
 	font-size: 1.0625rem;
 }
