@@ -7,6 +7,25 @@
 	"name_i18n": {
 		"en_US": "Forum Categories Admin"
 	},
+	"permissions": [
+		{
+			"actionIds": [],
+			"roleName": "Guest",
+			"scope": 4
+		},
+		{
+			"actionIds": [],
+			"roleName": "Site Member",
+			"scope": 4
+		},
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "Administrator",
+			"scope": 4
+		}
+	],
 	"private": false,
 	"type": "content"
 }
