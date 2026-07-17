@@ -3,15 +3,16 @@ package com.liferay.demo.forums.service;
 
 import com.liferay.demo.forums.client.LiferayApiClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,199 +28,147 @@ import org.springframework.stereotype.Service;
  *
  * <h3>How mentions are stored</h3>
  * <p>The message composer inserts a mention as an anchor whose href carries the
- * mentioned user id, e.g.
- * {@code <a class="forums-mention" href="#mention-12345">@Jane Doe</a>}. The
+ * mentioned user's screen name (the {@code alternateName} field), e.g.
+ * {@code <a class="forums-mention" href="#mention-jane.doe">@Jane Doe</a>}. The
  * href fragment is the reliable channel: CKEditor 5's schema may strip the
  * {@code class}/{@code data-*} attributes when the body is serialized, but the
- * anchor href survives — so ids are parsed from the {@code #mention-{id}}
+ * anchor href survives — so handles are parsed from the {@code #mention-{handle}}
  * pattern rather than from a data attribute.</p>
  *
- * <p>Given a body, this service extracts the distinct mentioned user ids and
- * resolves each to an email address via the headless user API, returning
- * {@link Subscriber} records the notification services already understand.</p>
+ * <p>The screen name (rather than the numeric user id) is the durable channel
+ * because it is a filterable/indexed field: mentions resolve to email addresses
+ * with a single site-scoped OData query, and — because that query is scoped to
+ * the site — a handle for a non-member simply does not match and is dropped. A
+ * crafted body therefore cannot notify or probe users outside the site.</p>
  */
 @Service
 public class MentionService {
 
 	private static final Logger _log = LoggerFactory.getLogger(MentionService.class);
 
+	/* Screen names are lowercase and may contain word characters, dots and
+	   hyphens; the composer inserts exactly these into the href fragment. */
 	private static final Pattern _MENTION_PATTERN = Pattern.compile(
-		"#mention-(\\d+)");
+		"#mention-([\\w.\\-]+)");
 
 	/**
-	 * Extracts the distinct user ids mentioned in the given (raw HTML) body.
+	 * Extracts the distinct screen names mentioned in the given (raw HTML) body.
 	 * Insertion order is preserved.
 	 *
 	 * @param bodyHtml the raw HTML body of the forum message
-	 * @return the mentioned user ids; never {@code null}
+	 * @return the mentioned screen names, lowercased; never {@code null}
 	 */
-	public Set<Long> extractMentionedUserIds(String bodyHtml) {
-		Set<Long> userIds = new LinkedHashSet<>();
+	public Set<String> extractMentionedScreenNames(String bodyHtml) {
+		Set<String> screenNames = new LinkedHashSet<>();
 
 		if ((bodyHtml == null) || bodyHtml.isBlank()) {
-			return userIds;
+			return screenNames;
 		}
 
 		Matcher matcher = _MENTION_PATTERN.matcher(bodyHtml);
 
 		while (matcher.find()) {
-			try {
-				userIds.add(Long.parseLong(matcher.group(1)));
-			}
-			catch (NumberFormatException numberFormatException) {
-				// Ignore malformed ids
+			String screenName = matcher.group(1);
+
+			if (!screenName.isBlank()) {
+				screenNames.add(screenName.toLowerCase());
 			}
 		}
 
-		return userIds;
+		return screenNames;
 	}
 
 	/**
-	 * Resolves mentioned user ids to {@link Subscriber} records (user id +
+	 * Resolves mentioned screen names to {@link Subscriber} records (user id +
 	 * email address) <em>strictly against the members of the given site</em>.
 	 *
 	 * <p>Only members of {@code siteId} can be mentioned and notified. A
-	 * mentioned id that is not a member of the site — for example an arbitrary
-	 * id injected into the post body via the REST API, since the composer's
-	 * site-scoped picker is only a client-side convenience — is silently
-	 * dropped. The company-wide {@code /user-accounts/{id}} endpoint is
-	 * deliberately <em>not</em> consulted, so a crafted body cannot notify or
+	 * mentioned screen name that is not a member of the site — for example a
+	 * handle injected into the post body via the REST API, since the composer's
+	 * site-scoped picker is only a client-side convenience — does not match the
+	 * site-scoped query and is dropped. The company-wide user-account endpoint
+	 * is deliberately <em>not</em> consulted, so a crafted body cannot notify or
 	 * probe users outside the site.</p>
 	 *
-	 * @param userIds   the mentioned user ids
-	 * @param siteId    the group id of the site the post belongs to; when
-	 *                  {@code <= 0} no mentions are resolved (fail closed)
-	 * @param authToken OAuth2 bearer token (JWT) for the API call
+	 * @param screenNames the mentioned screen names (lowercased)
+	 * @param siteId      the group id of the site the post belongs to; when
+	 *                    {@code <= 0} no mentions are resolved (fail closed)
+	 * @param authToken   OAuth2 bearer token (JWT) for the API call
 	 * @return the resolvable, site-member mentioned users; never {@code null}
 	 */
 	public List<Subscriber> resolveMentions(
-		Set<Long> userIds, long siteId, String authToken) {
+		Set<String> screenNames, long siteId, String authToken) {
 
 		List<Subscriber> mentioned = new ArrayList<>();
 
-		if ((userIds == null) || userIds.isEmpty()) {
+		if ((screenNames == null) || screenNames.isEmpty()) {
 			return mentioned;
 		}
 
 		if (siteId <= 0) {
 			_log.warn(
 				"Refusing to resolve {} mention(s) without a site scope",
-				userIds.size());
+				screenNames.size());
 
 			return mentioned;
 		}
 
-		Map<Long, String> siteMemberEmails = _fetchSiteMemberEmails(
-			userIds, siteId, authToken);
+		// A single site-scoped query filtered on the (indexed, filterable)
+		// alternateName field. Non-members do not appear in this site listing,
+		// so they cannot be resolved even if their handle is spelled correctly.
 
-		for (long userId : userIds) {
-			String emailAddress = siteMemberEmails.get(userId);
+		String filter = screenNames.stream()
+			.map(screenName -> "alternateName eq '" + _escape(screenName) + "'")
+			.collect(Collectors.joining(" or "));
 
-			if ((emailAddress != null) && !emailAddress.isBlank()) {
-				mentioned.add(new Subscriber(userId, emailAddress));
+		try {
+			String response = _liferayApiClient.get(
+				"/o/headless-admin-user/v1.0/sites/" + siteId +
+					"/user-accounts?fields=id,emailAddress&pageSize=" +
+						screenNames.size() + "&filter=" +
+							URLEncoder.encode(filter, StandardCharsets.UTF_8),
+				authToken);
+
+			JSONArray items = new JSONObject(response).optJSONArray("items");
+
+			if (items != null) {
+				for (int i = 0; i < items.length(); i++) {
+					JSONObject item = items.optJSONObject(i);
+
+					if (item == null) {
+						continue;
+					}
+
+					long userId = item.optLong("id", 0L);
+					String emailAddress = item.optString("emailAddress", "");
+
+					if ((userId > 0L) && !emailAddress.isBlank()) {
+						mentioned.add(new Subscriber(userId, emailAddress));
+					}
+				}
 			}
-			else {
-				_log.debug(
-					"Dropping mention of userId={}; not a member of siteId={}",
-					userId, siteId);
-			}
+		}
+		catch (Exception exception) {
+			_log.warn(
+				"Failed to resolve mentions for siteId={}: {}", siteId,
+				exception.getMessage());
+
+			return mentioned;
 		}
 
 		_log.debug(
-			"Resolved {} of {} mentioned user(s) within siteId={}",
-			mentioned.size(), userIds.size(), siteId);
+			"Resolved {} of {} mentioned screen name(s) within siteId={}",
+			mentioned.size(), screenNames.size(), siteId);
 
 		return mentioned;
 	}
 
-	/**
-	 * Pages the site-scoped user-account listing, collecting the email address
-	 * of each wanted id that is actually a member of the site. Paging stops as
-	 * soon as every wanted id has been found (so the common case of a handful
-	 * of mentions on a small site costs a single request). {@code id} is not a
-	 * filterable field on the user-accounts entity, so the ids cannot be pushed
-	 * into an OData filter — the listing is scanned and matched in memory.
-	 */
-	private Map<Long, String> _fetchSiteMemberEmails(
-		Set<Long> wantedUserIds, long siteId, String authToken) {
-
-		Map<Long, String> emailsByUserId = new HashMap<>();
-		Set<Long> remaining = new HashSet<>(wantedUserIds);
-
-		boolean lastPageReached = false;
-		int page = 1;
-
-		while (!remaining.isEmpty() && (page <= _MAX_PAGES)) {
-			String response;
-
-			try {
-				response = _liferayApiClient.get(
-					"/o/headless-admin-user/v1.0/sites/" + siteId +
-						"/user-accounts?fields=id,emailAddress&page=" + page +
-							"&pageSize=" + _PAGE_SIZE,
-					authToken);
-			}
-			catch (Exception exception) {
-				_log.warn(
-					"Failed to page members of siteId={} (page {}): {}",
-					siteId, page, exception.getMessage());
-
-				break;
-			}
-
-			JSONArray items = new JSONObject(response).optJSONArray("items");
-
-			if ((items == null) || items.isEmpty()) {
-				lastPageReached = true;
-
-				break;
-			}
-
-			for (int i = 0; i < items.length(); i++) {
-				JSONObject item = items.optJSONObject(i);
-
-				if (item == null) {
-					continue;
-				}
-
-				long userId = item.optLong("id", 0L);
-
-				if (remaining.remove(userId)) {
-					emailsByUserId.put(
-						userId, item.optString("emailAddress", ""));
-				}
-			}
-
-			if (items.length() < _PAGE_SIZE) {
-				lastPageReached = true;
-
-				break;
-			}
-
-			page++;
-		}
-
-		// Any id still remaining after a full scan is simply not a site member
-		// (the expected outcome for an injected id). Only warn when the scan was
-		// cut short by the page cap, since a genuine member beyond the cap on a
-		// very large site could then have been dropped.
-
-		if (!remaining.isEmpty() && !lastPageReached) {
-			_log.warn(
-				"Reached the {}-member scan cap for siteId={} with {} " +
-					"mention(s) unresolved; a member beyond the cap may have " +
-						"been dropped",
-				_MAX_PAGES * _PAGE_SIZE, siteId, remaining.size());
-		}
-
-		return emailsByUserId;
+	/* Double single quotes per OData string escaping. */
+	private String _escape(String value) {
+		return value.replace("'", "''");
 	}
 
 	@Autowired
 	private LiferayApiClient _liferayApiClient;
-
-	private static final int _MAX_PAGES = 50;
-
-	private static final int _PAGE_SIZE = 100;
 
 }

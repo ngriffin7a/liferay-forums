@@ -290,8 +290,8 @@ body.has-edit-mode-menu #forumsDetailReplyERC {
 }
 
 /* User mentions rendered inside a topic/reply body. The href is a
-   "#mention-{userId}" fragment used only to carry the id (parsed by the
-   notification microservice); clicks are neutralized in JS. */
+   "#mention-{screenName}" fragment used only to carry the screen name (parsed
+   by the notification microservice); clicks are neutralized in JS. */
 .forums-message-detail__body .forums-mention,
 .forums-message-detail__reply-body .forums-mention {
 	background: #f0f5ff;

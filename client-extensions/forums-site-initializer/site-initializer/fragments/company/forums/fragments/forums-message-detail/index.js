@@ -17,9 +17,9 @@ if (messageDetail) {
 	}
 	var currentUserId = Liferay.ThemeDisplay.getUserId();
 
-	/* Mentions render as <a href="#mention-{userId}"> anchors (the href only
-	   carries the id for the notification microservice). Neutralize clicks so
-	   they don't scroll/jump the page. */
+	/* Mentions render as <a href="#mention-{screenName}"> anchors (the href only
+	   carries the screen name for the notification microservice). Neutralize
+	   clicks so they don't scroll/jump the page. */
 	messageDetail.addEventListener('click', function(e) {
 		var mention = e.target.closest('a.forums-mention, a[href^="#mention-"]');
 		if (mention) e.preventDefault();

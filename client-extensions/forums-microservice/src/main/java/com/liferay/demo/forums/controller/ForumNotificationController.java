@@ -160,15 +160,15 @@ public class ForumNotificationController extends BaseRestController {
 		String url, List<Subscriber> alreadyNotified, String authorEmail,
 		long siteId, String authToken) {
 
-		Set<Long> mentionedUserIds = _mentionService.extractMentionedUserIds(
-			rawBody);
+		Set<String> mentionedScreenNames =
+			_mentionService.extractMentionedScreenNames(rawBody);
 
-		if (mentionedUserIds.isEmpty()) {
+		if (mentionedScreenNames.isEmpty()) {
 			return;
 		}
 
 		List<Subscriber> mentioned = _mentionService.resolveMentions(
-			mentionedUserIds, siteId, authToken);
+			mentionedScreenNames, siteId, authToken);
 
 		Set<Long> excludeUserIds = new HashSet<>();
 

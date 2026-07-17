@@ -938,12 +938,13 @@ if (messageComposer) {
 
 	   Typing "@" in the body editor opens a caret-anchored dropdown of users
 	   (searched via headless-admin-user). Selecting one inserts a mention as
-	   an anchor: <a class="forums-mention" href="#mention-{userId}">@Name</a>.
+	   an anchor: <a class="forums-mention" href="#mention-{screenName}">@Name</a>.
 
 	   The href fragment is the reliable channel across editor versions:
 	   CKEditor 5's schema may strip class/data-* attributes, but the anchor
-	   href survives, so the forums-microservice parses mentioned user ids
-	   from the "#mention-{id}" hrefs in the posted body (see MentionService).
+	   href survives, so the forums-microservice parses mentioned screen names
+	   from the "#mention-{screenName}" hrefs in the posted body and resolves
+	   them with a single site-scoped query (see MentionService).
 	   --------------------------------------------------------------------- */
 	(function setupMentions() {
 		var MENTION_MAX = 6;
@@ -1120,7 +1121,11 @@ if (messageComposer) {
 
 		function insertMention(editor, user) {
 			var name = mentionDisplayName(user) || (user.alternateName || 'user');
-			var href = '#mention-' + user.id;
+			/* Encode the screen name (alternateName), not the numeric id: the
+			   notification microservice resolves mentions with a single
+			   site-scoped query filtered on the indexed alternateName field
+			   (see MentionService). Screen names are fragment-safe. */
+			var href = '#mention-' + (user.alternateName || '');
 			var query = currentQuery || '';
 			var removeLen = query.length + 1; /* the "@" plus the typed query */
 
