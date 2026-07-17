@@ -124,6 +124,16 @@ public class ForumNotificationController extends BaseRestController {
 			.map(Subscriber::getEmailAddress)
 			.toList();
 
+		// Parsing the body for @mentions is a cheap local regex (no network),
+		// so do it up front: if there are neither subscribers nor mentions to
+		// notify, skip the site lookup and URL construction entirely.
+
+		Set<String> mentionedScreenNames = _extractCappedMentions(rawReplyBody);
+
+		if (subscribers.isEmpty() && mentionedScreenNames.isEmpty()) {
+			return new ResponseEntity<>(json, HttpStatus.OK);
+		}
+
 		// Fetch the site once; both the display page URL and the mention site
 		// scope read from it, so a reply makes a single site lookup.
 
@@ -151,34 +161,22 @@ public class ForumNotificationController extends BaseRestController {
 		long siteId = _resolveSiteId(dto, site);
 
 		_notifyMentions(
-			rawReplyBody, messageTitle, replyAuthor, replyBody, url, subscribers,
-			authorEmail, siteId, jwt.getTokenValue());
+			mentionedScreenNames, messageTitle, replyAuthor, replyBody, url,
+			subscribers, authorEmail, siteId, jwt.getTokenValue());
 
 		return new ResponseEntity<>(json, HttpStatus.OK);
 	}
 
 	/**
-	 * Notifies users @mentioned in a post body, by email and in-portal
-	 * notification, excluding the author and anyone in
-	 * {@code alreadyNotified} (e.g. topic subscribers already pinged).
+	 * Extracts the @mention screen names from a post body, capped at
+	 * {@code _MAX_MENTIONS}. Capping bounds the notification fan-out (a body
+	 * crafted with many handles cannot be used to spam) and keeps the
+	 * site-scoped resolution query's "or" clauses within a sane URL length.
+	 * Insertion order is preserved, so the first mentions in the body win.
 	 */
-	private void _notifyMentions(
-		String rawBody, String messageTitle, String author, String bodyPreview,
-		String url, List<Subscriber> alreadyNotified, String authorEmail,
-		long siteId, String authToken) {
-
+	private Set<String> _extractCappedMentions(String rawBody) {
 		Set<String> mentionedScreenNames =
 			_mentionService.extractMentionedScreenNames(rawBody);
-
-		if (mentionedScreenNames.isEmpty()) {
-			return;
-		}
-
-		// Cap the number of mentions honored per post. This bounds the
-		// notification fan-out (a body crafted with many handles cannot be used
-		// to spam), and keeps the site-scoped resolution query's "or" clauses
-		// within a sane URL length. Insertion order is preserved, so the first
-		// mentions in the body win.
 
 		if (mentionedScreenNames.size() > _MAX_MENTIONS) {
 			_log.warn(
@@ -188,6 +186,23 @@ public class ForumNotificationController extends BaseRestController {
 			mentionedScreenNames = mentionedScreenNames.stream()
 				.limit(_MAX_MENTIONS)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
+		}
+
+		return mentionedScreenNames;
+	}
+
+	/**
+	 * Notifies users @mentioned in a post body, by email and in-portal
+	 * notification, excluding the author and anyone in
+	 * {@code alreadyNotified} (e.g. topic subscribers already pinged).
+	 */
+	private void _notifyMentions(
+		Set<String> mentionedScreenNames, String messageTitle, String author,
+		String bodyPreview, String url, List<Subscriber> alreadyNotified,
+		String authorEmail, long siteId, String authToken) {
+
+		if (mentionedScreenNames.isEmpty()) {
+			return;
 		}
 
 		List<Subscriber> mentioned = _mentionService.resolveMentions(
@@ -285,6 +300,10 @@ public class ForumNotificationController extends BaseRestController {
 		String authorEmail = _resolveCreatorEmail(creator);
 
 		subscribers.removeIf(s -> s.getEmailAddress().equalsIgnoreCase(authorEmail));
+
+		if (subscribers.isEmpty()) {
+			return new ResponseEntity<>(json, HttpStatus.OK);
+		}
 
 		List<String> subscriberEmails = subscribers.stream()
 			.map(Subscriber::getEmailAddress)
