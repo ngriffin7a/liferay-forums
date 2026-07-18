@@ -51,6 +51,13 @@
 	{
 		"actionIds": ["VIEW"],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumRank$]",
+		"roleName": "Guest",
+		"scope": 1
+	},
+	{
+		"actionIds": ["VIEW"],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumMailingList$]",
 		"roleName": "Guest",
 		"scope": 1
@@ -115,6 +122,13 @@
 		"actionIds": ["VIEW"],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumStatsUser$]",
+		"roleName": "Site Member",
+		"scope": 1
+	},
+	{
+		"actionIds": ["VIEW"],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ForumRank$]",
 		"roleName": "Site Member",
 		"scope": 1
 	},
