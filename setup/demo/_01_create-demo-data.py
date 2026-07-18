@@ -287,7 +287,7 @@ def ensure_forum_stats_users(admin_session, base, site_id, users):
         name = f"{user.get('givenName', '')} {user.get('familyName', '')}".strip()
         resp = admin_session.get(
             f"{base}/o/c/forumstatsusers/scopes/{site_id}",
-            params={"filter": f"statsUserId eq '{uid}'", "pageSize": 1},
+            params={"filter": f"statsUserId eq {uid}", "pageSize": 1},
         )
         body = _json(resp)
         if resp.ok and body and body.get("totalCount", 0) > 0:
@@ -311,7 +311,35 @@ def ensure_forum_stats_users(admin_session, base, site_id, users):
 
 # ─── Steps 4 & 5: Create messages and replies ──────────────────────────────
 
-def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id):
+def _fetch_existing_thread_titles(admin_session, base, site_id):
+    """Return the set of ForumThread titles that already exist, so re-runs skip
+    threads created by a previous run instead of duplicating them.
+
+    Pre-fetched once (not per-thread): an OData `eq` filter on the localized
+    messageTitle field does not match reliably, and the previous per-message
+    guard filtered on `messageTitle`, a field that does not exist on
+    ForumMessage at all -- so it always errored and never skipped anything."""
+    titles = set()
+    page = 1
+    while True:
+        resp = admin_session.get(
+            f"{base}/o/c/forumthreads/scopes/{site_id}",
+            params={"page": page, "pageSize": 100, "fields": "messageTitle"},
+        )
+        body = _json(resp)
+        if not resp.ok or not body:
+            break
+        for item in body.get("items", []):
+            title = item.get("messageTitle")
+            if title:
+                titles.add(title)
+        if page >= body.get("lastPage", 1):
+            break
+        page += 1
+    return titles
+
+
+def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id, existing_titles):
     cat_erc = msg_def["category"]
     title = msg_def["title"]
     body_html = msg_def["body"]
@@ -327,15 +355,11 @@ def _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admi
 
     author_session = admin_session  # demo users lack Add permission on the Forum Objects (perms not set via site-initializer JSON)
 
-    # Skip if a message with the same title already exists — keeps the script
-    # re-runnable without producing duplicates.
-    escaped_title = title.replace("'", "''")
-    existing = author_session.get(
-        f"{base}/o/c/forummessages/scopes/{site_id}",
-        params={"filter": f"messageTitle eq '{escaped_title}'", "pageSize": 1},
-    )
-    existing_body = _json(existing)
-    if existing.ok and existing_body and existing_body.get("totalCount", 0) > 0:
+    # Skip if this thread already exists — keeps the script re-runnable without
+    # duplicating. Membership is checked against a set pre-fetched once (see
+    # _fetch_existing_thread_titles); a per-thread OData filter is unreliable
+    # for the localized messageTitle field.
+    if title in existing_titles:
         print(f"  ⏭  [{idx+1}/{total}] Skipping '{title}' — already exists")
         return 0, 0
 
@@ -458,9 +482,14 @@ def create_messages_and_replies(admin_session, user_sessions, base, site_id, cat
     message_dates = _generate_message_dates(DEMO_MESSAGES)
     print(f"  Date range: {_fmt_date(message_dates[0])} → {_fmt_date(message_dates[-1])}")
 
+    # Pre-fetch existing thread titles once so re-runs skip (not duplicate) them.
+    existing_titles = _fetch_existing_thread_titles(admin_session, base, site_id)
+    if existing_titles:
+        print(f"  Found {len(existing_titles)} existing threads — they will be skipped.")
+
     def task(args):
         idx, (msg_def, msg_date) = args
-        return _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id)
+        return _process_message(idx, total, msg_def, msg_date, cat_map, user_sessions, admin_session, base, site_id, existing_titles)
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         results = list(executor.map(task, enumerate(zip(DEMO_MESSAGES, message_dates))))
