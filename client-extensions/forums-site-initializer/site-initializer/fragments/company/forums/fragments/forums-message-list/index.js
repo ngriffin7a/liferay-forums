@@ -444,8 +444,9 @@ if (messageList) {
 				html += '<div class="card forums-message-card">'
 					+ '<div class="card-body">'
 					+ '<div class="autofit-row">'
-					+ '<div class="autofit-col forums-message-card__avatar-col text-center">'
+					+ '<div class="autofit-col forums-message-card__avatar-col">'
 					+ avatarHtml
+					+ '<div class="forums-message-card__username text-secondary text-truncate">' + Liferay.Util.escapeHTML(creatorName) + '</div>'
 					+ (msg.creator && msg.creator.id
 						? '<span class="d-block text-secondary small forums-message-card__rank" data-forums-rank-user="' + msg.creator.id + '" style="display:none"></span>'
 						: '')

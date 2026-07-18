@@ -34,13 +34,33 @@
 }
 
 .forums-message-card__avatar-col {
+	align-items: center;
 	flex-shrink: 0;
-	width: 64px;
+	justify-content: center;
+	margin-right: 1.25rem;
+	text-align: center;
+	width: 96px;
+}
+
+.forums-message-card__username {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	line-height: 1.2;
+	margin-top: 0.5rem;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .forums-message-card__rank {
-	margin-top: 0.25rem;
+	color: var(--secondary, #6b7280);
+	font-size: 0.6875rem;
+	letter-spacing: 0.02em;
 	line-height: 1.2;
+	margin-top: 0.125rem;
+	max-width: 100%;
+	text-transform: uppercase;
 	word-break: break-word;
 }
 
