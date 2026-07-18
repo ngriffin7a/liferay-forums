@@ -22,11 +22,13 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil
 import com.liferay.portal.kernel.util.PortalUtil
 import groovy.json.JsonSlurper
 
-// EDIT ME: path to setup/demo/data, relative to the home directory of the
-// OS user running the Liferay server. The Server Administration script
-// console reads from the server's filesystem; System.getProperty("user.home")
-// resolves to that server process's home (on a local dev box, that's you).
-def dataPath = System.getProperty("user.home") + "/Assets/liferay-forums/setup/demo/data"
+// Path to the demo data, on the SERVER filesystem (the Script console reads
+// from the server process, not your host). In Docker, the workspace `files`
+// folder is bind-mounted to /mnt/liferay/files, so drop the data there:
+//     cp -R setup/demo/data <workspace.home>/files/forums-demo/data
+// On a bare local dev box, point this at your Assets checkout instead, e.g.
+//     System.getProperty("user.home") + "/Assets/liferay-forums/setup/demo/data"
+def dataPath = "/mnt/liferay/files/forums-demo/data"
 def messages = new JsonSlurper().parse(new File("$dataPath/messages.json"))
 def usersJson = new JsonSlurper().parse(new File("$dataPath/users.json"))
 
