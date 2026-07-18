@@ -9,12 +9,84 @@
 	[/#if]
 [/#function]
 
+[#macro stat data label]
+	<div class="col">
+		<figure class="text-center mb-0 py-3">
+			<span class="forums-hero__stat-value text-white">
+				[#if data?is_hash && data.totalCount??]
+					${formatCount(data.totalCount)}
+				[#else]
+					&mdash;
+				[/#if]
+			</span>
+			<figcaption class="text-white-50 text-uppercase small mt-1">${label}</figcaption>
+		</figure>
+	</div>
+[/#macro]
+
+[#macro topPostersBlock onDark]
+	<div class="forums-hero__top-posters[#if !onDark] forums-hero__top-posters--below[/#if]"
+		id="forumsHeroTopPosters"
+		data-on-dark="${onDark?string("true", "false")}"
+		data-posters-count="${(configuration.topPostersCount!"3")}"
+		data-show-rank="${showPosterRank?string("true", "false")}"
+		data-label-unable-to-load="${languageUtil.get(locale, "unable-to-load-statistics", "Unable to load statistics.")}"
+		data-label-unknown="${languageUtil.get(locale, "unknown", "Unknown")}"
+		data-label-no-posters="${languageUtil.get(locale, "no-top-posters-yet", "No top posters yet.")}"
+		data-label-x-post="${languageUtil.get(locale, "x-post", "{0} post")}"
+		data-label-x-posts="${languageUtil.get(locale, "x-posts", "{0} posts")}">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-8">
+					<h2 class="forums-hero__top-posters-heading[#if onDark] text-white[/#if]">[#if topPostersHeadingText?has_content]${topPostersHeadingText}[#else]${languageUtil.get(locale, "top-posters", "Top Posters")}[/#if]</h2>
+
+					<ol class="forums-hero__leaderboard list-unstyled" id="forumsHeroLeaderboard" style="--posters-per-row: ${postersPerRow};">
+						<li class="forums-hero__loading [#if onDark]text-white-50[#else]text-secondary[/#if] text-center py-3">${languageUtil.get(locale, "loading", "Loading...")}</li>
+					</ol>
+				</div>
+			</div>
+		</div>
+	</div>
+[/#macro]
+
 [#assign scopeGroupId = themeDisplay.getScopeGroupId() /]
 [#assign scopeGroup = themeDisplay.getScopeGroup() /]
 [#assign sitePrefix = (themeDisplay.getPathFriendlyURLPublic()!"") + (scopeGroup.getFriendlyURL()!"") /]
-[#assign messagesData = restClient.get("/c/forumthreads/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
-[#assign solutionsData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true")!"" /]
-[#assign membersData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+
+[#assign showSolutions = (configuration.showSolutions!true) /]
+[#assign showDiscussions = (configuration.showDiscussions!true) /]
+[#assign showMessages = (configuration.showMessages!true) /]
+[#assign showParticipants = (configuration.showParticipants!true) /]
+[#assign showNewDiscussionButton = (configuration.showNewDiscussionButton!true) /]
+[#assign showTopPosters = (configuration.showTopPosters!true) /]
+[#assign showPosterRank = (configuration.showPosterRank!true) /]
+[#assign topPostersInHero = (configuration.topPostersInHero!true) /]
+[#assign postersPerRow = (configuration.postersPerRow!"3") /]
+
+[#assign heroTitleText = (configuration.heroTitle!"") /]
+[#assign heroDescriptionText = (configuration.heroDescription!"") /]
+[#assign topPostersHeadingText = (configuration.topPostersHeading!"") /]
+
+[#-- Each stat triggers a request only when it is shown. --]
+[#assign solutionsData = "" /]
+[#if showSolutions]
+	[#assign solutionsData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1&filter=answer%20eq%20true")!"" /]
+[/#if]
+
+[#assign threadsData = "" /]
+[#if showDiscussions]
+	[#assign threadsData = restClient.get("/c/forumthreads/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+[/#if]
+
+[#assign messagesData = "" /]
+[#if showMessages]
+	[#assign messagesData = restClient.get("/c/forummessages/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+[/#if]
+
+[#assign participantsData = "" /]
+[#if showParticipants]
+	[#assign participantsData = restClient.get("/c/forumstatsusers/scopes/" + scopeGroupId + "?pageSize=1&page=1")!"" /]
+[/#if]
 
 <div class="forums-hero">
 	<div class="forums-hero__backdrop">
@@ -22,64 +94,44 @@
 			<div class="row justify-content-center">
 				<div class="col-lg-8 text-center">
 					<h1 class="display-4 text-white mb-2">
-						${languageUtil.get(locale, "forums-title")}
+						[#if heroTitleText?has_content]${heroTitleText}[#else]${languageUtil.get(locale, "forums-title")}[/#if]
 					</h1>
 					<p class="lead text-white-50 mb-4">
-						${languageUtil.get(locale, "forums-description")}
+						[#if heroDescriptionText?has_content]${heroDescriptionText}[#else]${languageUtil.get(locale, "forums-description")}[/#if]
 					</p>
 
 					<div class="forums-hero__drop-zone">
 						<lfr-drop-zone></lfr-drop-zone>
 					</div>
 
-					<div class="forums-hero__stats mb-4">
-						<div class="row">
-							<div class="col-4">
-								<figure class="text-center mb-0 py-3">
-									<span class="forums-hero__stat-value text-white">
-										[#if solutionsData?is_hash && solutionsData.totalCount??]
-											${formatCount(solutionsData.totalCount)}
-										[#else]
-											&mdash;
-										[/#if]
-									</span>
-									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "solutions")}</figcaption>
-								</figure>
-							</div>
-							<div class="col-4">
-								<figure class="text-center mb-0 py-3">
-									<span class="forums-hero__stat-value text-white">
-										[#if messagesData?is_hash && messagesData.totalCount??]
-											${formatCount(messagesData.totalCount)}
-										[#else]
-											&mdash;
-										[/#if]
-									</span>
-									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "messages")}</figcaption>
-								</figure>
-							</div>
-							<div class="col-4">
-								<figure class="text-center mb-0 py-3">
-									<span class="forums-hero__stat-value text-white">
-										[#if membersData?is_hash && membersData.totalCount??]
-											${formatCount(membersData.totalCount)}
-										[#else]
-											&mdash;
-										[/#if]
-									</span>
-									<figcaption class="text-white-50 text-uppercase small mt-1">${languageUtil.get(locale, "participants")}</figcaption>
-								</figure>
+					[#if showSolutions || showDiscussions || showMessages || showParticipants]
+						<div class="forums-hero__stats mb-4">
+							<div class="row justify-content-center">
+								[#if showSolutions][@stat solutionsData languageUtil.get(locale, "solutions") /][/#if]
+								[#if showDiscussions][@stat threadsData languageUtil.get(locale, "discussions", "Discussions") /][/#if]
+								[#if showMessages][@stat messagesData languageUtil.get(locale, "messages") /][/#if]
+								[#if showParticipants][@stat participantsData languageUtil.get(locale, "participants") /][/#if]
 							</div>
 						</div>
-					</div>
+					[/#if]
 
-					[#if messagesData?is_hash && messagesData.actions?? && (messagesData.actions["post"]?? || messagesData.actions["create"]??)]
-						<a href="${sitePrefix}/new-discussion" class="btn btn-primary btn-lg">
+					[#-- Visibility is resolved client-side (see index.js): server-side
+					     restClient actions do not reflect the viewing user's create
+					     permission in a normal page render. --]
+					[#if showNewDiscussionButton]
+						<a href="${sitePrefix}/new-discussion" class="btn btn-primary btn-lg" id="forumsHeroAskBtn" style="display: none;">
 							${languageUtil.get(locale, "new-forum-message")}
 						</a>
 					[/#if]
 				</div>
 			</div>
 		</div>
+		[#if showTopPosters && topPostersInHero]
+			[@topPostersBlock true /]
+		[/#if]
 	</div>
+
+	[#if showTopPosters && !topPostersInHero]
+		[@topPostersBlock false /]
+	[/#if]
 </div>

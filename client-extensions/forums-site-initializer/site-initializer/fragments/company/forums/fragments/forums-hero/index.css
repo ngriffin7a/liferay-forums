@@ -30,6 +30,75 @@
 	max-width: 560px;
 }
 
+.forums-hero__top-posters {
+	padding-top: 3rem;
+}
+
+.forums-hero__top-posters--below {
+	padding-bottom: 3rem;
+	padding-top: 3rem;
+}
+
+.forums-hero__top-posters-heading {
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+.forums-hero__leaderboard {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--posters-gap, 1rem);
+	justify-content: center;
+	margin-bottom: 0;
+	padding-left: 0;
+}
+
+.forums-hero__loading,
+.forums-hero__empty {
+	flex: 1 0 100%;
+}
+
+.forums-hero__card {
+	flex: 0 0 auto;
+	min-width: 140px;
+	padding: 1.5rem 1rem 1.25rem;
+	position: relative;
+	text-align: center;
+	width: calc(
+		(100% - (var(--posters-per-row, 3) - 1) * var(--posters-gap, 1rem)) /
+			var(--posters-per-row, 3)
+	);
+}
+
+.forums-hero__card .sticker {
+	margin-bottom: 0.75rem;
+}
+
+.forums-hero__position {
+	background: var(--gray-100, #f1f2f5);
+	border-radius: 50%;
+	color: var(--gray-600, #6b6c7e);
+	font-size: 0.75rem;
+	font-weight: var(--font-weight-semi-bold, 600);
+	height: 1.5rem;
+	left: 0.75rem;
+	line-height: 1.5rem;
+	position: absolute;
+	text-align: center;
+	top: 0.75rem;
+	width: 1.5rem;
+}
+
+.forums-hero__poster-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.forums-hero__poster-count {
+	margin-top: 0.25rem;
+}
+
 @media (max-width: 767.98px) {
 	.forums-hero__backdrop {
 		padding: 2.5rem 0 2rem;

@@ -18,7 +18,10 @@ Data files are read from the data/ subdirectory:
   - data/replies.json
 
 Usage:
-    python3 create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
+    python3 create-demo-data.py [BASE_URL] [siteId] [--email EMAIL] [--password PASSWORD]
+
+If siteId is omitted, it is resolved by querying headless-admin-site for the
+site whose external reference code is "L_FORUMS".
 
 Defaults:
     BASE_URL: http://localhost:8080
@@ -55,7 +58,8 @@ DEMO_USERS = load_json("users.json")
 DEMO_MESSAGES = load_json("messages.json")
 REPLY_POOL = load_json("replies.json")
 
-DEMO_USER_PASSWORD = "ForumDemo2026!"
+DEMO_USER_PASSWORD = "test"
+FORUMS_SITE_ERC = "L_FORUMS"  # ERC of the Forums site, used to auto-resolve siteId
 
 
 def _generate_message_dates(messages):
@@ -91,6 +95,32 @@ def _fmt_date(dt):
     """Format a datetime for the Liferay Headless REST API (ISO 8601 / UTC)."""
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+
+
+def resolve_site_id(session, base, erc=FORUMS_SITE_ERC):
+    """Resolve the site (group) ID by ERC via headless-admin-site.
+
+    headless-admin-site v1.0 has no by-external-reference-code endpoint, and its
+    /sites listing ignores an OData filter on externalReferenceCode, so we list
+    the sites and match the ERC client-side. Returns the numeric id or None."""
+    url = f"{base}/o/headless-admin-site/v1.0/sites"
+    try:
+        resp = session.get(url, params={"pageSize": 200}, timeout=30)
+    except requests.RequestException as exc:
+        print(f"  ❌ Request failed while resolving site ID: {exc}")
+        return None
+
+    body = _json(resp)
+    if not resp.ok or not body:
+        print(f"  ❌ Could not list sites: {resp.status_code} — {body}")
+        return None
+
+    for site in body.get("items", []):
+        if site.get("externalReferenceCode") == erc:
+            return site.get("id")
+
+    print(f"  ❌ No site found with ERC '{erc}' among {body.get('totalCount', 0)} sites")
+    return None
 
 
 def make_session(email, password):
@@ -447,9 +477,11 @@ def main():
         description="Create demo forum data via the Liferay Headless API.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("site_id", help="Site (group) ID to scope all entries to")
     parser.add_argument("base_url", nargs="?", default="http://localhost:8080",
                         help="Liferay portal base URL")
+    parser.add_argument("site_id", nargs="?",
+                        help=f"Site (group) ID to scope all entries to "
+                             f"(default: resolved by ERC '{FORUMS_SITE_ERC}')")
     parser.add_argument("--email", default="test@liferay.com", help="Admin email address")
     parser.add_argument("--password", default="test", help="Admin password")
     args = parser.parse_args()
@@ -457,9 +489,17 @@ def main():
     base = args.base_url.rstrip("/")
     site_id = args.site_id
 
-    print(f"Target: {base}  Site ID: {site_id}")
-
     admin_session = make_session(args.email, args.password)
+
+    if not site_id:
+        print(f"No siteId given — resolving via headless-admin-site (ERC '{FORUMS_SITE_ERC}')...")
+        site_id = resolve_site_id(admin_session, base)
+        if not site_id:
+            print(f"\n❌ Could not resolve a site ID for ERC '{FORUMS_SITE_ERC}'. Aborting.")
+            sys.exit(1)
+        print(f"  ✅ Resolved site ID: {site_id}")
+
+    print(f"Target: {base}  Site ID: {site_id}")
 
     cat_map = ensure_categories(admin_session, base, site_id)
     if not cat_map:

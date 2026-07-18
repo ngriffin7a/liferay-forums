@@ -1,8 +1,106 @@
 {
 	"fieldSets": [
 		{
+			"label": "Statistics",
+			"fields": [
+				{
+					"defaultValue": true,
+					"label": "Show Solutions",
+					"name": "showSolutions",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Discussions",
+					"name": "showDiscussions",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Messages",
+					"name": "showMessages",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Participants",
+					"name": "showParticipants",
+					"type": "checkbox"
+				}
+			]
+		},
+		{
+			"label": "Top Posters",
+			"fields": [
+				{
+					"defaultValue": true,
+					"label": "Show Top Posters",
+					"name": "showTopPosters",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Top Posters In Hero Area",
+					"name": "topPostersInHero",
+					"type": "checkbox"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "3",
+					"label": "Top Posters Count",
+					"name": "topPostersCount",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "3",
+					"label": "Top Posters Per Row",
+					"name": "postersPerRow",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"label": "Show Poster Rank",
+					"name": "showPosterRank",
+					"type": "checkbox"
+				}
+			]
+		},
+		{
+			"label": "Headings",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "",
+					"label": "Hero Title",
+					"name": "heroTitle",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "",
+					"label": "Hero Description",
+					"name": "heroDescription",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "",
+					"label": "Top Posters Heading",
+					"name": "topPostersHeading",
+					"type": "text"
+				}
+			]
+		},
+		{
 			"label": "Content",
 			"fields": [
+				{
+					"defaultValue": true,
+					"label": "Show New Discussion Button",
+					"name": "showNewDiscussionButton",
+					"type": "checkbox"
+				},
 				{
 					"dataType": "string",
 					"defaultValue": "/forums-messages",
