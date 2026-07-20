@@ -250,7 +250,7 @@ The `setup/demo/` directory contains scripts for populating a development enviro
 ### Step 1 — Create demo data
 
 ```bash
-python3 setup/demo/_01_create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
+python3 setup/demo/1-create-demo-data.py <siteId> [BASE_URL] [--email EMAIL] [--password PASSWORD]
 ```
 
 Creates the four default Forum Categories (by ERC if they do not already exist), a set of demo user accounts assigned the Site Member role with profile photos, Forum Threads with keywords distributed across those categories, and replies to each message. All content is created as the admin user; authorship is corrected in Step 2.
@@ -264,13 +264,13 @@ Creates the four default Forum Categories (by ERC if they do not already exist),
 
 ### Step 2 — Reassign authors
 
-Run [_02_reassign-authors.groovy](setup/demo/_02_reassign-authors.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
+Run [2-reassign-authors.groovy](setup/demo/2-reassign-authors.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
 
 Step 1 creates every entry as the admin user. This step reassigns each `ForumThread` and `ForumMessage` to the author declared in `messages.json` (threads matched by `messageTitle`; messages ordered by `createDate`). **It must run before Step 4** — the stats backfill counts distinct entry owners, so if authorship has not been reassigned it finds only the admin user.
 
 ### Step 3 — Backfill create dates
 
-Run [_03_backfill-create-dates.groovy](setup/demo/_03_backfill-create-dates.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
+Run [3-backfill-create-dates.groovy](setup/demo/3-backfill-create-dates.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
 
 Copies the `displayDate` values (set by Step 1) into the `createDate` and `modifiedDate` columns on the `ObjectEntry` table for `ForumThread` and `ForumMessage` entries (definitions resolved by external reference code). This ensures that the entries appear with realistic chronological dates rather than all sharing the same import timestamp. This depends on the `LPD-17564` feature flag (see [Required Feature Flags](#required-feature-flags)) — with it disabled, Step 1's `displayDate` was never stored and this step updates 0 rows. After running, flush caches and rebuild indexes:
 
@@ -283,7 +283,7 @@ Copies the `displayDate` values (set by Step 1) into the `createDate` and `modif
 
 ### Step 4 — Backfill Forum Stats Users
 
-Run [_04_backfill-forum-stats-users.groovy](setup/demo/_04_backfill-forum-stats-users.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
+Run [4-backfill-forum-stats-users.groovy](setup/demo/4-backfill-forum-stats-users.groovy) via **Control Panel → Server Administration → Script** (language: Groovy).
 
 Backfills `ForumStatsUser` records for every user who has posted a thread or message. Without these records, the `forums-hero` fragment displays 0 Members. **Run this after Step 2** (author reassignment), otherwise it records only the admin user. If re-running, first clear existing records with `setup/util/delete-forum-stats-users.py` to avoid duplicates.
 

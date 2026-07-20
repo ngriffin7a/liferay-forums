@@ -2,8 +2,8 @@
 /**
  * Repairs the ForumStatsUser records that drive the forums-hero "Top Posters"
  * leaderboard and PARTICIPANTS count. Run this AFTER the other setup scripts
- * (_01_create-demo-data.py, _02_reassign-authors, _03_backfill-create-dates,
- * _04_backfill-forum-stats-users).
+ * (1-create-demo-data.py, 2-reassign-authors, 3-backfill-create-dates,
+ * 4-backfill-forum-stats-users).
  *
  * It fixes three problems, none of which the earlier scripts handle:
  *
@@ -17,7 +17,7 @@
  *      ("Test Test"). The hero is public and guests can read forumstatsusers but
  *      NOT user-accounts, so the member identity must live on the record itself.
  *      This script reassigns each record's userId/userName to the member named by
- *      statsUserId (mirrors _02_reassign-authors' ObjectEntry rewrite).
+ *      statsUserId (mirrors 2-reassign-authors' ObjectEntry rewrite).
  *
  *   3. Duplicate records. _01's "already registered?" check filters with
  *      statsUserId eq '<id>' (quoted), which is a BAD_REQUEST for an Integer
@@ -37,7 +37,7 @@
  * Optional: list screen names in EXCLUDE_SCREEN_NAMES (e.g. the admin "test") to
  * drop their stats records, so the demo leaderboard shows only named community
  * members. Empty by default -- it deletes real data (the admin genuinely authored
- * the messages that _02_reassign-authors did not reassign, because messages.json
+ * the messages that 2-reassign-authors did not reassign, because messages.json
  * only covers half the threads), so populate it deliberately.
  */
 
@@ -83,8 +83,8 @@ EXCLUDE_SCREEN_NAMES.each { screenName ->
 }
 
 // ── 1. Aggregate ForumMessage entries per author ────────────────────────────
-// ObjectEntry.userId is the author (set by _02_reassign-authors) and createDate
-// is the historical post date (set by _03_backfill-create-dates).
+// ObjectEntry.userId is the author (set by 2-reassign-authors) and createDate
+// is the historical post date (set by 3-backfill-create-dates).
 
 def aggregateQuery = ObjectEntryLocalServiceUtil.dynamicQuery()
 aggregateQuery.add(RestrictionsFactoryUtil.eq("objectDefinitionId", messageDef.getObjectDefinitionId()))

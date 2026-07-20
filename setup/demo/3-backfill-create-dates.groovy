@@ -5,7 +5,7 @@
  * Both columns are TIMESTAMP (Types.TIMESTAMP in JDBC / DATE in Liferay DDL),
  * so there is no precision mismatch.
  *
- * Run this AFTER _01_create-demo-data.py has populated all entries, via
+ * Run this AFTER 1-create-demo-data.py has populated all entries, via
  * Control Panel -> Server Administration -> Script (language: Groovy).
  *
  * Direct ObjectEntry writes bypass the entity cache, so afterwards clear caches:

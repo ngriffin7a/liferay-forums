@@ -1,5 +1,5 @@
 /* Reassign ForumThread / ForumMessage ObjectEntry authorship to match the
- * `author` field declared in messages.json. Runs after _01_create-demo-data.py
+ * `author` field declared in messages.json. Runs after 1-create-demo-data.py
  * which creates everything as admin.
  *
  * Matching strategy:
