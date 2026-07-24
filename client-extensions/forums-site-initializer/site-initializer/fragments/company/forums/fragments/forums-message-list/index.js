@@ -201,7 +201,7 @@ if (messageList) {
 		var level = PRIORITY_LEVELS[Math.round(parseFloat(priority)) || 0];
 		if (!level) return '';
 		var label = dataset[level.labelKey] || level.fallback;
-		return '<span class="forums-message-card__solved ' + level.textClass + ' ml-3 small" title="' + Liferay.Util.escapeHTML(label) + '">'
+		return '<span class="forums-message-card__solved ' + level.textClass + ' ml-3 small">'
 			+ '<svg class="lexicon-icon lexicon-icon-' + level.icon + '" role="presentation"><use href="' + clayIconsUrl + '#' + level.icon + '"></use></svg> '
 			+ Liferay.Util.escapeHTML(label) + '</span>';
 	}
