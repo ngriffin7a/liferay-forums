@@ -424,7 +424,7 @@ if (messageList) {
 				var solvedBadge = '';
 				if (msg.question && hasSolution) {
 					var solvedText = messageList.dataset.labelSolved || 'Solved';
-					solvedBadge = '<span class="forums-message-card__solved text-success font-weight-semi-bold ml-2">' + checkIcon + ' ' + solvedText + '</span>';
+					solvedBadge = '<span class="forums-message-card__solved text-success font-weight-semi-bold ml-3 small">' + checkIcon + ' ' + solvedText + '</span>';
 				}
 
 				var priorityBadgeHtml = priorityBadge(msg.priority, messageList.dataset);
@@ -438,7 +438,7 @@ if (messageList) {
 				var flaggedBadge = '';
 				if (isFlagged) {
 					var flaggedText = messageList.dataset.labelFlagged || 'Flagged';
-					flaggedBadge = '<span class="forums-message-card__solved text-danger ml-2"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
+					flaggedBadge = '<span class="forums-message-card__solved text-danger ml-3 small"><svg class="lexicon-icon lexicon-icon-warning-full" role="presentation" viewBox="0 0 16 16" fill="currentColor"><path d="M16 14.5L8 1 0 14.5h16zM8 13c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V6h2v4z"/></svg> ' + flaggedText + '</span>';
 				}
 
 				html += '<div class="card forums-message-card">'
