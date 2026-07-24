@@ -15,17 +15,23 @@
 
 .forums-message-composer__layout {
 	display: flex;
-	gap: 2rem;
+	flex-direction: column;
+	gap: 1rem;
 }
 
-.forums-message-composer__layout-left {
-	flex: 0 0 320px;
-}
-
+/* Editor first, attachments below it: a single-column reply, matching the page
+   composer. A fixed side column just for the attach button read as a large
+   empty gap next to the editor, and stacked it put attachments above the
+   reply. */
 .forums-message-composer__layout-right {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
+	order: 1;
+}
+
+.forums-message-composer__layout-left {
+	order: 2;
 }
 
 .forums-message-composer__body-group {
@@ -36,17 +42,6 @@
 
 .forums-message-composer__editor-wrapper {
 	flex: 1;
-}
-
-@media (max-width: 767.98px) {
-	.forums-message-composer__layout {
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.forums-message-composer__layout-left {
-		flex: none;
-	}
 }
 
 /* Page mode: the composer is rendered full-screen as a single-column form
