@@ -50,6 +50,7 @@ if (messageList) {
 	var searchBtn = messageList.querySelector('#forumsMessageListSearchBtn');
 	var tabLinks = messageList.querySelectorAll('#forumsMessageListTabs .nav-link');
 	var askBtn = messageList.querySelector('#forumsMessageListAskBtn');
+	var newDiscussionBaseUrl = askBtn ? askBtn.getAttribute('href') : '';
 	var categoryFilter = messageList.querySelector('#forumsMessageListCategoryFilter');
 	var showingEl = messageList.querySelector('#forumsMessageListShowing');
 
@@ -316,6 +317,13 @@ if (messageList) {
 			if (askBtn) {
 				if (!isBanned && data.actions && (data.actions['post'] || data.actions['create'])) {
 					askBtn.style.display = '';
+
+					/* Carry the current category into New Discussion so the
+					   composer preselects it — no manual category pick when
+					   posting from within a category. */
+					askBtn.href = categoryId
+						? newDiscussionBaseUrl + '?categoryId=' + encodeURIComponent(categoryId)
+						: newDiscussionBaseUrl;
 				} else {
 					askBtn.style.display = 'none';
 				}
