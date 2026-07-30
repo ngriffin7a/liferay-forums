@@ -52,6 +52,23 @@ if (messageList) {
 	var askBtn = messageList.querySelector('#forumsMessageListAskBtn');
 	var categoryFilter = messageList.querySelector('#forumsMessageListCategoryFilter');
 	var showingEl = messageList.querySelector('#forumsMessageListShowing');
+	var breadcrumbOl = messageList.querySelector('#forumsMessageListBreadcrumb');
+	var subcatsContainer = messageList.querySelector('#forumsMessageListSubcategories');
+	var subcatsRow = messageList.querySelector('#forumsMessageListSubcategoriesRow');
+	var subcatsToggle = messageList.querySelector('#forumsMessageListSubcategoriesToggle');
+	var subcatsToggleLabel = messageList.querySelector('#forumsMessageListSubcategoriesToggleLabel');
+	var subcatsToggleIcon = messageList.querySelector('#forumsMessageListSubcategoriesToggleIcon');
+
+	/* Collapsed subcategory box shows exactly two rows; expanded shows all */
+	var subcatsExpanded = false;
+
+	/* FK exposed by the ForumCategory self-relationship (0 / absent = top-level) */
+	var PARENT_FK = 'r_categorySubcategories_c_forumCategoryId';
+
+	/* Subcategories are capped at ONE level — see MAX_DEPTH in
+	   forums-categories-admin. Kept as a constant, never a setting. */
+	var MAX_DEPTH = 1;
+	var categoryTree = null;
 
 	/* Read URL params */
 	var urlParams = new URLSearchParams(window.location.search);
@@ -206,41 +223,254 @@ if (messageList) {
 			+ Liferay.Util.escapeHTML(label) + '</span>';
 	}
 
-	/* Fetch category name for breadcrumb */
-	if (categoryId) {
-		Liferay.Util.fetch(portalURL + '/o/c/forumcategories/' + categoryId, {
-			headers: headers,
-			method: 'GET'
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(cat) {
-			var name = cat.categoryName || messageList.dataset.labelCategory || 'Category';
-			if (headingEl) headingEl.textContent = name;
-			if (breadcrumbName) breadcrumbName.textContent = name;
-		})
-		.catch(function() {});
+	/* --- Category hierarchy -------------------------------------------- */
+
+	function getParentId(cat) {
+		return Number(cat[PARENT_FK]) || 0;
 	}
 
-	/* Populate category filter dropdown */
-	if (categoryFilter) {
-		Liferay.Util.fetch(portalURL + '/o/c/forumcategories/scopes/' + scopeGroupId + '?pageSize=200&sort=categoryName:asc', {
-			headers: headers,
-			method: 'GET'
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(data) {
-			(data.items || []).forEach(function(cat) {
-				var opt = document.createElement('option');
-				opt.value = cat.id;
-				opt.textContent = cat.categoryName || '';
-				if (String(cat.id) === String(categoryId)) {
-					opt.selected = true;
-				}
-				categoryFilter.appendChild(opt);
-			});
-		})
-		.catch(function() {});
+	/* Link to another category on this same page */
+	function categoryHref(id) {
+		return window.location.pathname + '?categoryId=' + id;
+	}
 
+	/* Build {byId, childrenOf} from a flat list. Anything deeper than
+	   MAX_DEPTH — only reachable by writing the FK directly through the REST
+	   API — is normalized to top-level so it still renders somewhere. */
+	function buildTree(items) {
+		var byId = {};
+		items.forEach(function(cat) { byId[cat.id] = cat; });
+
+		var depthOf = {};
+		items.forEach(function(cat) {
+			var depth = 0;
+			var pid = getParentId(cat);
+			var guard = 0;
+			while (pid && byId[pid] && guard < 50) {
+				depth++;
+				pid = getParentId(byId[pid]);
+				guard++;
+			}
+			depthOf[cat.id] = depth;
+		});
+
+		var childrenOf = {};
+		items.forEach(function(cat) {
+			var pid = getParentId(cat);
+			if (!pid || !byId[pid] || depthOf[cat.id] > MAX_DEPTH) pid = 0;
+			(childrenOf[pid] = childrenOf[pid] || []).push(cat);
+		});
+
+		return { byId: byId, childrenOf: childrenOf, depthOf: depthOf };
+	}
+
+	/* Rebuild the breadcrumb as Forums > [Parent >] Current.
+	   With the one-level cap this is at most three crumbs. */
+	function buildBreadcrumb(tree) {
+		if (!breadcrumbName) return;
+
+		var allLabel = messageList.dataset.labelAllCategories || messageList.dataset.labelAllMessages || 'All Messages';
+		var activeLi = breadcrumbName.closest('li');
+
+		/* Drop ancestor crumbs from a previous render */
+		if (breadcrumbOl) {
+			breadcrumbOl.querySelectorAll('.forums-breadcrumb-ancestor').forEach(function(el) { el.remove(); });
+		}
+
+		var current = categoryId ? tree.byId[categoryId] : null;
+		var name = current
+			? (current.categoryName || messageList.dataset.labelCategory || 'Category')
+			: allLabel;
+
+		breadcrumbName.textContent = name;
+		if (headingEl) headingEl.textContent = name;
+
+		if (!current || !activeLi || !breadcrumbOl) return;
+
+		/* Walk up the parent chain (cycle-guarded; at most one hop when capped) */
+		var ancestors = [];
+		var pid = getParentId(current);
+		var guard = 0;
+		while (pid && tree.byId[pid] && guard < 50) {
+			ancestors.unshift(tree.byId[pid]);
+			pid = getParentId(tree.byId[pid]);
+			guard++;
+		}
+
+		ancestors.forEach(function(anc) {
+			var li = document.createElement('li');
+			li.className = 'breadcrumb-item forums-breadcrumb-ancestor';
+			var a = document.createElement('a');
+			a.className = 'breadcrumb-link';
+			a.href = categoryHref(anc.id);
+			a.textContent = anc.categoryName || '';
+			li.appendChild(a);
+			breadcrumbOl.insertBefore(li, activeLi);
+		});
+	}
+
+	/* Fill the filter dropdown with an indented two-tier category tree */
+	function populateCategoryFilter(tree) {
+		if (!categoryFilter) return;
+		(tree.childrenOf[0] || []).forEach(function(cat) {
+			categoryFilter.appendChild(categoryOption(cat, 0));
+			(tree.childrenOf[cat.id] || []).forEach(function(child) {
+				categoryFilter.appendChild(categoryOption(child, 1));
+			});
+		});
+	}
+
+	function categoryOption(cat, depth) {
+		var opt = document.createElement('option');
+		opt.value = cat.id;
+		opt.textContent = (depth > 0 ? '— ' : '') + (cat.categoryName || '');
+		if (String(cat.id) === String(categoryId)) opt.selected = true;
+		return opt;
+	}
+
+	/* Render the current category's subcategories as navigable cards.
+	   A parent lists only its OWN topics, so these cards are the way into
+	   subcategory content — hidden entirely when there are none, which keeps
+	   a flat forum looking exactly as it did before. */
+	/* Cards per row implied by the column classes below (sm/lg only, matching
+	   the rest of the fragment): 4 from lg up, 2 from sm up, 1 below. */
+	function subcategoryColumnsPerRow() {
+		if (window.matchMedia('(min-width: 992px)').matches) return 4;
+		if (window.matchMedia('(min-width: 576px)').matches) return 2;
+		return 1;
+	}
+
+	/* Two rows' worth of cards */
+	function subcategoryVisibleLimit() {
+		return subcategoryColumnsPerRow() * 2;
+	}
+
+	/* Hide everything past two rows and sync the toggle. Safe to re-run on
+	   resize; the expanded state is deliberately preserved. */
+	function applySubcategoryCollapse() {
+		if (!subcatsRow) return;
+
+		var cols = subcatsRow.children;
+		var limit = subcategoryVisibleLimit();
+		var overflows = cols.length > limit;
+
+		for (var i = 0; i < cols.length; i++) {
+			var hidden = !subcatsExpanded && overflows && i >= limit;
+			cols[i].classList.toggle('forums-message-list__subcategory-col--hidden', hidden);
+		}
+
+		if (!subcatsToggle) return;
+
+		subcatsToggle.style.display = overflows ? '' : 'none';
+
+		if (!overflows) {
+			/* Nothing hidden, so the row is fully exposed */
+			subcatsToggle.setAttribute('aria-expanded', 'true');
+			return;
+		}
+
+		subcatsToggle.setAttribute('aria-expanded', subcatsExpanded ? 'true' : 'false');
+
+		if (subcatsToggleLabel) {
+			subcatsToggleLabel.textContent = subcatsExpanded
+				? (messageList.dataset.labelCollapse || 'Collapse')
+				: (messageList.dataset.labelExpand || 'Expand');
+		}
+
+		if (subcatsToggleIcon) {
+			var use = subcatsToggleIcon.querySelector('use');
+			if (use) {
+				var href = use.getAttribute('href') || '';
+				use.setAttribute(
+					'href',
+					href.replace(/#angle-(down|up)$/, subcatsExpanded ? '#angle-up' : '#angle-down')
+				);
+			}
+		}
+	}
+
+	function renderSubcategories(tree) {
+		if (!subcatsContainer || !subcatsRow) return;
+		subcatsRow.innerHTML = '';
+
+		var children = categoryId ? (tree.childrenOf[categoryId] || []) : [];
+		if (children.length === 0) {
+			subcatsContainer.style.display = 'none';
+			return;
+		}
+
+		children.forEach(function(cat) {
+			var col = document.createElement('div');
+			col.className = 'col-sm-6 col-lg-3 mb-4';
+
+			var card = document.createElement('a');
+			card.href = categoryHref(cat.id);
+			card.className = 'card card-interactive card-interactive-secondary h-100 text-decoration-none forums-message-list__subcategory-card';
+
+			var body = document.createElement('div');
+			body.className = 'card-body';
+
+			var title = document.createElement('div');
+			title.className = 'card-title font-weight-semi-bold forums-message-list__subcategory-title';
+			title.textContent = cat.categoryName || '';
+			title.title = cat.categoryName || '';
+			body.appendChild(title);
+
+			/* Always appended — an empty description still reserves its two
+			   lines so every card ends up the same height. */
+			var desc = document.createElement('p');
+			desc.className = 'card-text text-secondary small forums-message-list__subcategory-desc';
+			desc.textContent = cat.categoryDescription || '';
+			if (cat.categoryDescription) {
+				/* Clamped to two lines — expose the full text on hover */
+				desc.title = cat.categoryDescription;
+				desc.setAttribute('data-tooltip-align', 'top');
+			}
+			body.appendChild(desc);
+
+			card.appendChild(body);
+			col.appendChild(card);
+			subcatsRow.appendChild(col);
+		});
+
+		/* A freshly rendered box starts collapsed */
+		subcatsExpanded = false;
+		applySubcategoryCollapse();
+
+		subcatsContainer.style.display = '';
+	}
+
+	if (subcatsToggle) {
+		subcatsToggle.addEventListener('click', function() {
+			subcatsExpanded = !subcatsExpanded;
+			applySubcategoryCollapse();
+		});
+	}
+
+	/* Registered once: the number of visible cards depends on the breakpoint */
+	var subcatsResizeTimer = null;
+	window.addEventListener('resize', function() {
+		if (subcatsResizeTimer) clearTimeout(subcatsResizeTimer);
+		subcatsResizeTimer = setTimeout(applySubcategoryCollapse, 150);
+	});
+
+	/* One fetch drives the breadcrumb, the filter dropdown and the
+	   subcategory cards. */
+	Liferay.Util.fetch(portalURL + '/o/c/forumcategories/scopes/' + scopeGroupId + '?pageSize=200&sort=categoryName:asc', {
+		headers: headers,
+		method: 'GET'
+	})
+	.then(function(r) { return r.json(); })
+	.then(function(data) {
+		categoryTree = buildTree(data.items || []);
+
+		buildBreadcrumb(categoryTree);
+		populateCategoryFilter(categoryTree);
+		renderSubcategories(categoryTree);
+	})
+	.catch(function() {});
+
+	if (categoryFilter) {
 		categoryFilter.addEventListener('change', function() {
 			categoryId = this.value || null;
 			currentPage = 1;
@@ -254,16 +484,9 @@ if (messageList) {
 			}
 			history.pushState(null, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
 
-			var allLabel = messageList.dataset.labelAllCategories || messageList.dataset.labelAllMessages || 'All Messages';
-			if (!categoryId) {
-				if (headingEl) headingEl.textContent = allLabel;
-				if (breadcrumbName) breadcrumbName.textContent = allLabel;
-			}
-			else {
-				var selectedOpt = this.options[this.selectedIndex];
-				var catName = selectedOpt ? selectedOpt.textContent : allLabel;
-				if (headingEl) headingEl.textContent = catName;
-				if (breadcrumbName) breadcrumbName.textContent = catName;
+			if (categoryTree) {
+				buildBreadcrumb(categoryTree);
+				renderSubcategories(categoryTree);
 			}
 
 			loadMessages();
